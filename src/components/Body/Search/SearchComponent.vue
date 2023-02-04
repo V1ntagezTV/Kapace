@@ -26,18 +26,10 @@
     </BaseBackground>
   </div>
 </template>
-<script>
+
+<script lang="ts" setup>
 import BaseBackground from "@/components/Base/BaseBackground.vue";
-
-export default {
-    name: 'App',
-    components: {
-        BaseBackground
-    },
-}
 </script>
-
-
 
 <style lang="scss">
 

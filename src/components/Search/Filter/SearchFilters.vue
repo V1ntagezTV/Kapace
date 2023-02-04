@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import FilterUnit from "@/components/Search/RightBar/FilterUnit.vue";
+import FilterUnit from "@/components/Search/Filter/FilterUnit.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 

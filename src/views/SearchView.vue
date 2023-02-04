@@ -19,7 +19,7 @@
 import SearchComponent from '@/components/Body/Search/SearchComponent.vue';
 import SearchTags from '@/components/Body/Search/SearchTags.vue';
 import SearchContent from '@/components/Body/Search/SearchContent.vue';
-import SearchFilters from '@/components/Search/RightBar/SearchFilters.vue';
+import SearchFilters from '@/components/Search/Filter/SearchFilters.vue';
 
 export default {
   name: 'SearchView',

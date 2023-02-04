@@ -12,16 +12,13 @@
   </button>
 </template>
 
-<script>
-export default {
-  name: "BaseButton",
-  props: {
-    buttonType: {
-      type: Number,
-      default: 1
-    }
+<script lang="ts" setup>
+const props = defineProps({
+  buttonType: {
+    type: Number,
+    default: 1
   }
-}
+})
 </script>
 
 <style lang="scss">

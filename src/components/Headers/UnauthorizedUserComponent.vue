@@ -8,7 +8,7 @@
     </router-link>
   </div>
 
-  <div v-else>
+  <div v-else class="user-main">
     <a @click="LogOut">Уже профиль</a>
   </div>
 </template>
@@ -30,13 +30,20 @@ export default {
 }
 </script>
 
-<style>
-  .user-main {
-      display: flex;
-      height: 42px;
-      color: #38383C;
-      flex-direction: row;
-      align-items: end;
-      gap: 20px;
+<style lang="scss" scoped>
+.user-main {
+    display: flex;
+    height: 42px;
+    color: #38383C;
+    flex-direction: row;
+    align-items: end;
+    gap: 20px;
+
+  & a,
+  & a.router-link-active,
+  & a.router-link-exact-active {
+    text-decoration: none;
+    color: #9D9D9D;
+  }
 }
 </style>
