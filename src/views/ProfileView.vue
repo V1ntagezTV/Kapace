@@ -40,7 +40,7 @@
 <script lang="ts" setup>
 import AvatarComponent from "@/components/Profile/AvatarComponent.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
-import BaseBackground from "@/components/Body/BaseBackground.vue";
+import BaseBackground from "@/components/Base/BaseBackground.vue";
 import ProfileMenu from "@/components/Profile/ProfileMenu.vue";
 import {ref} from "vue";
 import {DataClass} from "@/components/Profile/ViewModels/DataClass";

@@ -27,7 +27,7 @@
   </div>
 </template>
 <script>
-import BaseBackground from "@/components/Body/BaseBackground.vue";
+import BaseBackground from "@/components/Base/BaseBackground.vue";
 
 export default {
     name: 'App',

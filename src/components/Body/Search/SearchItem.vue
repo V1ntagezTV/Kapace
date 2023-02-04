@@ -52,7 +52,7 @@
 
 <script>
 import FavoriteIcon from "@/components/Icons/FavoriteIcon.vue";
-import BaseBackground from "@/components/Body/BaseBackground.vue";
+import BaseBackground from "@/components/Base/BaseBackground.vue";
 import DetailsIcon from "@/components/Icons/DetailsIcon.vue";
 
 export default {
@@ -70,8 +70,8 @@ export default {
           country: String,
           minAge: Int8Array,
           genres: Array,
-          languages: Array
-        }
+          languages: Array,
+        },
     }
 }
 </script>

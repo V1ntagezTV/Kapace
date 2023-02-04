@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import BaseBackground from '../BaseBackground.vue';
+import BaseBackground from '../../Base/BaseBackground.vue';
 
 export default {
   name: 'App',

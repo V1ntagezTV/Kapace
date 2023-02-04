@@ -47,7 +47,7 @@
 </template>
 
 <script lang="ts">
-import BaseBackground from "@/components/Body/BaseBackground.vue";
+import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import {defineComponent} from "vue";
 import {mapMutations, mapState} from 'vuex'
