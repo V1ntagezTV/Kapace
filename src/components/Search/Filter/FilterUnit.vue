@@ -11,8 +11,8 @@
     <transition name="content">
       <div v-if="show">
         <div
-          v-for="(value, key) in inputValues"
-          :key="key"
+          v-for="([key, value], index) in inputValues"
+          :key="index"
           class="filter-unit__input-container"
           @click="inputClick(key, value)"
         >
@@ -20,61 +20,39 @@
             :checked="value"
             type="checkbox"
           >
-          <label class="filter-unit__label">{{ key }}</label>
+          <label class="filter-unit__label">{{ index }} / {{ value }}</label>
         </div>
       </div>
     </transition>
   </div>
 </template>
 
-<script>
+<script lang="ts" setup>
 import DropArrow from "@/components/Icons/DropArrow.vue";
-import { ref } from 'vue'
+import FilterUnitModel from "@/components/Search/Models/FilterUnitModel";
+import {ref, watch} from 'vue'
+import {SearchEmits} from "@/components/Search/Models/SearchEmits";
 
-export default {
-  name: "FilterUnit",
-  components: {
-    DropArrow,
-  },
-  props: {
-    clearTrigger: Boolean,
-    filter: {
-      Name: String,
-      Type: String,
-      Values: {
-        Type: Map
-      }
-    }
-  },
-  emits: ['clean:acceptedFilters'],
-    data: function () {
-    return {
-      show: ref(true)
-    }
-  },
-  computed: {
-    inputValues() {
-      return this.filter.Values;
-    }
-  },
-  watch: {
-    clearTrigger() {
-      const mapValues = new Map(Object.entries(this.filter.Values));
-      console.log(mapValues.size)
-      for (let key of  mapValues.keys()) {
-        // eslint-disable-next-line vue/no-mutating-props
-        this.filter.Values[key] = false;
-      }
-    }
-  },
-  methods: {
-    inputClick(key, value) {
-      this.inputValues[key] = !value
-      this.$emit('update:filtersHasChanges', {key: key, value: this.inputValues[key]});
-    }
-  },
+const emits = defineEmits<{ (emitName: SearchEmits.Add, key: string, value: boolean) : void }>()
+
+const props = defineProps({
+  show: {type: Boolean, default: true, required: false},
+  filter: {type: FilterUnitModel, required: true},
+  clearTrigger: {type: Boolean, required: true},
+})
+
+const inputValues = ref(props.filter.Values)
+
+watch(() => props.clearTrigger, () => {
+  for (let key of  props.filter?.Values.keys()) {
+    inputValues.value.set(key, false)
+  }
+})
+
+function inputClick(key: string, value: boolean) : void {
+  inputValues.value.set(key, !value)
+  emits(SearchEmits.Add, key, !value)
 }
-
 
 </script>
 
@@ -138,7 +116,6 @@ export default {
   }
 }
 
-// --Animations-- //
 .content {
   &-enter-from {
     opacity: 0;

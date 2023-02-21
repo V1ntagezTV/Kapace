@@ -5,17 +5,14 @@
         v-for="filter in filters"
         :key="filter"
         ref="filterUnit"
-        :clear-trigger="clearTrigger"
         :filter="filter"
-        @update:filtersHasChanges="inputFilterSelected($event)"
+        :clear-trigger="clearTrigger"
+        @add:accepted-filters="inputFilterSelected"
       />
     </BaseBackground>
 
     <div class="search-filters__actions-container">
-      <BaseButton
-        :button-type="2"
-        @click="AcceptFilters"
-      >
+      <BaseButton :button-type="2" @click="AcceptFilters">
         Принять
       </BaseButton>
       <BaseButton @click="CleanFiltersByParent">
@@ -25,78 +22,51 @@
   </div>
 </template>
 
-<script>
+<script lang="ts" setup>
+import {defineEmits, reactive, ref} from 'vue';
 import FilterUnit from "@/components/Search/Filter/FilterUnit.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
+import FilterUnitModel from "@/components/Search/Models/FilterUnitModel";
+import {SearchEmits} from "@/components/Search/Models/SearchEmits";
 
-export default {
-  name: 'SearchFilters',
-  components: {
-    BaseBackground,
-    BaseButton,
-    FilterUnit,
-  },
-  emits: ["update:acceptedFilters", "clean:acceptedFilters"],
-  data() {
-    return {
-      clearTrigger: false,
-      emitAcceptedFilters: new Map(),
-      filtersHasChanges: false,
-      filters: {
-        Type: {
-          Name: "Тип",
-          Type: "Flags",
-          Values: {
-            Фильм: false,
-            Сериал: false,
-            Шоу: false
-          }
-        },
-        Status: {
-          Name: "Статус",
-          Type: "Flags",
-          Values: {
-            Завершен: false,
-            Выходит: false,
-            Скоро: false,
-          }
-        },
-        Country: {
-          Name: "Страна",
-          Type: "Flags",
-          Values: {
-            Китай: false,
-            Корея: false,
-            Япония: false,
-          }
-        }
-      },
+const emits = defineEmits<{
+  (emitName: 'update:acceptedFilters', filters: string[]) : void,
+  (emitName: 'clean:accepted-filters') : void,
+  (emitName: 'add:accepted-filters', key: string, value: boolean) : void,
+}>()
+
+let clearTrigger = ref(false)
+let emitAcceptedFilters = new Map<string, boolean>()
+
+const filters = [
+  new FilterUnitModel('Тип', 'Flags', new Map<string, boolean>([["key1", false], ["key2", false]])),
+  new FilterUnitModel('Статус', 'Flags', new Map<string, boolean>([["key3", false], ["key4", false]])),
+  new FilterUnitModel('Стрнана', 'Flags', new Map<string, boolean>([["key5", false], ["key6", false]]))
+];
+
+function inputFilterSelected(key: string, value: boolean) {
+  emitAcceptedFilters.set(key, value)
+  console.log(emitAcceptedFilters)
+}
+
+function CleanFiltersByParent() {
+  clearTrigger.value = !clearTrigger.value
+
+  console.log(clearTrigger)
+  emits(SearchEmits.Clean)
+}
+
+function AcceptFilters() {
+  let resultFilters = []
+
+  emitAcceptedFilters.forEach((value, key) => {
+    if (value) {
+      resultFilters.push(key)
     }
-  },
-  methods: {
-    inputFilterSelected(keyValuePair) {
-      this.emitAcceptedFilters.set(keyValuePair.key, keyValuePair.value)
-    },
+  })
 
-    CleanFiltersByParent() {
-      this.clearTrigger = !this.clearTrigger;
-      // eslint-disable-next-line vue/custom-event-name-casing
-      this.$emit('clean:acceptedFilters')
-    },
-
-    AcceptFilters() {
-      let resultFilters = []
-
-      this.emitAcceptedFilters.forEach((value, key) => {
-        if (value) {
-          resultFilters.push(key)
-        }
-      })
-
-      this.$emit('update:acceptedFilters', resultFilters);
-    }
-  }
+  emits('update:acceptedFilters', resultFilters)
 }
 
 </script>
