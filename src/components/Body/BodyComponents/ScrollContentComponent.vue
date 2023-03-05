@@ -27,7 +27,9 @@
         class="scroll-content-component__card"
       >
         <div class="scroll-content-component__card-title">
-          <p>{{ content.title }}</p>
+          <router-link :to="{ name: 'theater', params: { id: content.id }}">
+            {{ content.title }}
+          </router-link>
         </div>
             
         <div class="scroll-content-component__card-content">
@@ -138,19 +140,26 @@
 </template>
 
 <script>
+import router from "@/router";
+
 export default {
-    name: 'App',
-    components: { },
-    props: {
-        scrollTitle: {
-            type: String,
-            required: true
-        },
-        scrollContent: {
-            type: Array,
-            required: true,
-        }
+  name: 'App',
+  components: { },
+  props: {
+    scrollTitle: {
+      type: String,
+      required: true
+    },
+    scrollContent: {
+      type: Array,
+      required: true,
     }
+  },
+  data() {
+    return {
+      route: this.$route,
+    }
+  }
 }
 </script>
 

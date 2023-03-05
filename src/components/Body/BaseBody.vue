@@ -36,9 +36,9 @@ export default {
                 "Последние обновления",
             ],
             scrollContentData: [
-                {title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-                {title: "Ночь любви c тобой 2", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-                {title: "Ночь любви c тобой 3", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
+                {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
+                {id: 2, title: "Ночь любви c тобой 2", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
+                {id: 3, title: "Ночь любви c тобой 3", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
             ]
         }
     },

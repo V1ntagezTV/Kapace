@@ -9,7 +9,10 @@
   </div>
 
   <div v-else class="user-main">
-    <a @click="LogOut">Уже профиль</a>
+    <router-link to="/profile">
+      Профиль
+    </router-link>
+    <a @click="LogOut">Выйти</a>
   </div>
 </template>
 
@@ -33,17 +36,25 @@ export default {
 <style lang="scss" scoped>
 .user-main {
     display: flex;
-    height: 42px;
+    height: 100%;
     color: #38383C;
     flex-direction: row;
     align-items: end;
     gap: 20px;
 
-  & a,
-  & a.router-link-active,
-  & a.router-link-exact-active {
-    text-decoration: none;
-    color: #9D9D9D;
+  & a {
+    align-items: center;
+    height: 100%;
+    font-style: normal;
+    display: flex;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 17px;
+
+    &:hover {
+      color: var(--header-hover-text);
+      cursor: pointer;
+    }
   }
 }
 </style>
