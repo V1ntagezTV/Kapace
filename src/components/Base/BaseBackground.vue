@@ -23,7 +23,7 @@ const props = defineProps({
 <style lang="scss">
 .base-background__default {
   background: #FFFFFF;
-  border-radius: 4px;
+  border-radius: 6px;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 16%);
   overflow: hidden;
 }
