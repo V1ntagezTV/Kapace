@@ -51,22 +51,22 @@ import {LinkedProperty} from "@/components/Profile/ViewModels/LinkedProperty";
 import {GenericSortableDataClass} from "@/components/Profile/ViewModels/GenericSortableDataClass";
 
 const eventList = ref([
-  new DataClass(BigInt(1), '20.21.2022 23:32', [
-    new LinkedProperty("1nsurka", LinkPropertyType.TO_FILM, BigInt(123)),
+  new DataClass(1, '20.21.2022 23:32', [
+    new LinkedProperty("1nsurka", LinkPropertyType.TO_FILM, 123),
     new Property("оценил оценил оценил оценил оценил оценил"),
-    new LinkedProperty("Мастер Копья", LinkPropertyType.TO_FILM, BigInt(123)),
+    new LinkedProperty("Мастер Копья", LinkPropertyType.TO_FILM, 123),
     new Property("в 4.5 звезд"),
   ]),
-  new DataClass(BigInt(1), '20.21.2022 23:32', [
-    new LinkedProperty("1nsurka", LinkPropertyType.TO_FILM, BigInt(123)),
+  new DataClass(1, '20.21.2022 23:32', [
+    new LinkedProperty("1nsurka", LinkPropertyType.TO_FILM, 123),
     new Property("оценил"),
-    new LinkedProperty("Мастер Копья", LinkPropertyType.TO_FILM, BigInt(123)),
+    new LinkedProperty("Мастер Копья", LinkPropertyType.TO_FILM, 123),
     new Property("в 4.5 звезд"),
   ]),
-  new DataClass(BigInt(1), '20.21.2022 23:32', [
-    new LinkedProperty("1nsurka", LinkPropertyType.TO_FILM, BigInt(123)),
+  new DataClass(1, '20.21.2022 23:32', [
+    new LinkedProperty("1nsurka", LinkPropertyType.TO_FILM, 123),
     new Property("оценил"),
-    new LinkedProperty("Мастер Копья", LinkPropertyType.TO_FILM, BigInt(123)),
+    new LinkedProperty("Мастер Копья", LinkPropertyType.TO_FILM, 123),
     new Property("в 4.5 звезд"),
   ]),
 ])
