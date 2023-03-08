@@ -20,7 +20,7 @@
 
       <router-link
         to="/"
-        class="user-main__menu-item"
+        class="user-main__menu-item user-main__menu-item-exit"
         @click="LogOut"
       >
         <LogOutIcon class="user-main__icon" />
@@ -77,6 +77,14 @@ export default {
 
     &:hover {
       color: var(--primary);
+      cursor: pointer;
+      background: #F4F5F7;
+    }
+  }
+
+  &__menu-item-exit {
+    &:hover {
+      color: #ff3838;
       cursor: pointer;
       background: #F4F5F7;
     }
