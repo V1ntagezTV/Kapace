@@ -61,29 +61,6 @@ const props = defineProps({
     height: 30px;
   }
 
-  &__menu-button {
-    font-style: normal;
-    font-weight: 700;
-    font-size: 14px;
-    line-height: 15px;
-    letter-spacing: 0.04em;
-
-    color: #969BAB;
-
-    border: none;
-    background: none;
-    text-decoration: none;
-
-    &:hover {
-      color: var(--primary);
-      cursor: pointer;
-    }
-
-    &:active {
-      color: #474A57;
-    }
-  }
-
   &__main {
     width: 100%;
     height: fit-content;

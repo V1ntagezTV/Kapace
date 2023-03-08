@@ -191,7 +191,7 @@ export default {
     &__title {
         width: 962px;
         height: 29px;
-        margin: 0 auto;
+        margin: 0;
         font-style: normal;
         font-weight: 800;
         font-size: 24px;

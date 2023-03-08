@@ -111,6 +111,7 @@ export default {
   &__container {
     display: grid;
     grid-auto-flow: column;
+    width: 100%;
     height: 165px;
     overflow: hidden;
   }

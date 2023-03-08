@@ -26,7 +26,7 @@ const props = defineProps({
   &__button {
     width: 100%;
     height: fit-content;
-    padding: 12px;
+    padding: 12px 0;
     display: flex;
     justify-content: center;
     background: transparent;
@@ -70,7 +70,7 @@ const props = defineProps({
 
   &__text {
     font-size: 14px;
-    color: #969BAB;
+    color: var(--font-gray-v4);
     border: none;
     background: none;
     text-decoration: none;
