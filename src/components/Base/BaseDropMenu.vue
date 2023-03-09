@@ -12,7 +12,8 @@
       v-if="isActive"
       :type="3"
       class="drop-menu__menu"
-      @dragleave="onDragLeave"
+      @click="onDragLeave"
+      @focusout="onDragLeave"
     >
       <slot />
     </BaseBackground>
