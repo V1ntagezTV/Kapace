@@ -82,14 +82,12 @@ import LoopIcon from "@/components/Icons/LoopIcon.vue";
       border-color: transparent;
       border-width: 0;
       padding: 0;
-
-      background-color: var(--secondary);
+      background-color: #576999;
       color: white;
-
       transition: background-color 0.25s, color 0.25s;
 
       &:hover {
-        background-color: var(--primary);
+        background-color: #6686B3;
         color: white;
       }
     }
