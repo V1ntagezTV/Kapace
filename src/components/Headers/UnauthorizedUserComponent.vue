@@ -8,7 +8,7 @@
     </router-link>
   </div>
 
-  <div v-else class="user-main">
+  <div v-else class="user-main__main">
     <BaseDropMenu>
       <router-link
         class="user-main__menu-item"
@@ -61,6 +61,18 @@ export default {
     align-items: center;
     color: #38383C;
     gap: 20px;
+
+    & a {
+      align-items: center;
+      display: flex;
+      font-weight: 600;
+      font-size: 14px;
+
+      & :hover {
+        color: var(--header-hover-text);
+        cursor: pointer;
+      }
+    }
   }
 
   &__menu-item {

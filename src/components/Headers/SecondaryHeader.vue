@@ -60,11 +60,9 @@ components: {
     & a {
       align-items: center;
       height: 100%;
-      font-style: normal;
       display: flex;
       font-weight: 600;
       font-size: 14px;
-      line-height: 17px;
 
       & :hover {
         color: var(--header-hover-text);
