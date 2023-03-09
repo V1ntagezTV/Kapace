@@ -8,7 +8,7 @@
     </router-link>
   </div>
 
-  <div v-else class="user-main">
+  <div v-else class="user-main__main">
     <BaseDropMenu>
       <router-link
         class="user-main__menu-item"
