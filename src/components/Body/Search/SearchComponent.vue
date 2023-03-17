@@ -88,6 +88,7 @@ import LoopIcon from "@/components/Icons/LoopIcon.vue";
 
       &:hover {
         background-color: #6686B3;
+        cursor: pointer;
         color: white;
       }
     }

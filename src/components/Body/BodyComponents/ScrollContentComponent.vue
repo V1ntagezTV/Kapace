@@ -33,9 +33,9 @@
         </div>
             
         <div class="scroll-content-component__card-content">
-          <div class="scroll-content-component__image">
+          <router-link class="scroll-content-component__image" :to="{ name: 'theater', params: { id: content.id }}">
             <img :src="content.image">
-          </div>
+          </router-link>
 
           <div class="scroll-content-component__footer">
             <div class="scroll-content-component__tag">
