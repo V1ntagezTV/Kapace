@@ -10,10 +10,7 @@
 
   <div v-else class="user-main__main">
     <BaseDropMenu>
-      <router-link
-        class="user-main__menu-item"
-        to="/profile"
-      >
+      <router-link class="user-main__menu-item" to="/profile">
         <UserIcon class="user-main__icon" />
         Профиль
       </router-link>
@@ -67,8 +64,10 @@ export default {
       display: flex;
       font-weight: 600;
       font-size: 14px;
+      color: var(--header-static-text);
+      transition: color 0.25s;
 
-      & :hover {
+      &:hover {
         color: var(--header-hover-text);
         cursor: pointer;
       }
