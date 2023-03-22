@@ -20,7 +20,7 @@ import TheaterDetails from "@/components/Theater/TheaterDetails.vue";
 import {ref} from "vue";
 import TheaterVideos from "@/components/Theater/TheaterVideos.vue";
 import ImageColumn from "@/components/Theater/TheaterAvatar.vue";
-import {TheaterInfoToUser, TheaterContent} from "@/components/Theater/ViewModels/TheaterContent";
+import {TheaterInfoToUser, TheaterContent, VideoUnit} from "@/components/Theater/ViewModels/TheaterContent";
 import {TheaterContentTypes} from "@/models/TheaterContentTypes";
 import {TheaterContentStatus} from "@/models/TheaterContentStatus";
 import {Tag} from "@/components/Theater/ViewModels/Tag";
@@ -51,7 +51,7 @@ function GetContentAsync(): TheaterContent {
         new Tag(1, '1', '1')
     ],
     new TheaterInfoToUser(false, null, null, 4),
-    [],
+    [new VideoUnit(1, 'jopa', 1), new VideoUnit(1, 'jopa', 1), new VideoUnit(1, 'jopa', 1)],
   )
 }
 

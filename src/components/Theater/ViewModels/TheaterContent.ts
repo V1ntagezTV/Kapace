@@ -42,9 +42,9 @@ export class TheaterInfoToUser {
 
 export class VideoUnit {
     constructor(
-        id: number,
-        name: string,
-        series: number,
+        public id: number,
+        public name: string,
+        public series: number,
     ) {
     }
 }

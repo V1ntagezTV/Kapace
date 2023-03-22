@@ -9,7 +9,7 @@
     </h2>
 
     <div class="theater-videos__videos-main ">
-      <div 
+      <div
         v-for="video in props.videos"
         :key="video"
         class="theater-videos__videos-item"
@@ -17,10 +17,9 @@
         <div class="theater-videos__video-image" />
 
         <BaseTextButton class="theater-videos__video-name">
-          {{ video.id + video.name }}
+          {{ video.id + " " + video.name }}
         </BaseTextButton>
       </div>
-      
     </div>
   </BaseBackground>
 </template>
@@ -28,12 +27,11 @@
 <script lang="ts" setup>
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
-import TheaterVideos from "@/components/Theater/TheaterVideos.vue";
 import {PropType} from "vue";
 import {VideoUnit} from "@/components/Theater/ViewModels/TheaterContent";
 
 const props = defineProps({
-  videos: {type: Array as PropType<VideoUnit[]>, required: true}
+  videos: {type: Object as PropType<VideoUnit[]>, required: true}
 })
 </script>
 
@@ -75,7 +73,6 @@ const props = defineProps({
   &__videos-item {
     display: flex;
     flex-direction: column;
-    gap: 10px;
   }
 
   &__video-image {
@@ -87,11 +84,16 @@ const props = defineProps({
 
     &:hover {
       border: 3px solid var(--secondary);
+      cursor: pointer;
     }
   }
 
   &__video-name {
-    text-align: start;
+    display: flex;
+    text-align: center;
+    padding-top: 10px;
+    padding-bottom: 6px;
+    align-items: center;
   }
 }
 
