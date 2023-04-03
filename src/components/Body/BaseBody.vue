@@ -31,7 +31,7 @@ export default {
                 {image: "/images/177_o.jpg", title: "3", description: "~"}
             ],
             scrollContentTitles: [
-                "Рекомендации недели",
+                "Популярное",
                 "Новинки",
                 "Последние обновления",
             ],
