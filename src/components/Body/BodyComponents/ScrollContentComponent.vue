@@ -1,5 +1,5 @@
 <template>
-  <div class="scroll-content-component">
+  <BaseBackground :type="2" class="scroll-content-component">
     <div class="scroll-content-component__header">
       <h3 class="scroll-content-component__title">
         {{ scrollTitle }}
@@ -72,17 +72,18 @@
         </div>
       </div>
     </div>
-  </div>
+  </BaseBackground>
 </template>
 
 <script>
 import Calendar from '../../Icons/Calendar.vue';
 import EyeIcon from '../../Icons/EyeIcon.vue';
 import StarIcon from '../../Icons/StarIcon.vue';
+import BaseBackground from "@/components/Base/BaseBackground.vue";
 
 export default {
   name: 'App',
-  components: { Calendar, EyeIcon, StarIcon },
+  components: {BaseBackground, Calendar, EyeIcon, StarIcon },
   props: {
     scrollTitle: {
       type: String,
@@ -106,13 +107,8 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 15px 20px;
-    gap: 10px;
-    width: 100%;
-    height: 100%;
-
-    background: #FFFFFF;
-    border-radius: 4px;
+    padding: 20px 20px;
+    gap: 15px;
 
     & p {
         margin: 0;
@@ -140,7 +136,6 @@ export default {
         gap: 10px;
         align-items: center;
         width: auto;
-        height: 45px;
     
         flex: none;
         order: 0;
@@ -208,7 +203,7 @@ export default {
           transition: color 0.25s;
 
           &:hover {
-            color: var(--primary);
+            color: var(--secondary);
             cursor: pointer;
           }
         }
