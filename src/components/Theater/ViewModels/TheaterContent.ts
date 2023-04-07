@@ -3,9 +3,6 @@ import {Tag} from "@/components/Theater/ViewModels/Tag";
 import {TheaterContentTypes} from "@/models/TheaterContentTypes";
 import {TheaterContentStatus} from "@/models/TheaterContentStatus";
 
-/**
- * Theater view model.
- */
 export class TheaterContent {
     constructor(
         public id: number,
@@ -27,9 +24,6 @@ export class TheaterContent {
     }
 }
 
-/**
- * Current authorized user information model about theater content.
- */
 export class TheaterInfoToUser {
     constructor(
         public isInFavourite: boolean,
