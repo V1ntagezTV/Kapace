@@ -10,20 +10,9 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import PrimaryHeader from './components/Headers/PrimaryHeader.vue';
 import SecondaryHeader from './components/Headers/SecondaryHeader.vue';
-
-export default {
-    name: "App",
-    components: {
-      PrimaryHeader,
-      SecondaryHeader
-    },
-    mounted() {
-      console.log(this.$store)
-    }
-  }
 </script>
 
 <style lang="scss">
