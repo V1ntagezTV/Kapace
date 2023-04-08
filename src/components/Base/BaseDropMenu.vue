@@ -5,7 +5,7 @@
       class="drop-menu__button"
       @click="onClick"
     >
-      Action
+      <slot name="header" @click="onClick()" />
     </BaseButton>
 
     <BaseBackground
@@ -15,7 +15,7 @@
       @click="onDragLeave"
       @focusout="onDragLeave"
     >
-      <slot />
+      <slot name="menu" />
     </BaseBackground>
   </div>
 </template>
@@ -29,6 +29,7 @@ let isActive = ref(false);
 
 function onClick() {
   isActive.value = !isActive.value;
+  console.log(isActive.value)
 }
 
 function onDragLeave() {
