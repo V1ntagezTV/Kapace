@@ -20,10 +20,10 @@ import TheaterDetails from "@/components/Theater/TheaterDetails.vue";
 import {ref} from "vue";
 import TheaterVideos from "@/components/Theater/TheaterVideos.vue";
 import ImageColumn from "@/components/Theater/TheaterAvatar.vue";
-import {TheaterInfoToUser, TheaterContent, VideoUnit} from "@/components/Theater/ViewModels/TheaterContent";
+import {TheaterInfoToUser, FullContentDetails, VideoUnit} from "@/api/Models/FullContentDetails";
 import {TheaterContentTypes} from "@/models/TheaterContentTypes";
 import {TheaterContentStatus} from "@/models/TheaterContentStatus";
-import {Tag} from "@/components/Theater/ViewModels/Tag";
+import {Tag} from "@/api/Models/Tag";
 
 const route = useRoute()
 const id = ref(+route.params.id);
@@ -31,8 +31,8 @@ const id = ref(+route.params.id);
 
 const content = GetContentAsync();
 
-function GetContentAsync(): TheaterContent {
-  return new TheaterContent(
+function GetContentAsync(): FullContentDetails {
+  return new FullContentDetails(
     1,
     id.value + ' Название содержимогоа',
     'Все люди в жизни рано или поздно задаются различными вопросами касательно жизни и поставленных в ней целях. Дабы найти эти самые ответы, четверо молодых парней, Ли СынГи, Ли СанЮн, Юк СонЧже и Ян СэХён, вооружившись энергией любопытства, отправляются на поиски мастеров, которые помогут им в этом деле.',

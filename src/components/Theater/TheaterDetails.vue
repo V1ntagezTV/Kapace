@@ -3,7 +3,7 @@
     <div class="content-details__title-main">
       <div class="content-details__title-primary">
         <h1 class="content-details__title">
-          {{ props.details.name }}
+          {{ contentDetails.title }}
         </h1>
 
         <HeartSVG
@@ -15,31 +15,31 @@
 
       <div class="content-details__title-secondary">
         <p class="content-details__title-rating">
-          {{ props.details.stars }}
+          {{ contentDetails.importStars }}
         </p>
-        <p>{{ props.details.country }}</p>
-        <p>{{ moment(new Date(props.details.releasedAt)).format('YYYY') }}</p>
-        <p v-if="props.details.genres.length > 0">
-          {{ props.details.genres[0]?.name ?? "123" }}
+        <p>{{ contentDetails.country }}</p>
+        <p>{{ moment(new Date(contentDetails.releasedAt)).format('YYYY') }}</p>
+        <p v-if="contentDetails.genres.length > 0">
+          {{ contentDetails.genres[0]?.name ?? "123" }}
         </p>
-        <p>{{ '+' + props.details.minAgeLimit }}</p>
+        <p>{{ '+' + contentDetails.minAgeLimit }}</p>
       </div>
     </div>
 
     <div class="content-details__splitter" />
 
-    <div v-if="props.details.tags.length > 0" class="content-details__tags-main">
+    <div v-if="tags.length > 0" class="content-details__tags-main">
       <div class="content-details__tags-column">
         <template
-          v-for="(tag, index) in props.details.tags"
-          :key="tag"
+          v-for="[name, value] in tags"
+          :key="name"
         >
-          <div v-if="index % 2 === 0" class="content-details__tag">
+          <div v-if="value % 2 === 0" class="content-details__tag">
             <p class="content-details__tag-name">
-              {{ tag.name }}
+              {{ name }}
             </p>
             <p class="content-details__tag-value">
-              {{ tag.value }}
+              {{ value }}
             </p>
           </div>
         </template>
@@ -47,15 +47,15 @@
 
       <div class="content-details__tags-column">
         <template
-          v-for="(tag, index) in props.details.tags"
-          :key="tag"
+          v-for="[name, value] in tags"
+          :key="name"
         >
-          <div v-if="index % 2 === 1" class="content-details__tag">
+          <div v-if="value % 2 === 1" class="content-details__tag">
             <p class="content-details__tag-name">
-              {{ tag.name }}
+              {{ name }}
             </p>
             <p class="content-details__tag-value">
-              {{ tag.value }}
+              {{ value }}
             </p>
           </div>
         </template>
@@ -64,7 +64,7 @@
 
     <div>
       <p class="content-details__description">
-        {{ props.details.description }}
+        {{ contentDetails.description }}
       </p>
     </div>
   </BaseBackground>
@@ -74,18 +74,40 @@
 import moment from 'moment'
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import HeartSVG from "@/components/Icons/HeartSVG.vue";
-import {TheaterContent} from "@/components/Theater/ViewModels/TheaterContent";
-import {defineProps, ref} from 'vue';
+import {inject, onMounted, ref} from 'vue';
+import {ContentService} from "@/api/ContentService";
+import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
+import {V1GetMainPageContentResponse} from "@/api/Responses/V1GetMainPageContentResponse";
 
-const props = defineProps({
-  details: {type: TheaterContent, required: true}
+const contentService: ContentService = inject("content-service");
+
+let content: V1GetMainPageContentResponse = ref(null);
+let details: V1GetFullContentResponse = ref(null);
+
+onMounted(async() => {
+  details = await contentService.V1GetFullContentAsync(1, 1);
 })
 
-let isInFavorite = ref<boolean>(props.details.contentInfoToUser.isInFavourite);
+const tags = getTagsFromDetails(details);
+let isInFavorite = ref<boolean>(true);
 
 function heartOnClick() {
+    /*
   props.details.contentInfoToUser.isInFavourite = !props.details.contentInfoToUser.isInFavourite;
   isInFavorite.value = !isInFavorite.value;
+     */
+}
+function getTagsFromDetails(details: V1GetFullContentResponse): {[key: string]: string} {
+  if (details == null) {
+      return {}
+  }
+
+  const formattedDuration = `${(details.duration / 60)}:${details.duration % 60}`;
+
+  return {
+    "Время:": formattedDuration,
+    "Добавил:": formattedDuration
+  };
 }
 </script>
 

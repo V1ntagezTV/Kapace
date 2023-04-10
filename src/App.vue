@@ -13,6 +13,12 @@
 <script setup>
 import PrimaryHeader from './components/Headers/PrimaryHeader.vue';
 import SecondaryHeader from './components/Headers/SecondaryHeader.vue';
+import {ContentService} from "@/api/ContentService";
+
+import {provide} from "vue";
+const contentService = new ContentService();
+provide('content-service', contentService);
+
 </script>
 
 <style lang="scss">

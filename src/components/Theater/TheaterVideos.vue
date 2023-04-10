@@ -28,7 +28,7 @@
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import {PropType} from "vue";
-import {VideoUnit} from "@/components/Theater/ViewModels/TheaterContent";
+import {VideoUnit} from "@/api/Models/FullContentDetails";
 
 const props = defineProps({
   videos: {type: Object as PropType<VideoUnit[]>, required: true}

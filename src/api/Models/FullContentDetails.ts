@@ -1,9 +1,9 @@
-import {Genre} from "@/components/Theater/ViewModels/Genre";
-import {Tag} from "@/components/Theater/ViewModels/Tag";
+import {Genre} from "@/api/Models/Genre";
+import {Tag} from "@/api/Models/Tag";
 import {TheaterContentTypes} from "@/models/TheaterContentTypes";
 import {TheaterContentStatus} from "@/models/TheaterContentStatus";
 
-export class TheaterContent {
+export class FullContentDetails {
     constructor(
         public id: number,
         public name: string,

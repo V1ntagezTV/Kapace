@@ -1,4 +1,4 @@
-export class ApiController {
+export class ApiService {
     constructor(protected basePath: string = "http://localhost:5000/v1/content/") { }
 
     private CallHandler<TResponse, TRequest>(

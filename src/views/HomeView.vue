@@ -16,11 +16,11 @@
 <script lang="ts" setup>
 import NewContentComponent from "@/components/Body/BodyComponents/NewContentComponent.vue";
 import ScrollContentComponent from "@/components/Body/BodyComponents/ScrollContentComponent.vue";
-import {ContentController} from "@/api/ContentController";
-import {onMounted} from "vue";
+import {ContentService} from "@/api/ContentService";
+import {inject, onMounted, ref } from "vue";
 import {V1GetMainPageContentResponse} from "@/api/Responses/V1GetMainPageContentResponse";
 
-const contentController = new ContentController();
+const contentService: ContentService = inject('content-service');
 
 const slides = [
     {image: "/images/film_test.png", title: "1", description: "~"},
@@ -35,8 +35,8 @@ const scrollContentTitles = [
 
 const scrollContentData = [
     {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-    {id: 2, title: "Ночь любви c тобой 2", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-    {id: 3, title: "Ночь любви c тобой 3", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
+    {id: 1, title: "Ночь любви c тобой 2", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
+    {id: 1, title: "Ночь любви c тобой 3", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
     {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
     {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
     {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
@@ -46,11 +46,9 @@ const scrollContentData = [
     {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
 ];
 
-let content: V1GetMainPageContentResponse = null;
-
+let content: V1GetMainPageContentResponse = ref(null);
 onMounted(async() => {
-    content = await contentController.V1GetMainPageContentAsync();
-    //const scrollNews = contentController.V1GetNewsAsync();
+    content = await contentService.V1GetMainPageContentAsync();
 })
 
 function onSelect(value) {
