@@ -16,17 +16,16 @@ export class ApiService {
         })
             .then(response => response.json())
             .then(response => response as TResponse);
-
     }
 
     protected async CallHandlerAsync<TResponse, TRequest>(
         requestBody: TRequest,
         handlerPath: string): Promise<TResponse> {
-        console.log('HANDLER REQUEST: ' + handlerPath + ' BODY: ' + JSON.stringify(requestBody));
+        console.log('HANDLER REQUEST: ' + this.basePath + handlerPath + '\nBODY: ' + JSON.stringify(requestBody));
 
         const response = await this.CallHandler<TResponse, TRequest>(requestBody, handlerPath);
 
-        console.log('HANDLER RESPONSE: ' + handlerPath + ' BODY: ' + JSON.stringify(response))
+        console.log('HANDLER RESPONSE: ' + this.basePath + handlerPath + '\nBODY: ' + JSON.stringify(response))
 
         return response;
     }
