@@ -3,7 +3,7 @@
     <div class="content-details__title-main">
       <div class="content-details__title-primary">
         <h1 class="content-details__title">
-          {{ contentDetails.title }}
+          {{ props.details.Title }}
         </h1>
 
         <HeartSVG
@@ -15,28 +15,28 @@
 
       <div class="content-details__title-secondary">
         <p class="content-details__title-rating">
-          {{ contentDetails.importStars }}
+          {{ props.details.ImportStars }}
         </p>
-        <p>{{ contentDetails.country }}</p>
-        <p>{{ moment(new Date(contentDetails.releasedAt)).format('YYYY') }}</p>
-        <p v-if="contentDetails.genres.length > 0">
-          {{ contentDetails.genres[0]?.name ?? "123" }}
+        <p>{{ props.details.Country }}</p>
+        <p>{{ moment(new Date(details.ReleasedAt)).format('YYYY') }}</p>
+        <p v-if="props.details.Genres?.length > 0">
+          {{ props.details.Genres[0]?.Name ?? "123" }}
         </p>
-        <p>{{ '+' + contentDetails.minAgeLimit }}</p>
+        <p>{{ '+' + props.details.MinAgeLimit }}</p>
       </div>
     </div>
 
     <div class="content-details__splitter" />
 
-    <div v-if="tags.length > 0" class="content-details__tags-main">
+    <div class="content-details__tags-main">
       <div class="content-details__tags-column">
         <template
-          v-for="[name, value] in tags"
-          :key="name"
+          v-for="([key, value], index) in tags"
+          :key="index"
         >
-          <div v-if="value % 2 === 0" class="content-details__tag">
+          <div v-if="index % 2 === 0" class="content-details__tag">
             <p class="content-details__tag-name">
-              {{ name }}
+              {{ key }}
             </p>
             <p class="content-details__tag-value">
               {{ value }}
@@ -47,12 +47,12 @@
 
       <div class="content-details__tags-column">
         <template
-          v-for="[name, value] in tags"
-          :key="name"
+          v-for="([key, value], index) in tags"
+          :key="index"
         >
-          <div v-if="value % 2 === 1" class="content-details__tag">
+          <div v-if="index % 2 === 1" class="content-details__tag">
             <p class="content-details__tag-name">
-              {{ name }}
+              {{ key }}
             </p>
             <p class="content-details__tag-value">
               {{ value }}
@@ -64,7 +64,7 @@
 
     <div>
       <p class="content-details__description">
-        {{ contentDetails.description }}
+        {{ details.Description }}
       </p>
     </div>
   </BaseBackground>
@@ -74,21 +74,14 @@
 import moment from 'moment'
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import HeartSVG from "@/components/Icons/HeartSVG.vue";
-import {inject, onMounted, ref} from 'vue';
-import {ContentService} from "@/api/ContentService";
+import {PropType, ref} from 'vue';
 import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
-import {V1GetMainPageContentResponse} from "@/api/Responses/V1GetMainPageContentResponse";
 
-const contentService: ContentService = inject("content-service");
-
-let content: V1GetMainPageContentResponse = ref(null);
-let details: V1GetFullContentResponse = ref(null);
-
-onMounted(async() => {
-  details = await contentService.V1GetFullContentAsync(1, 1);
+const props = defineProps({
+  details: {type: Object as PropType<V1GetFullContentResponse>, required: true}
 })
 
-const tags = getTagsFromDetails(details);
+const tags = getTagsFromDetails(props.details);
 let isInFavorite = ref<boolean>(true);
 
 function heartOnClick() {
@@ -97,17 +90,34 @@ function heartOnClick() {
   isInFavorite.value = !isInFavorite.value;
      */
 }
-function getTagsFromDetails(details: V1GetFullContentResponse): {[key: string]: string} {
+function getTagsFromDetails(details: V1GetFullContentResponse) : Map<string, string | number> {
   if (details == null) {
-      return {}
+      return new Map<string, string | number>();
   }
 
-  const formattedDuration = `${(details.duration / 60)}:${details.duration % 60}`;
+  const hoursStr = Math.floor(details.Duration / 60) > 0
+    ? `${Math.floor(details.Duration / 60)}ч`
+    : ""
 
-  return {
-    "Время:": formattedDuration,
-    "Добавил:": formattedDuration
-  };
+  const minStr = details.Duration % 60 > 0 ? `${details.Duration % 60} мин` : '';
+  const formattedDuration = `${hoursStr} ${minStr}`;
+
+  const resultMap = new Map<string, string | number>();
+
+  if (details.PlannedSeries > 0 && details.OutSeries > 0) {
+    resultMap.set("Серий:", `${details.OutSeries}/${details.PlannedSeries}`);
+  } else if (details.PlannedSeries == 0 && details.OutSeries > 0) {
+    resultMap.set("Серий:", `${details.OutSeries}/10`);
+  }
+
+  resultMap.set("Создано:", moment(new Date(details.CreatedAt)).format("HH:MM DD.MM.YYYY"));
+  if (details.Views > 0) {
+    resultMap.set("Просмотров:", details.Views);
+  }
+  resultMap.set("Обновлено:", moment(new Date(details.LastUpdateAt)).format("HH:MM DD.MM.YYYY"));
+  resultMap.set("Время:", formattedDuration);
+
+  return resultMap;
 }
 </script>
 

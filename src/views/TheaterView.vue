@@ -8,8 +8,8 @@
     </div>
 
     <div class="theater__body">
-      <TheaterDetails :details="content" />
-      <TheaterVideos :videos="content.videos" />
+      <TheaterDetails v-if="isDataReady" :details="details" />
+      <TheaterVideos v-if="isDataReady" :videos="details.Episodes" />
     </div>
   </div>
 </template>
@@ -17,19 +17,28 @@
 <script lang="ts" setup>
 import {useRoute} from 'vue-router'
 import TheaterDetails from "@/components/Theater/TheaterDetails.vue";
-import {ref} from "vue";
+import {inject, onMounted, ref} from "vue";
 import TheaterVideos from "@/components/Theater/TheaterVideos.vue";
 import ImageColumn from "@/components/Theater/TheaterAvatar.vue";
 import {TheaterInfoToUser, FullContentDetails, VideoUnit} from "@/api/Models/FullContentDetails";
 import {TheaterContentTypes} from "@/models/TheaterContentTypes";
 import {TheaterContentStatus} from "@/models/TheaterContentStatus";
 import {Tag} from "@/api/Models/Tag";
+import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
+import {ContentService} from "@/api/ContentService";
 
-const route = useRoute()
+const contentService: ContentService = inject("content-service");
+let isDataReady = ref(false);
+const route = useRoute();
 const id = ref(+route.params.id);
-
-
 const content = GetContentAsync();
+
+let details = ref<V1GetFullContentResponse>(null);
+onMounted(async() => {
+  details.value = await contentService.V1GetFullContentAsync(id.value, 1);
+
+  isDataReady.value = true;
+})
 
 function GetContentAsync(): FullContentDetails {
   return new FullContentDetails(

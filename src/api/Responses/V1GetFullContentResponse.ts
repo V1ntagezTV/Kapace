@@ -3,52 +3,52 @@ import {ContentStatus} from "@/api/Enums/ContentStatus";
 
 export class V1GetFullContentResponse {
     constructor(
-        public contentId: bigint,
-        public title: string,
-        public description: string,
-        public contentType: ContentType,
-        public contentStatus: ContentStatus,
-        public image: string,
-        public importStars: number,
-        public outSeries: number,
-        public plannedSeries: number,
-        public views: number,
-        public country: number,
-        public releasedAt: Number,
-        public createdAt: Number,
-        public lastUpdateAt: Number,
-        public minAgeLimit: Number,
-        public duration: Number | null,
-        public episodes: V1GetFullContentEpisode[],
-        public genres: V1GetFullContentGenre[],
-        public userInfo: V1GetFullContentUserInfo | null) {
+        public ContentId: bigint,
+        public Title: string,
+        public Description: string,
+        public ContentType: ContentType,
+        public ContentStatus: ContentStatus,
+        public Image: string,
+        public ImportStars: number,
+        public OutSeries: number,
+        public PlannedSeries: number,
+        public Views: number,
+        public Country: string,
+        public ReleasedAt: Number,
+        public CreatedAt: Number,
+        public LastUpdateAt: Number,
+        public MinAgeLimit: Number,
+        public Duration: Number | null,
+        public Episodes: V1GetFullContentEpisode[],
+        public Genres: V1GetFullContentGenre[],
+        public UserInfo: V1GetFullContentUserInfo | null) {
     }
 }
 
 export class V1GetFullContentGenre {
     constructor(
-        public genreId: number,
-        public name: string) {
+        public GenreId: number,
+        public Name: string) {
     }
 }
 
 export class V1GetFullContentEpisode {
     constructor(
-        public id: number,
-        public title: string,
-        public image: string,
-        public number: number
+        public Id: number,
+        public Title: string,
+        public Image: string,
+        public Number: number
     ) { }
 }
 
 
 export class V1GetFullContentUserInfo {
     constructor(
-        public contentId: number,
-        public userId: number,
-        public isInFavourite: boolean,
-        public lastViewedSeries: number,
-        public rating: number
+        public ContentId: number,
+        public UserId: number,
+        public IsInFavourite: boolean,
+        public LastViewedSeries: number,
+        public Rating: number
     ) {
     }
 }

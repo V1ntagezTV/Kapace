@@ -17,7 +17,7 @@
         <div class="theater-videos__video-image" />
 
         <BaseTextButton class="theater-videos__video-name">
-          {{ video.id + " " + video.name }}
+          {{ video.Number + " " + video.Title }}
         </BaseTextButton>
       </div>
     </div>
@@ -28,10 +28,10 @@
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import {PropType} from "vue";
-import {VideoUnit} from "@/api/Models/FullContentDetails";
+import {V1GetFullContentEpisode} from "@/api/Responses/V1GetFullContentResponse";
 
 const props = defineProps({
-  videos: {type: Object as PropType<VideoUnit[]>, required: true}
+  videos: {type: Array as PropType<Array<V1GetFullContentEpisode>>, required: true}
 })
 </script>
 
