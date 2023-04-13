@@ -76,7 +76,7 @@ import BaseBackground from "@/components/Base/BaseBackground.vue";
 import HeartSVG from "@/components/Icons/HeartSVG.vue";
 import {PropType, ref} from 'vue';
 import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
-
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const props = defineProps({
   details: {type: Object as PropType<V1GetFullContentResponse>, required: true}
 })
@@ -110,11 +110,13 @@ function getTagsFromDetails(details: V1GetFullContentResponse) : Map<string, str
     resultMap.set("Серий:", `${details.OutSeries}/10`);
   }
 
-  resultMap.set("Создано:", moment(new Date(details.CreatedAt)).format("HH:MM DD.MM.YYYY"));
+  const createdAtDate = moment(new Date(details.CreatedAt));
+  resultMap.set("Создано:", createdAtDate.day() + ` ${months[createdAtDate.month() - 1]} ` + createdAtDate.format(`YYYY в HH:MM`));
   if (details.Views > 0) {
     resultMap.set("Просмотров:", details.Views);
   }
-  resultMap.set("Обновлено:", moment(new Date(details.LastUpdateAt)).format("HH:MM DD.MM.YYYY"));
+  const updatedAtDate = moment(new Date(details.LastUpdateAt));
+  resultMap.set("Обновлено:", updatedAtDate.day() + ` ${months[updatedAtDate.month() - 1]} ` + updatedAtDate.format(`YYYY в HH:MM`));
   resultMap.set("Время:", formattedDuration);
 
   return resultMap;
