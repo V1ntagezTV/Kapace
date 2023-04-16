@@ -4,20 +4,6 @@
       <h3 class="scroll-content-component__title">
         {{ scrollTitle }}
       </h3>
-      <div class="scroll-content-component__icons">
-        <svg
-          width="24" height="24"
-          viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-        >
-          <path fill="currentColor" d="M8.17033 11.1808L15.4265 6.10142C16.0893 5.63748 17 6.11163 17 6.92066V17.0793C17 17.8884 16.0893 18.3625 15.4265 17.8986L8.17033 12.8192C7.60161 12.4211 7.60162 11.5789 8.17033 11.1808Z" />
-        </svg>
-        <svg
-          width="24" height="24"
-          viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-        >
-          <path fill="currentColor" d="M15.8297 11.1808L8.57346 6.10142C7.91068 5.63748 7 6.11163 7 6.92066V17.0793C7 17.8884 7.91069 18.3625 8.57346 17.8986L15.8297 12.8192C16.3984 12.4211 16.3984 11.5789 15.8297 11.1808Z" />
-        </svg>
-      </div>
     </div>
 
     <div class="scroll-content-component__scroll-body">
@@ -27,14 +13,14 @@
         class="scroll-content-component__card"
       >
         <div class="scroll-content-component__card-title">
-          <router-link :to="{ name: 'theater', params: { id: content.id }}">
-            {{ content.title }}
+          <router-link :to="{ name: 'theater', params: { id: content.Id}}">
+            {{ content.Title }}
           </router-link>
         </div>
             
         <div class="scroll-content-component__card-content">
-          <router-link class="scroll-content-component__image" :to="{ name: 'theater', params: { id: content.id }}">
-            <img :src="content.image" alt="Dorama card image">
+          <router-link class="scroll-content-component__image" :to="{ name: 'theater', params: { id: content.Id }}">
+            <img :src="content.Image" :alt="content.Title+' изображение'">
           </router-link>
 
           <div class="scroll-content-component__footer">
@@ -45,7 +31,7 @@
               <div class="scroll-content-component__tag-value-container">
                 <Calendar />
                 <p class="scroll-content-component__tag-counter">
-                  {{ content.seriesCameOut }}/{{ content.seriesCount }}
+                  {{ content.SeriesOut }}/{{ content.SeriesPlanned }}
                 </p>
               </div>
             </div>
@@ -57,7 +43,7 @@
               <div class="scroll-content-component__tag-value-container">
                 <EyeIcon />
                 <p class="scroll-content-component__tag-counter">
-                  {{ content.watched }}
+                  {{ content.Views }}
                 </p>
               </div>
             </div>
@@ -65,7 +51,7 @@
 
           <div class="scroll-content-component__rating">
             <p class="scroll-content-component__rating-value">
-              {{ content.rating }}
+              {{ content.ImportStars }}
             </p>
             <StarIcon />
           </div>
@@ -75,31 +61,24 @@
   </BaseBackground>
 </template>
 
-<script>
+<script lang="ts" setup>
+import {defineProps, PropType} from 'vue';
 import Calendar from '../../Icons/Calendar.vue';
 import EyeIcon from '../../Icons/EyeIcon.vue';
 import StarIcon from '../../Icons/StarIcon.vue';
 import BaseBackground from "@/components/Base/BaseBackground.vue";
+import {V1GetMainPageContent} from "@/api/Responses/V1GetMainPageContentResponse";
 
-export default {
-  name: 'App',
-  components: {BaseBackground, Calendar, EyeIcon, StarIcon },
-  props: {
-    scrollTitle: {
-      type: String,
-      required: true
-    },
-    scrollContent: {
-      type: Array,
-      required: true,
-    }
+const props = defineProps({
+  scrollTitle: {
+    type: String,
+    required: true
   },
-  data() {
-    return {
-      route: this.$route,
-    }
+  scrollContent: {
+    type: Array as PropType<Array<V1GetMainPageContent>>,
+    required: true,
   }
-}
+})
 </script>
 
 <style lang="scss" scoped>
@@ -219,6 +198,7 @@ export default {
         width: 100%;
         height: 267px;
         border-radius: 6px;
+        background: var(--font-gray-v1);
 
         & :hover {
           cursor: pointer;

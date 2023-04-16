@@ -4,12 +4,14 @@
       :slides="slides"
       @select="onSelect($event)"
     />
-    <ScrollContentComponent
-      v-for="title in scrollContentTitles"
-      :key="title"
-      :scroll-title="title"
-      :scroll-content="scrollContentData"
-    />
+    <template v-if="content != null && content.Contents != undefined">
+      <ScrollContentComponent
+        v-for="(pageTypeKey, index) in getContentKeys(content)"
+        :key="index"
+        :scroll-title="getMainPageTypeTitle(pageTypeKey)"
+        :scroll-content="content.Contents[index].Content"
+      />
+    </template>
   </div>
 </template>
 
@@ -17,8 +19,9 @@
 import NewContentComponent from "@/components/Body/BodyComponents/NewContentComponent.vue";
 import ScrollContentComponent from "@/components/Body/BodyComponents/ScrollContentComponent.vue";
 import {ContentService} from "@/api/ContentService";
-import {inject, onMounted, ref } from "vue";
+import {inject, onMounted, ref} from "vue";
 import {V1GetMainPageContentResponse} from "@/api/Responses/V1GetMainPageContentResponse";
+import {MainPageType} from "@/api/Enums/MainPageType";
 
 const contentService: ContentService = inject('content-service');
 
@@ -27,29 +30,26 @@ const slides = [
     {image: "/images/162_o.jpg", title: "2", description: "~"},
     {image: "/images/177_o.jpg", title: "3", description: "~"}
 ];
-const scrollContentTitles = [
-    "Популярное",
-    "Новинки",
-    "Последние обновления",
-];
 
-const scrollContentData = [
-    {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-    {id: 1, title: "Ночь любви c тобой 2", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-    {id: 1, title: "Ночь любви c тобой 3", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-    {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-    {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-    {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-    {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-    {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-    {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-    {id: 1, title: "Ночь любви c тобой 1", rating: 1.2, watched: 12314, seriesCount: 12, seriesCameOut: 8, image: "/images/film_test.png"},
-];
+function getMainPageTypeTitle(pageType: MainPageType) : string {
+  switch (pageType) {
+    case MainPageType.PopularForTwoWeeks:
+      return "Популярное";
+    case MainPageType.LastCreated:
+      return "Новинки";
+    case MainPageType.LastUpdated:
+      return "Последние обновления";
+  }
+}
 
-let content: V1GetMainPageContentResponse = ref(null);
+let content = ref<V1GetMainPageContentResponse>(null);
 onMounted(async() => {
-    content = await contentService.V1GetMainPageContentAsync();
+    content.value = await contentService.V1GetMainPageContentAsync();
 })
+
+function getContentKeys(content: V1GetMainPageContentResponse): MainPageType[] {
+  return content.Contents.map((x) => x.MainPageType);
+}
 
 function onSelect(value) {
     console.log(value);

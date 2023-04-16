@@ -10,24 +10,32 @@
 
   <div v-else>
     <BaseDropMenu>
-      <template #header class="user-main__main">
-        Профиль
-        <drop-arrow />
+      <template #header="{ onClick }">
+        <BaseButton
+          class="user-main__menu-button"
+          :button-type="3"
+          @click="onClick"
+        >
+          Профиль
+          <drop-arrow />
+        </BaseButton>
       </template>
 
       <template #menu>
-        <router-link class="user-main__menu-item" to="/profile">
-          <UserIcon />
-          Профиль
-        </router-link>
-        <router-link
-          to="/"
-          class="user-main__menu-item user-main__menu-item-exit"
-          @click="LogOut"
-        >
-          <LogOutIcon />
-          Выйти
-        </router-link>
+        <BaseBackground class="user-main__menu" :type="3">
+          <router-link class="user-main__menu-item" to="/profile">
+            <UserIcon />
+            Профиль
+          </router-link>
+          <router-link
+            to="/"
+            class="user-main__menu-item user-main__menu-item-exit"
+            @click="LogOut"
+          >
+            <LogOutIcon />
+            Выйти
+          </router-link>
+        </BaseBackground>
       </template>
     </BaseDropMenu>
   </div>
@@ -39,10 +47,12 @@ import BaseDropMenu from "@/components/Base/BaseDropMenu.vue";
 import UserIcon from "@/components/Icons/UserIcon.vue";
 import LogOutIcon from "@/components/Icons/LogOutIcon.vue";
 import DropArrow from "@/components/Icons/DropArrow.vue";
+import BaseButton from "@/components/Base/BaseButton.vue";
+import BaseBackground from "@/components/Base/BaseBackground.vue";
 
 export default {
   name: 'App',
-  components: {DropArrow, LogOutIcon, UserIcon, BaseDropMenu},
+  components: {BaseBackground, BaseButton, DropArrow, LogOutIcon, UserIcon, BaseDropMenu},
   computed: {
     ...mapState({
         loggedIn: state => state.loggedIn,
@@ -93,6 +103,24 @@ export default {
       cursor: pointer;
       background: #F4F5F7;
     }
+  }
+
+  &__menu-button {
+    display: flex;
+    height: 100%;
+    padding: 0;
+  }
+
+  &__menu {
+    display: flex;
+    flex-direction: column;
+    width: 270px;
+    padding: 10px 0;
+    z-index: 999;
+    position: absolute;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    right: 0;
   }
 
   &__menu-item-exit {

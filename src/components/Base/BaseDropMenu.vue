@@ -1,35 +1,23 @@
 <template>
   <div class="drop-menu__main">
-    <BaseButton
-      :button-type="3"
-      class="drop-menu__button"
-      @click="onClick"
-    >
-      <slot name="header" @click="onClick()" />
-    </BaseButton>
-
-    <BaseBackground
+    <slot name="header" :onClick="onClick" />
+    <slot
       v-if="isActive"
-      :type="3"
+      name="menu"
       class="drop-menu__menu"
       @click="onDragLeave"
       @focusout="onDragLeave"
-    >
-      <slot name="menu" />
-    </BaseBackground>
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
 import {ref} from "vue";
-import BaseButton from "@/components/Base/BaseButton.vue";
-import BaseBackground from "@/components/Base/BaseBackground.vue";
 
 let isActive = ref(false);
 
 function onClick() {
   isActive.value = !isActive.value;
-  console.log(isActive.value)
 }
 
 function onDragLeave() {
@@ -54,6 +42,12 @@ function onDragLeave() {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
     right: 0;
+
+    transition: height 0.25ms;
+
+    &:hover {
+      height: 300px;
+    }
   }
 
   &__button {

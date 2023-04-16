@@ -64,7 +64,7 @@ provide('content-service', contentService);
 
 .wrapper {
   margin: 0;
-  height: 100%;
+  height: 100vh;
   min-width: 1120px;
   width: 100%;
   display: grid;

@@ -14,7 +14,7 @@
       </div>
 
       <div class="content-details__title-secondary">
-        <p class="content-details__title-rating">
+        <p v-if="props.details.ImportStars >= 1" class="content-details__title-rating">
           {{ props.details.ImportStars }}
         </p>
         <p>{{ props.details.Country }}</p>
@@ -22,7 +22,9 @@
         <p v-if="props.details.Genres?.length > 0">
           {{ props.details.Genres[0]?.Name ?? "123" }}
         </p>
-        <p>{{ '+' + props.details.MinAgeLimit }}</p>
+        <p v-if="props.details.MinAgeLimit > 0">
+          {{ '+' + props.details.MinAgeLimit }}
+        </p>
       </div>
     </div>
 
@@ -117,8 +119,10 @@ function getTagsFromDetails(details: V1GetFullContentResponse) : Map<string, str
   }
   const updatedAtDate = moment(new Date(details.LastUpdateAt));
   resultMap.set("Обновлено:", updatedAtDate.day() + ` ${months[updatedAtDate.month() - 1]} ` + updatedAtDate.format(`YYYY в HH:MM`));
-  resultMap.set("Время:", formattedDuration);
 
+  if (details.Duration) {
+    resultMap.set("Время:", formattedDuration);
+  }
   return resultMap;
 }
 </script>

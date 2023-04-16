@@ -2,8 +2,9 @@
   <div class="theater__main">
     <div>
       <ImageColumn
-        :image-link="content.image"
-        :current-series="content.contentInfoToUser.continueToWatchFrom"
+        v-if="isDataReady"
+        :image-link="details.Image"
+        :user-info="details.UserInfo"
       />
     </div>
 
@@ -26,12 +27,12 @@ import {TheaterContentStatus} from "@/models/TheaterContentStatus";
 import {Tag} from "@/api/Models/Tag";
 import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
 import {ContentService} from "@/api/ContentService";
-
-const contentService: ContentService = inject("content-service");
-let isDataReady = ref(false);
 const route = useRoute();
 const id = ref(+route.params.id);
-const content = GetContentAsync();
+const contentService: ContentService = inject("content-service");
+
+
+let isDataReady = ref(false);
 
 let details = ref<V1GetFullContentResponse>(null);
 onMounted(async() => {
@@ -40,29 +41,6 @@ onMounted(async() => {
   isDataReady.value = true;
 })
 
-function GetContentAsync(): FullContentDetails {
-  return new FullContentDetails(
-    1,
-    id.value + ' Название содержимогоа',
-    'Все люди в жизни рано или поздно задаются различными вопросами касательно жизни и поставленных в ней целях. Дабы найти эти самые ответы, четверо молодых парней, Ли СынГи, Ли СанЮн, Юк СонЧже и Ян СэХён, вооружившись энергией любопытства, отправляются на поиски мастеров, которые помогут им в этом деле.',
-    4.1,
-    Date.now(),
-    Date.now(),
-    'images/image.png',
-    TheaterContentTypes.Serial,
-    TheaterContentStatus.Ongoing,
-    'Юж. Корея',
-    18,
-    [],
-    [
-        new Tag(1, '1', '1'),
-        new Tag(1, '1', '1'),
-        new Tag(1, '1', '1')
-    ],
-    new TheaterInfoToUser(false, null, null, 4),
-    [new VideoUnit(1, 'jopa', 1), new VideoUnit(1, 'jopa', 1), new VideoUnit(1, 'jopa', 1)],
-  )
-}
 
 </script>
 
