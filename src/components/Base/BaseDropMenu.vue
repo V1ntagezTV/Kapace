@@ -4,7 +4,6 @@
     <slot
       v-if="isActive"
       name="menu"
-      class="drop-menu__menu"
       :onClick="onDragLeave"
     />
   </div>
@@ -29,24 +28,6 @@ function onDragLeave() {
   &__main {
     height: 100%;
     position: relative;
-  }
-
-  &__menu {
-    display: flex;
-    flex-direction: column;
-    width: 300px;
-    padding: 10px 0;
-    z-index: 999;
-    position: absolute;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    right: 0;
-
-    transition: height 0.25ms;
-
-    &:hover {
-      height: 300px;
-    }
   }
 
   &__button {

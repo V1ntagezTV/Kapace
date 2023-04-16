@@ -15,7 +15,11 @@
 
     <BaseDropMenu>
       <template #header="{onClick}">
-        <BaseButton :button-type="1" @click="onClick">
+        <BaseButton
+          class="image-column__drop-button"
+          :button-type="1"
+          @click="onClick"
+        >
           Добавить в
           <drop-arrow />
         </BaseButton>
@@ -77,6 +81,11 @@ const props = defineProps({
     display: flex;
     height: 100%;
     width: 100%;
+  }
+
+  &__drop-button {
+    display: flex;
+    gap: 6px;
   }
 
   &__add-menu {

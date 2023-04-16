@@ -111,6 +111,7 @@ export default {
 
   &__menu-button {
     display: flex;
+    gap: 6px;
     height: 100%;
     padding: 0;
   }
