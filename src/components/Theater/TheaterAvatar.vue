@@ -21,8 +21,12 @@
         </BaseButton>
       </template>
 
-      <template #menu>
-        <BaseBackground class="image-column__add-menu" :type="3">
+      <template #menu="{ onClick }">
+        <BaseBackground
+          class="image-column__add-menu"
+          :type="3"
+          @click="onClick"
+        >
           <BaseButton :button-type="3">
             Запланировано
           </BaseButton>

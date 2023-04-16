@@ -5,8 +5,7 @@
       v-if="isActive"
       name="menu"
       class="drop-menu__menu"
-      @click="onDragLeave"
-      @focusout="onDragLeave"
+      :onClick="onDragLeave"
     />
   </div>
 </template>

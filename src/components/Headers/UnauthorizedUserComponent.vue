@@ -21,8 +21,12 @@
         </BaseButton>
       </template>
 
-      <template #menu>
-        <BaseBackground class="user-main__menu" :type="3">
+      <template #menu="{ onClick }">
+        <BaseBackground
+          class="user-main__menu"
+          :type="3"
+          @click="onClick"
+        >
           <router-link class="user-main__menu-item" to="/profile">
             <UserIcon />
             Профиль
