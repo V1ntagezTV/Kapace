@@ -14,10 +14,18 @@
         :key="video"
         class="theater-videos__videos-item"
       >
-        <div class="theater-videos__video-image" />
+        <router-link
+          :to="{ name: 'episode', params: { episode: video.Id }}"
+          class="theater-videos__video-image"
+        />
 
-        <BaseTextButton class="theater-videos__video-name">
-          {{ video.Number + " " + video.Title }}
+        <BaseTextButton>
+          <router-link
+            class="theater-videos__video-name"
+            :to="{ name: 'episode', params: { episode: video.Id }}"
+          >
+            {{ video.Number + " " + video.Title }}
+          </router-link>
         </BaseTextButton>
       </div>
     </div>

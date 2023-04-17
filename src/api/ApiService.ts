@@ -1,10 +1,12 @@
 export class ApiService {
-    constructor(protected basePath: string = "http://localhost:5000/v1/content/") { }
+    private hostPath: string = "http://localhost:5000/";
+
+    constructor(protected servicePath: string) { }
 
     private CallHandler<TResponse, TRequest>(
         requestBody: TRequest,
         handlerPath: string): Promise<TResponse> {
-        const path = this.basePath + handlerPath;
+        const path = this.hostPath + this.servicePath + handlerPath;
         const requestHeaders: HeadersInit = new Headers();
         requestHeaders.set('Content-Type', 'application/json; charset=utf-8');
         const requestJson = JSON.stringify(requestBody);
@@ -21,11 +23,11 @@ export class ApiService {
     protected async CallHandlerAsync<TResponse, TRequest>(
         requestBody: TRequest,
         handlerPath: string): Promise<TResponse> {
-        console.log('HANDLER REQUEST: ' + this.basePath + handlerPath + '\nBODY: ' + JSON.stringify(requestBody));
+        console.log('HANDLER REQUEST: ' + this.servicePath + handlerPath + '\nBODY: ' + JSON.stringify(requestBody));
 
         const response = await this.CallHandler<TResponse, TRequest>(requestBody, handlerPath);
 
-        console.log('HANDLER RESPONSE: ' + this.basePath + handlerPath + '\nBODY: ' + JSON.stringify(response))
+        console.log('HANDLER RESPONSE: ' + this.servicePath + handlerPath + '\nBODY: ' + JSON.stringify(response))
 
         return response;
     }

@@ -4,9 +4,9 @@ import SearchView from '../views/SearchView.vue'
 import ProfileView from "@/views/ProfileView.vue";
 import LogInView from "@/views/LogInView.vue";
 import RegistrationView from "@/views/RegistrationView.vue";
-import RestorePasswordView from "@/views/RestorePasswordView.vue";
 import TheaterView from "@/views/TheaterView.vue";
-
+import RestorePasswordView from "@/views/RestorePasswordView.vue";
+import EpisodeView from "@/views/EpisodeView.vue";
 
 const routes = [
   {
@@ -43,6 +43,16 @@ const routes = [
     name: 'theater',
     path: '/theater/:id',
     component: TheaterView,
+  },
+  {
+    name: "episode",
+    path: '/episode/:episode/:translation',
+    component: EpisodeView,
+  },
+  {
+    name: "episode",
+    path: '/episode/:episode',
+    component: EpisodeView
   }
 ]
 

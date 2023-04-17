@@ -8,6 +8,10 @@ import {V1GetFullContentRequest} from "@/api/Requests/V1GetFullContentRequest";
 import {ContentSelectedInfo} from "@/api/Enums/ContentSelectedInfo";
 
 export class ContentService extends ApiService {
+    constructor() {
+        super("v1/content/");
+    }
+
     async V1GetMainPageContentAsync(): Promise<V1GetMainPageContentResponse> {
         const request = new V1GetMainPageContentRequest(
             [MainPageType.LastCreated, MainPageType.PopularForTwoWeeks, MainPageType.LastUpdated],
