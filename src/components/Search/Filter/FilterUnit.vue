@@ -2,7 +2,7 @@
   <div>
     <button
       class="filter-unit__header-button"
-      @click="show = !show"
+      @click="updateShow(!show)"
     >
       <p>{{ filter.Name }}</p>
       <DropArrow class="filter-unit__arrow-icon" />
@@ -28,9 +28,9 @@
 </template>
 
 <script lang="ts" setup>
+import {ref, watch} from 'vue'
 import DropArrow from "@/components/Icons/DropArrow.vue";
 import FilterUnitModel from "@/components/Search/Models/FilterUnitModel";
-import {ref, watch} from 'vue'
 import {SearchEmits} from "@/components/Search/Models/SearchEmits";
 
 const emits = defineEmits<{ (emitName: SearchEmits.Add, key: string, value: boolean) : void }>()
@@ -42,12 +42,17 @@ const props = defineProps({
 })
 
 const inputValues = ref(props.filter.Values)
+let show = ref(props.show);
 
 watch(() => props.clearTrigger, () => {
   for (let key of  props.filter?.Values.keys()) {
     inputValues.value.set(key, false)
   }
 })
+
+function updateShow(show: boolean) {
+  this.show = show;
+}
 
 function inputClick(key: string, value: boolean) : void {
   inputValues.value.set(key, !value)

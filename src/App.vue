@@ -11,13 +11,14 @@
 </template>
 
 <script setup>
+import {TranslationService} from './api/TranslationService';
 import PrimaryHeader from './components/Headers/PrimaryHeader.vue';
 import SecondaryHeader from './components/Headers/SecondaryHeader.vue';
 import {ContentService} from "@/api/ContentService";
 
 import {provide} from "vue";
-const contentService = new ContentService();
-provide('content-service', contentService);
+provide('content-service', new ContentService());
+provide('translation-service', new TranslationService());
 
 </script>
 

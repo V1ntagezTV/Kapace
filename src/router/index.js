@@ -46,13 +46,8 @@ const routes = [
   },
   {
     name: "episode",
-    path: '/episode/:episode/:translation',
+    path: '/episode/:episode/:translation(\\d+)*',
     component: EpisodeView,
-  },
-  {
-    name: "episode",
-    path: '/episode/:episode',
-    component: EpisodeView
   }
 ]
 

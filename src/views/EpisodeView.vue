@@ -40,10 +40,11 @@
         allowfullscreen
       />
       <div class="episode__video-translations">
-
+        <div v-for="translation in translations" :key="translation">
+          Перевод
+        </div>
       </div>
     </div>
-
   </BaseBackground>
 </template>
 
@@ -51,27 +52,31 @@
 import {inject, onMounted, ref} from "vue";
 import {ContentService} from "@/api/ContentService";
 import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
+import {TranslationService, V1GetByEpisodeRequest, V1GetByEpisodeResponse} from "@/api/TranslationService"
 import {useRoute} from "vue-router";
 import moment from "moment/moment";
 import HeartSVG from "@/components/Icons/HeartSVG.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 
 const route = useRoute();
-const episodeId = ref(+route.params.episode);
-const translationId = ref(route.params.translation);
+const episodeId = ref(route.params.episode as number);
+const translationId = ref((+route.params.translation) >= 0
+  ? (+route.params.translation)
+  : 0);
 
 console.log("episode: " + episodeId.value);
 console.log("translation: " + translationId.value);
 
 const contentService: ContentService = inject('content-service');
+const translationService: TranslationService = inject('translation-service');
 
 const details = ref<V1GetFullContentResponse>(null);
-const translations = ref(null);
+const translations = ref<V1GetByEpisodeResponse>(null);
 let isInFavorite = ref<boolean>(true);
 
 onMounted(async() => {
   details.value = await contentService.V1GetFullContentAsync(episodeId.value, 0);
-  translations.value = null;
+  translations.value = await translationService.V1GetByEpisodeAsync(new V1GetByEpisodeRequest(episodeId.value));
 })
 
 function heartOnClick() {
