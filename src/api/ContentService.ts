@@ -5,7 +5,8 @@ import {V1GetMainPageContentRequest} from "@/api/Requests/V1GetMainPageContentRe
 import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
 import {V1GetFullContentRequest} from "@/api/Requests/V1GetFullContentRequest";
 import {ContentSelectedInfo} from "@/api/Enums/ContentSelectedInfo";
-import {V1GetByQueryRequest, V1GetByQueryResponse} from "@/api/Requests/V1GetByQueryRequest";
+import {V1GetByQueryRequest} from "@/api/Requests/V1GetByQueryRequest";
+import {V1GetByQueryResponse} from "@/api/Requests/V1GetByQueryResponse";
 
 
 
