@@ -52,11 +52,13 @@
 import {inject, onMounted, ref} from "vue";
 import {ContentService} from "@/api/ContentService";
 import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
-import {TranslationService, V1GetByEpisodeRequest, V1GetByEpisodeResponse} from "@/api/TranslationService"
+import {TranslationService} from "@/api/TranslationService"
 import {useRoute} from "vue-router";
 import moment from "moment/moment";
 import HeartSVG from "@/components/Icons/HeartSVG.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
+import {V1GetByEpisodeRequest} from "@/api/Requests/V1GetByEpisodeRequest";
+import {V1GetByEpisodeResponse} from "@/api/Responses/V1GetByEpisodeResponse";
 
 const route = useRoute();
 const episodeId = ref(route.params.episode as number);

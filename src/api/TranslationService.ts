@@ -1,4 +1,6 @@
 import {ApiService} from "@/api/ApiService";
+import {V1GetByEpisodeRequest} from "@/api/Requests/V1GetByEpisodeRequest";
+import {V1GetByEpisodeResponse} from "@/api/Responses/V1GetByEpisodeResponse";
 
 export class TranslationService extends ApiService {
     constructor() {
@@ -9,32 +11,3 @@ export class TranslationService extends ApiService {
         return await this.CallHandlerAsync<V1GetByEpisodeRequest, V1GetByEpisodeResponse>(request, "get-by-episode");
     }
 }
-
-export class V1GetByEpisodeRequest {
-    constructor(
-        public EpisodeId: number
-    ) {
-    }
-}
-
-export class V1GetByEpisodeResponse {
-    constructor(
-        Translations: V1GetByEpisodeTranslation[]
-    ) { }
-}
-
-export type V1GetByEpisodeTranslation = {
-    TranslationId: number;
-    EpisodeId: number;
-    Language: string;
-    Link: string;
-    TranslationType: typeof TranslationType;
-    CreatedAt: number;
-    CreatedBy: number | null;
-}
-
-export const TranslationType = {
-    Subtitles: "Subtitles",
-    AutoSubtitles: "AutoSubtitles",
-    VoiceActing: "VoiceActing",
-} as const;
