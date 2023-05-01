@@ -1,5 +1,7 @@
 export enum ContentSelectedInfo {
-    Episodes = 0,
-    ContentGenres = 1,
-    UserInfo = 2,
+    None = 0,
+    Episodes = 1,
+    ContentGenres = 2,
+    UserInfo = 4,
+    Translations = 8,
 }

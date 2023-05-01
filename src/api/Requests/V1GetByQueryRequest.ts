@@ -3,19 +3,17 @@ import {ContentStatus} from "@/api/Enums/ContentStatus";
 import {ContentType} from "@/api/Enums/ContentType";
 import {Country} from "@/api/Enums/Country";
 import {QueryPaging} from "@/api/Models/QueryPaging";
-import {TranslationType} from "../Enums/TranslationType";
-import {V1GetByQueryResponse} from "@/api/Requests/V1GetByQueryResponse";
 
-export type V1GetByQueryRequest = {
-    Search: string;
-    Filters: V1GetByQuerySearchFilters;
-    QueryPaging: QueryPaging;
-    SelectedInfo: ContentSelectedInfo;
+export class V1GetByQueryRequest {
+    public Search: string = "";
+    public Filters: V1GetByQuerySearchFilters = new V1GetByQuerySearchFilters();
+    public QueryPaging: QueryPaging = { Limit: 20, Offset: 0 };
+    public SelectedInfo: ContentSelectedInfo = ContentSelectedInfo.None;
 }
 
-export type V1GetByQuerySearchFilters = {
-    Countries: Array<typeof Country>,
-    ContentTypes: Array<ContentType>,
-    ContentStatuses: Array<ContentStatus>,
-    GenreIds: Array<number>,
+export class V1GetByQuerySearchFilters {
+    public Countries: Array<typeof Country> = [];
+    public ContentTypes: Array<ContentType> = [];
+    public ContentStatuses: Array<ContentStatus> = [];
+    public GenreIds: Array<number> = [];
 }
