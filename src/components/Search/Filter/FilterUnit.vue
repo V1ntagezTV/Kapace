@@ -2,86 +2,61 @@
   <div>
     <button
       class="filter-unit__header-button"
-      @click="show = !show"
+      @click="updateShow(!show)"
     >
-      <p>{{ filter.Name }}</p>
+      <p>{{ filter.name }}</p>
       <DropArrow class="filter-unit__arrow-icon" />
     </button>
 
     <transition name="content">
       <div v-if="show">
         <div
-          v-for="(value, key) in inputValues"
-          :key="key"
+          v-for="([key, value], index) in inputValues"
+          :key="index"
           class="filter-unit__input-container"
-          @click="inputClick(key, value)"
+          @click="inputClick(key.toString(), value)"
         >
-          <input
-            :checked="value"
-            type="checkbox"
-          >
-          <label class="filter-unit__label">{{ key }}</label>
+          <input :checked="value" type="checkbox">
+          <label class="filter-unit__label">{{ key }} / {{ value }}</label>
         </div>
       </div>
     </transition>
   </div>
 </template>
 
-<script>
+<script lang="ts" setup>
+import {PropType, ref, watch} from 'vue'
 import DropArrow from "@/components/Icons/DropArrow.vue";
-import { ref } from 'vue'
+import FilterUnitModel from "@/components/Search/Models/FilterUnitModel";
+import {SearchEmits} from "@/components/Search/Models/SearchEmits";
 
-export default {
-  name: "FilterUnit",
-  components: {
-    DropArrow,
-  },
-  props: {
-    clearTrigger: Boolean,
-    filter: {
-      Name: String,
-      Type: String,
-      Values: {
-        Type: Map
-      }
-    }
-  },
-  emits: ['clean:acceptedFilters'],
-    data: function () {
-    return {
-      show: ref(true)
-    }
-  },
-  computed: {
-    inputValues() {
-      return this.filter.Values;
-    }
-  },
-  watch: {
-    clearTrigger() {
-      const mapValues = new Map(Object.entries(this.filter.Values));
-      console.log(mapValues.size)
-      for (let key of  mapValues.keys()) {
-        // eslint-disable-next-line vue/no-mutating-props
-        this.filter.Values[key] = false;
-      }
-    }
-  },
-  methods: {
-    inputClick(key, value) {
-      this.inputValues[key] = !value
-      this.$emit('update:filtersHasChanges', {key: key, value: this.inputValues[key]});
-    }
-  },
+const props = defineProps({
+  show: {type: Boolean, default: true, required: false},
+  filter: {type: Object as PropType<FilterUnitModel>, required: true},
+});
+
+const inputValues = ref(props.filter.values);
+let show = ref(props.show);
+
+watch(() => props.clearTrigger, () => {
+  for (let key of  props.filter?.values.keys()) {
+    inputValues.value.set(key, false);
+  }
+})
+
+function updateShow(show: boolean) {
+  this.show = show;
 }
 
+function inputClick(key: string, value: boolean) : void {
+  inputValues.value.set(key, !value);
+}
 
 </script>
 
 <style lang="scss">
 
 .filter-unit {
-
   &__header-button {
     display: flex;
     justify-content: space-between;
@@ -138,7 +113,6 @@ export default {
   }
 }
 
-// --Animations-- //
 .content {
   &-enter-from {
     opacity: 0;

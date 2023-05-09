@@ -4,7 +4,9 @@ import SearchView from '../views/SearchView.vue'
 import ProfileView from "@/views/ProfileView.vue";
 import LogInView from "@/views/LogInView.vue";
 import RegistrationView from "@/views/RegistrationView.vue";
+import TheaterView from "@/views/TheaterView.vue";
 import RestorePasswordView from "@/views/RestorePasswordView.vue";
+import EpisodeView from "@/views/EpisodeView.vue";
 
 const routes = [
   {
@@ -36,6 +38,16 @@ const routes = [
     path: '/restore',
     name: 'Восстановление пароля',
     component: RestorePasswordView,
+  },
+  {
+    name: 'theater',
+    path: '/theater/:id',
+    component: TheaterView,
+  },
+  {
+    name: "episode",
+    path: '/episode/:episode/:translation(\\d+)*',
+    component: EpisodeView,
   }
 ]
 

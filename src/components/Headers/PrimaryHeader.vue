@@ -1,8 +1,11 @@
 <template>
-  <div class="container">
-    <img class="logo" src="@/assets/images/Logo.svg">
+  <div class="primary-header__main">
+    <router-link to="/">
+      <img class="primary-header__logo" src="@/assets/images/Logo.svg" />
+    </router-link>
+
     <button>
-      BECOME A CONTENT CREATOR
+      BECOME AN EDITOR
     </button>
     <button>
       WRITE AN UPDATE
@@ -10,40 +13,39 @@
   </div>
 </template>
 
-<style scoped>
-
-.container {
+<style lang="scss" scoped>
+.primary-header {
+  &__main {
     display: flex;
     flex-direction: row;
     align-items: center;
-    height: 42px;
+    height: 100%;
     gap: 20px;
-}
 
-.logo {
-    width: 90px;
-    height: 20px;
+    & button  {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: white;
+      height: 22px;
+      background: transparent;
+      border: 1px solid white;
+      border-radius: 4px;
+      transition: border 0.25s, color 0.25s;
+
+      &:hover {
+        cursor: pointer;
+        border: 1px solid var(--font-gray-v1);
+        color: var(--font-gray-v1);
+      }
+    }
+  }
+
+  &__logo {
+    height: 22px;
     background: #FFFFFF;
-    flex: none;
-    order: 0;
-    flex-grow: 0;
+  }
 }
 
-.container button:hover {
-    cursor: pointer;
-    border: 1px solid #ffffff;
-}
 
-.container button  {
-    font-size: 10px;
-    font-weight: 600;
-    line-height: 12px;
-    letter-spacing: 0.04em;
-    color: white;
-    height: 20px;
-    align-items: center;
-    background: transparent;
-    border: 1px solid #BDD5EA;
-    border-radius: 3px;
-}
 </style>

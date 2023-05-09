@@ -1,18 +1,25 @@
 <template>
-  <div class="main">
-    <nav class="nav-main some-component">
-      <router-link to="/" active-class="nav-main">
-        Главная
+  <div class="secondary-header__main">
+    <nav class="secondary-header__nav">
+      <router-link to="/">
+        <BaseTextButton class="secondary-header__text-button">
+          Главная
+        </BaseTextButton>
       </router-link>
       <router-link to="/search">
-        Новинки
+        <BaseTextButton class="secondary-header__text-button">
+          Поиск
+        </BaseTextButton>
       </router-link>
-      <a>Популярное</a>
-      <a>Категории</a>
-      <a>По жанрам</a>
-      <router-link to="/profile">
-        Профиль
-      </router-link>
+      <BaseTextButton class="secondary-header__text-button">
+        Популярное
+      </BaseTextButton>
+      <BaseTextButton class="secondary-header__text-button">
+        Категории
+      </BaseTextButton>
+      <BaseTextButton class="secondary-header__text-button">
+        По жанрам
+      </BaseTextButton>
     </nav>
 
     <UnauthorizedUserComponent class="nav-main" />
@@ -21,52 +28,51 @@
 
 <script>
 import UnauthorizedUserComponent from "./UnauthorizedUserComponent.vue";
+import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 
 export default {
 name: 'App',
 components: {
+  BaseTextButton,
     UnauthorizedUserComponent
   },
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
 
-.main {
+.secondary-header {
+  &__main {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    height: 42px;
+    height: 100%;
     background: white;
-}
+  }
 
-nav a,
-nav a.router-link-active,
-nav a.router-link-exact-active {
-    text-decoration: none;
-    color: #9D9D9D;
-}
-
-.nav-main {
-    color: #9D9D9D;
+  &__nav {
+    color: var(--header-static-text);
     display: flex;
     flex-direction: row;
     align-items: end;
     gap: 20px;
-}
 
-.nav-main a {
-    align-items: center;
-    height: 100%;
-    font-style: normal;
-    display: flex;
-    font-weight: 600;
-    font-size: 14px;
-    line-height: 17px;
-}
+    & a {
+      align-items: center;
+      height: 100%;
+      display: flex;
+      font-weight: 600;
+      font-size: 14px;
 
-.nav-main a:hover {
-    color: #577399;
-    cursor: pointer;
+      & :hover {
+        color: var(--header-hover-text);
+        cursor: pointer;
+      }
+    }
+  }
+
+  &__text-button {
+    color: var(--header-static-text);
+  }
 }
 </style>

@@ -5,7 +5,7 @@ export class LinkedProperty extends Property {
     constructor(
         public readonly value: string,
         public readonly LinkType: LinkPropertyType,
-        public readonly LinkId: bigint) {
+        public readonly LinkId: number) {
         super(value);
     }
 }

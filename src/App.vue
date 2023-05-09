@@ -10,20 +10,16 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import {TranslationService} from './api/TranslationService';
 import PrimaryHeader from './components/Headers/PrimaryHeader.vue';
 import SecondaryHeader from './components/Headers/SecondaryHeader.vue';
+import {ContentService} from "@/api/ContentService";
 
-export default {
-    name: "App",
-    components: {
-      PrimaryHeader,
-      SecondaryHeader
-    },
-    mounted() {
-      console.log(this.$store)
-    }
-  }
+import {provide} from "vue";
+provide('content-service', new ContentService());
+provide('translation-service', new TranslationService());
+
 </script>
 
 <style lang="scss">
@@ -41,10 +37,19 @@ export default {
   --font-gray-v1: #D9DBE1;
   --font-gray-v2: #EEEFF4;
   --font-gray-v3: #F4F5F7;
+
+  --header-static-text: #9D9D9D;
+  --header-hover-text: #577399;
+
+  --font-gray-v4: #969BAB;
 }
 
 * {
   box-sizing: border-box;
+  a {
+    color: var(--dark-primary);
+    text-decoration: none;
+  }
 }
 
 #app {
@@ -65,7 +70,7 @@ export default {
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 20px 1080px 20px 1fr;
-  grid-template-rows: 42px 42px auto;
+  grid-template-rows: 46px 46px auto;
 }
 
 .header-grid {

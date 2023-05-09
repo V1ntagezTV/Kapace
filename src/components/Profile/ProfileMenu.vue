@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-import BaseBackground from "@/components/Body/BaseBackground.vue";
+import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 
 const props = defineProps({
@@ -59,29 +59,6 @@ const props = defineProps({
     align-items: center;
     gap: 20px;
     height: 30px;
-  }
-
-  &__menu-button {
-    font-style: normal;
-    font-weight: 700;
-    font-size: 14px;
-    line-height: 15px;
-    letter-spacing: 0.04em;
-
-    color: #969BAB;
-
-    border: none;
-    background: none;
-    text-decoration: none;
-
-    &:hover {
-      color: var(--primary);
-      cursor: pointer;
-    }
-
-    &:active {
-      color: #474A57;
-    }
   }
 
   &__main {

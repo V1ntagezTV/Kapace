@@ -1,28 +1,33 @@
 <template>
-  <BaseBackground class="search-item__container">
-    <div class="search-item__image-wrapper">
-      <img class="search-item__image" src="@/assets/images/image.png">
-    </div>
+  <BaseBackground :type="3" class="search-item__container">
+    <router-link
+      :to="{ name: 'theater', params: { id: item.Id}}"
+      class="search-item__image-wrapper"
+    >
+      <img class="search-item__image" :src="viewModel.Image">
+    </router-link>
 
     <div class="search-item__details-container">
       <div class="search-item__details">
         <div class="search-item__title-container">
-          <p class="search-item__title search-item__line-breaker">
-            {{ item.ruTitle }}
-          </p>
+          <router-link :to="{ name: 'theater', params: { id: item.Id}}">
+            <BaseTextButton class="search-item__title search-item__line-breaker">
+              {{ viewModel.Title }}
+            </BaseTextButton>
+          </router-link>
         </div>
 
         <a class="search-item__description search-item__line-breaker">
-          {{ item.engTitle + " / " + item.year + " / " + item.country }}
+          {{ viewModel.Description }}
         </a>
 
-        <p class="search-item__genres search-item__line-breaker">
-          {{ item.genres.join(", ") }}
+        <p v-if="viewModel.Genres" class="search-item__genre search-item__line-breaker">
+          {{ viewModel.Genres }}
         </p>
 
         <div class="search-item__language-container">
           <div
-            v-for="lang in item.languages"
+            v-for="lang in viewModel.Translates"
             :key="lang"
             class="search-item__language-unit"
           >
@@ -32,12 +37,13 @@
           </div>
         </div>
       </div>
+
       <div class="search-item__buttons">
-        <div class="search-item__min-age-container">
-          <span class="search-item__min-age">{{ item.minAge }}+</span>
+        <div v-if="viewModel.MinAge" class="search-item__min-age-container">
+          <span class="search-item__min-age">{{ viewModel.MinAge }}+</span>
         </div>
-        <div class="search-item__min-age-container">
-          <span class="search-item__min-age">11/12</span>
+        <div v-if="viewModel.SeriesCounter" class="search-item__min-age-container">
+          <span class="search-item__min-age">{{ viewModel.SeriesCounter }}</span>
         </div>
         <button class="search-item__icon-button">
           <FavoriteIcon class="search-item__icon" />
@@ -50,73 +56,132 @@
   </BaseBackground>
 </template>
 
-<script>
+<script lang="ts" setup>
+import {defineProps, PropType} from "vue";
 import FavoriteIcon from "@/components/Icons/FavoriteIcon.vue";
-import BaseBackground from "@/components/Body/BaseBackground.vue";
+import BaseBackground from "@/components/Base/BaseBackground.vue";
 import DetailsIcon from "@/components/Icons/DetailsIcon.vue";
+import {V1GetByQueryResponseContent} from "@/api/Requests/V1GetByQueryResponse";
+import moment from "moment/moment";
+import {V1GetByEpisodeTranslation} from "@/api/Responses/V1GetByEpisodeResponse";
+import {types} from "sass";
+import List = types.List;
+import {Country} from "@/api/Enums/Country";
+import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 
-export default {
-    name: 'SearchItem',
-    components: {
-      DetailsIcon,
-      BaseBackground,
-      FavoriteIcon,
-    },
-    props: {
-        item: {
-          ruTitle: String,
-          engTitle: String,
-          year: Int8Array,
-          country: String,
-          minAge: Int8Array,
-          genres: Array,
-          languages: Array
-        }
-    }
+const props = defineProps({
+  item: {type: Object as PropType<V1GetByQueryResponseContent>, required: true}
+})
+
+const viewModel = getItemViewModel(props.item);
+
+type ItemViewModel = {
+  Image: string
+  Title: string
+  Description: string | null
+  Translates: string[]
+  Genres: string | null
+  MinAge: number | null
+  SeriesCounter: string | null
+}
+
+function getItemViewModel(item: V1GetByQueryResponseContent): ItemViewModel {
+  const releaseYear = moment(new Date(item.ReleasedAt)).format('YYYY');
+
+  let description: string[] = [];
+  if (item.EngTitle) {
+    description.push(item.EngTitle);
+  }
+  description.push(releaseYear);
+  if (item.Country && item.Country.toString() != Country.Null.toString()) {
+    description.push(item.Country.toString())
+  }
+
+  let seriesCounter = '';
+  if (item.PlannedSeries > 0) {
+    seriesCounter = item.PlannedSeries.toString();
+  }
+
+  if (item.OutSeries > 0) {
+    seriesCounter = item.OutSeries + '/' + seriesCounter;
+  }
+
+  return {
+    Image: item.Image,
+    Title: item.Title,
+    Description: description.join(' / '),
+    Translates: item.Translations.map(x => x.Language.toString()),
+    Genres: item.Genres.map(x => x.Name).join(' '),
+    MinAge: item.MinAgeLimit >= 0 ? item.MinAgeLimit : null,
+    SeriesCounter: seriesCounter
+  };
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 
 .search-item {
 
   &__image-wrapper {
-    display: grid;
-    height: 165px;
-    width: 117px;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    height: 100%;
+    min-width: 117px;
+    max-width: 117px;
+    overflow: hidden;
     background: #112D3D;
   }
 
   &__image {
+    object-fit: cover;
+    height: 100%;
+    display: flex;
     align-self: center;
     justify-self: center;
+    transition: width 0.25s, height 0.25s;
+
+    &:hover {
+      height: 110%;
+      width: 110%;
+    }
   }
 
   &__image-container {
     width: 100%;
+    min-width: 117px;
+    max-width: 117px;
     height: fit-content;
   }
 
   &__details-container {
     height: 100%;
-    width: auto;
+    width: 100%;
+    justify-content: space-between;
 
     gap: 6px;
-    display: grid;
-    grid-template-rows: 1fr;
-
+    display: flex;
+    flex-direction: row;
     padding: 12px 12px;
   }
 
   &__container {
-    display: grid;
-    grid-auto-flow: column;
+    display: flex;
+    flex-direction: row;
+
+    width: 100%;
     height: 165px;
     overflow: hidden;
+    transition: border 0.25s;
+
+    &:hover {
+      border: 1.5px solid var(--font-gray-v4);
+    }
   }
 
   &__details {
     display: flex;
+    width: 100%;
     flex-direction: column;
     align-items: start;
     gap: 6px;
@@ -143,7 +208,7 @@ export default {
   &__title {
     font-style: normal;
     font-weight: 900;
-    font-size: 16px;
+    font-size: 18px;
     color: #474A57;
     -webkit-line-clamp: 2;
 
@@ -169,6 +234,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+    height: fit-content;
 
     padding: 4px;
     gap: 12px;
@@ -184,13 +250,14 @@ export default {
 
   &__description {
     font-weight: 500;
-    font-size: 12px;
+    font-size: 13px;
     text-align: left;
     letter-spacing: 0.02em;
     color: #474A57;
+    -webkit-line-clamp: 2;
   }
 
-  &__genres {
+  &__genre {
     font-weight: 500;
     font-size: 12px;
     text-align: left;
@@ -209,10 +276,15 @@ export default {
   &__language-container {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    overflow: hidden;
+    width: 100%;
+    height: 23px;
     gap: 8px;
   }
 
   &__language-unit {
+    width: fit-content;
     background: #577399;
     border-radius: 4px;
     padding: 4px 8px;
@@ -224,10 +296,10 @@ export default {
   }
 
   &__buttons {
-    align-self: flex-end;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    align-items: center;
     gap: 10px;
 
     grid-row-start: 1;
@@ -243,22 +315,17 @@ export default {
     align-self: center;
     justify-self: center;
     text-decoration: none;
-    border-color: transparent;
-    background: transparent;
+    border-radius: 4px;
+    border: 1.5px solid var(--font-gray-v1);
+    background: var(--white);
     color: #9D9D9D;
-    border-width: 0;
-
+    transition: color 0.1s;
 
     &:hover {
       cursor: pointer;
-      background-color: #EEEFF4;
       border-radius: 4px;
       color: #577399;
-      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 16%);
-    }
-
-    &:active {
-      color: var(--secondary);
+      border: 1.5px solid #93B0D9;
     }
 
     & svg {

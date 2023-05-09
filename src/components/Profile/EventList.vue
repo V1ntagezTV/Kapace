@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts" setup>
-import BaseBackground from "@/components/Body/BaseBackground.vue";
+import BaseBackground from "@/components/Base/BaseBackground.vue";
 import {GenericSortableDataClass} from "@/components/Profile/ViewModels/GenericSortableDataClass";
 import {DataClass} from "@/components/Profile/ViewModels/DataClass";
 import {LinkedProperty} from "@/components/Profile/ViewModels/LinkedProperty";

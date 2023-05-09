@@ -1,5 +1,5 @@
 <template>
-  <div class="new-content-component__container">
+  <base-background :type="2" class="new-content-component__container">
     <div class="new-content-component__images-wrapper">
       <div 
         v-for="image in images" 
@@ -7,7 +7,7 @@
         ref="slides"
         class="new-content-component__images"
       >
-        <img :src="image">
+        <img :src="image" alt="Изображение новости">
       </div>
     </div>
 
@@ -21,7 +21,7 @@
 
       <div class="new-content-component__scroll-circles-bar">
         <span
-          v-for="(_, idx) in images" 
+          v-for="(idx) in images"
           :key="idx"
           :class="{
             'new-content-component__circle': true,
@@ -32,7 +32,7 @@
       </div>
     </div>
 
-    <div class="new-content-component__left-scroll-button" @click="leftSlide">
+    <BaseBackground class="new-content-component__left-button" @click="leftSlide">
       <svg
         width="13" height="19"
         viewBox="0 0 13 19" xmlns="http://www.w3.org/2000/svg"
@@ -42,9 +42,9 @@
           fill-opacity="0.5"
         />
       </svg>
-    </div>
+    </BaseBackground>
 
-    <div class="new-content-component__right-scroll-button" @click="rightSlide">
+    <div class="new-content-component__right-button" @click="rightSlide">
       <svg
         width="13" height="19"
         viewBox="0 0 13 19" xmlns="http://www.w3.org/2000/svg"
@@ -55,14 +55,16 @@
         />
       </svg>
     </div>
-  </div>
+  </base-background>
 </template>
 
 <script>
 
+import BaseBackground from "@/components/Base/BaseBackground.vue";
+
 export default {
     name: 'NewContentComponent',
-    components: { },
+    components: {BaseBackground},
     props: {
         slides: {
             type: Array,
@@ -136,7 +138,6 @@ export default {
         position: relative;
         width: 100%;
         height: 438px;
-        border-radius: 4px;
         overflow: hidden;
 
         &:hover {
@@ -162,8 +163,8 @@ export default {
         max-height: 162px;
         width: 100%;
         color: #F4F5F7;
-        left: 0px;
-        bottom: 0px;
+        left: 0;
+        bottom: 0;
 
         &-title {
             width: fit-content;
@@ -201,74 +202,82 @@ export default {
         }
     }
 
-    &__left-scroll-button {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+  &__left-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 
-        position: absolute;
-        width: 40px;
-        height: 56px;
-        left: 0px;
-        top: 191px;
+    position: absolute;
+    width: 40px;
+    height: 56px;
+    left: 0;
+    top: 191px;
 
-        color: rgba(247, 247, 255, 0.5);
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 0px 4px 4px 0px;
+    border-radius: 0 4px 4px 0;
+    color: rgba(247, 247, 255, 0.5);
+    background: rgba(0, 0, 0, 0.5);
+    transition: color 0.1s, height 0.2s, width 0.2s;
 
-        &:hover path {
-            color: white;
-            fill-opacity: 1;
-        }
-
-        &:hover svg {
-            height: 26px;
-            width: 16px;
-        }
-
-        &:hover {
-            width: 46px;
-            height: 62px;
-            left: 0px;
-            top: 188px;
-        }
+    & path {
+      transition: color 0.1s, height 0.2s, width 0.2s;
     }
 
-    &__right-scroll-button {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 0px;
-        gap: 10px;
+    &:hover path {
+      color: white;
+      fill-opacity: 1;
+    }
 
-        position: absolute;
-        width: 40px;
-        height: 56px;
-        left: 1040px;
-        top: 191px;
-        
-        color: rgba(247, 247, 255, 0.5);
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 4px 0px 0px 4px;
+    &:hover svg {
+      height: 26px;
+      width: 16px;
+    }
 
-        &:hover path {
-            color: white;
-            fill-opacity: 1;
-        }
+    &:hover {
+      width: 46px;
+      height: 62px;
+      top: 188px;
+    }
+  }
 
-        &:hover svg {
-            height: 26px;
-            width: 16px;
-        }
+    &__right-button {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      gap: 10px;
 
-        &:hover {
-            width: 46px;
-            height: 62px;
-            left: 1034px;
-            top: 188px;
-        }
+      position: absolute;
+      width: 40px;
+      height: 56px;
+      right: 0;
+      top: 191px;
+
+      color: rgba(247, 247, 255, 0.5);
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 4px 0 0 4px;
+      transition: color 0.1s, height 0.2s, width 0.2s;
+
+      & path {
+        transition: color 0.1s, height 0.2s, width 0.2s;
+      }
+
+      &:hover path {
+          color: white;
+          fill-opacity: 1;
+      }
+
+      &:hover svg {
+          height: 26px;
+          width: 16px;
+      }
+
+      &:hover {
+          width: 46px;
+          height: 62px;
+          top: 188px;
+      }
     }
 
     &__images-wrapper {

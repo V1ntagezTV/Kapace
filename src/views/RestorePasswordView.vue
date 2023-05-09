@@ -32,7 +32,7 @@
 
 <script lang="ts">
 import {defineComponent} from "vue";
-import BaseBackground from "@/components/Body/BaseBackground.vue";
+import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 
 export default defineComponent({

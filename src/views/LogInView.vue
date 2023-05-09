@@ -2,7 +2,10 @@
   <div class="login-view__main">
     <BaseBackground class="login-view__container">
       <router-link to="/">
-        <img class="login-view__logo" src="@/assets/images/Logo.svg">
+        <img
+          class="login-view__logo" src="@/assets/images/Logo.svg"
+          alt="Kapace logotype"
+        >
       </router-link>
 
       <span>Авторизация</span>
@@ -44,7 +47,7 @@
 </template>
 
 <script lang="ts">
-import BaseBackground from "@/components/Body/BaseBackground.vue";
+import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import {defineComponent} from "vue";
 import {mapMutations, mapState} from 'vuex'
@@ -59,6 +62,9 @@ export default defineComponent({
       isRememberMe: false
     }
   },
+  computed: {
+    ...mapState({loggedIn: (state: any) => state.loggedIn})
+  },
   methods: {
     ...mapMutations([
       'LogIn',
@@ -66,9 +72,6 @@ export default defineComponent({
     RememberMeClickHandler() {
       this.isRememberMe = !this.isRememberMe;
     }
-  },
-  computed: {
-    ...mapState({loggedIn: (state: any) => state.loggedIn})
   }
 })
 </script>
