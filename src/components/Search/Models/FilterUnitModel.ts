@@ -1,6 +1,8 @@
-export default class FilterUnitModel {
+import {FilterTypes} from "@/components/Search/Models/FilterTypes";
+
+export default class FilterUnitModel<TValues> {
     constructor(
-        public Name: String,
-        public Type: String,
-        public Values: Map<string, boolean>) { }
+        public name: String,
+        public type: typeof FilterTypes,
+        public values: Map<TValues, boolean>) { }
 }

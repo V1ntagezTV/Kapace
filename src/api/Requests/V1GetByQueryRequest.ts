@@ -13,7 +13,7 @@ export class V1GetByQueryRequest {
 
 export class V1GetByQuerySearchFilters {
     public Countries: Array<typeof Country> = [];
-    public ContentTypes: Array<ContentType> = [];
-    public ContentStatuses: Array<ContentStatus> = [];
+    public ContentTypes: Array<typeof ContentType> = [];
+    public ContentStatuses: Array<typeof ContentStatus> = [];
     public GenreIds: Array<number> = [];
 }

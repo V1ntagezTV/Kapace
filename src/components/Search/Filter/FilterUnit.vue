@@ -4,7 +4,7 @@
       class="filter-unit__header-button"
       @click="updateShow(!show)"
     >
-      <p>{{ filter.Name }}</p>
+      <p>{{ filter.name }}</p>
       <DropArrow class="filter-unit__arrow-icon" />
     </button>
 
@@ -14,13 +14,10 @@
           v-for="([key, value], index) in inputValues"
           :key="index"
           class="filter-unit__input-container"
-          @click="inputClick(key, value)"
+          @click="inputClick(key.toString(), value)"
         >
-          <input
-            :checked="value"
-            type="checkbox"
-          >
-          <label class="filter-unit__label">{{ index }} / {{ value }}</label>
+          <input :checked="value" type="checkbox">
+          <label class="filter-unit__label">{{ key }} / {{ value }}</label>
         </div>
       </div>
     </transition>
@@ -28,25 +25,22 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, watch} from 'vue'
+import {PropType, ref, watch} from 'vue'
 import DropArrow from "@/components/Icons/DropArrow.vue";
 import FilterUnitModel from "@/components/Search/Models/FilterUnitModel";
 import {SearchEmits} from "@/components/Search/Models/SearchEmits";
 
-const emits = defineEmits<{ (emitName: SearchEmits.Add, key: string, value: boolean) : void }>()
-
 const props = defineProps({
   show: {type: Boolean, default: true, required: false},
-  filter: {type: FilterUnitModel, required: true},
-  clearTrigger: {type: Boolean, required: true},
-})
+  filter: {type: Object as PropType<FilterUnitModel>, required: true},
+});
 
-const inputValues = ref(props.filter.Values)
+const inputValues = ref(props.filter.values);
 let show = ref(props.show);
 
 watch(() => props.clearTrigger, () => {
-  for (let key of  props.filter?.Values.keys()) {
-    inputValues.value.set(key, false)
+  for (let key of  props.filter?.values.keys()) {
+    inputValues.value.set(key, false);
   }
 })
 
@@ -55,8 +49,7 @@ function updateShow(show: boolean) {
 }
 
 function inputClick(key: string, value: boolean) : void {
-  inputValues.value.set(key, !value)
-  emits(SearchEmits.Add, key, !value)
+  inputValues.value.set(key, !value);
 }
 
 </script>
@@ -64,7 +57,6 @@ function inputClick(key: string, value: boolean) : void {
 <style lang="scss">
 
 .filter-unit {
-
   &__header-button {
     display: flex;
     justify-content: space-between;

@@ -4,18 +4,15 @@
       <FilterUnit
         v-for="filter in filters"
         :key="filter"
-        ref="filterUnit"
         :filter="filter"
-        :clear-trigger="clearTrigger"
-        @add:accepted-filters="inputFilterSelected"
       />
     </BaseBackground>
 
     <div class="search-filters__actions-container">
-      <BaseButton :button-type="2" @click="AcceptFilters">
+      <BaseButton :button-type="2" @click="onClickAcceptFilters">
         Принять
       </BaseButton>
-      <BaseButton @click="CleanFiltersByParent">
+      <BaseButton @click="onClickCleanFilters">
         Сбросить
       </BaseButton>
     </div>
@@ -23,54 +20,43 @@
 </template>
 
 <script lang="ts" setup>
-import {defineEmits, reactive, ref} from 'vue';
+import {defineEmits, PropType, ref} from 'vue';
 import FilterUnit from "@/components/Search/Filter/FilterUnit.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import FilterUnitModel from "@/components/Search/Models/FilterUnitModel";
-import {SearchEmits} from "@/components/Search/Models/SearchEmits";
 
 const emits = defineEmits<{
-  (emitName: 'update:acceptedFilters', filters: string[]) : void,
-  (emitName: 'clean:accepted-filters') : void,
-  (emitName: 'add:accepted-filters', key: string, value: boolean) : void,
+  (emitName: 'accept:filters') : void,
+  (emitName: 'clean:filters') : void,
 }>()
 
-let clearTrigger = ref(false)
-let emitAcceptedFilters = new Map<string, boolean>()
+const props = defineProps({
+	filters: {type: Array as PropType<Array<FilterUnitModel>>, required: true}
+})
 
-const filters = [
-  new FilterUnitModel('Тип', 'Flags', new Map<string, boolean>([["key1", false], ["key2", false]])),
-  new FilterUnitModel('Статус', 'Flags', new Map<string, boolean>([["key3", false], ["key4", false]])),
-  new FilterUnitModel('Стрнана', 'Flags', new Map<string, boolean>([["key5", false], ["key6", false]]))
-];
+const filters = ref<Array<FilterUnitModel>>(props.filters);
 
-function inputFilterSelected(key: string, value: boolean) {
-  emitAcceptedFilters.set(key, value)
-  console.log(emitAcceptedFilters)
+function onClickCleanFilters() {
+	console.log(filters.value)
+	console.log('onClick clean')
+  filters.value.forEach((value, index) => {
+		const filterUnit = filters.value[index];
+		for (const filterKey in filterUnit.values) {
+			filterUnit.values.set(filterKey, false);
+		}
+  });
+
+  emits('clean:filters');
 }
 
-function CleanFiltersByParent() {
-  clearTrigger.value = !clearTrigger.value
-
-  console.log(clearTrigger)
-  emits(SearchEmits.Clean)
-}
-
-function AcceptFilters() {
-  let resultFilters = []
-
-  emitAcceptedFilters.forEach((value, key) => {
-    if (value) {
-      resultFilters.push(key)
-    }
-  })
-
-  emits('update:acceptedFilters', resultFilters)
+function onClickAcceptFilters() {
+	console.log('onClick accept');
+	console.log(filters.value);
+	emits('accept:filters');
 }
 
 </script>
-
 
 <style lang="scss" scoped>
 

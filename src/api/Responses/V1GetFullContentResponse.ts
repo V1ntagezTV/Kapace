@@ -1,13 +1,13 @@
-import {ContentType} from "@/api/Enums/ContentType";
-import {ContentStatus} from "@/api/Enums/ContentStatus";
+import {ContentType as Type} from "@/api/Enums/ContentType";
+import {ContentStatus as Status} from "@/api/Enums/ContentStatus";
 
 export class V1GetFullContentResponse {
     constructor(
         public ContentId: bigint,
         public Title: string,
         public Description: string,
-        public ContentType: ContentType,
-        public ContentStatus: ContentStatus,
+        public ContentType: typeof Type,
+        public ContentStatus: typeof Status,
         public Image: string,
         public ImportStars: number,
         public OutSeries: number,

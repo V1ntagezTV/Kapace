@@ -21,11 +21,9 @@
           {{ viewModel.Description }}
         </a>
 
-        <template v-for="genre in viewModel.Genres" :key="genre">
-          <p class="search-item__genres search-item__line-breaker">
-            {{ genre }}
-          </p>
-        </template>
+        <p v-if="viewModel.Genres" class="search-item__genre search-item__line-breaker">
+          {{ viewModel.Genres }}
+        </p>
 
         <div class="search-item__language-container">
           <div
@@ -39,6 +37,7 @@
           </div>
         </div>
       </div>
+
       <div class="search-item__buttons">
         <div v-if="viewModel.MinAge" class="search-item__min-age-container">
           <span class="search-item__min-age">{{ viewModel.MinAge }}+</span>
@@ -81,7 +80,7 @@ type ItemViewModel = {
   Title: string
   Description: string | null
   Translates: string[]
-  Genres: string[]
+  Genres: string | null
   MinAge: number | null
   SeriesCounter: string | null
 }
@@ -112,7 +111,7 @@ function getItemViewModel(item: V1GetByQueryResponseContent): ItemViewModel {
     Title: item.Title,
     Description: description.join(' / '),
     Translates: item.Translations.map(x => x.Language.toString()),
-    Genres: item.Genres.map(x => x.Name),
+    Genres: item.Genres.map(x => x.Name).join(' '),
     MinAge: item.MinAgeLimit >= 0 ? item.MinAgeLimit : null,
     SeriesCounter: seriesCounter
   };
@@ -255,9 +254,10 @@ function getItemViewModel(item: V1GetByQueryResponseContent): ItemViewModel {
     text-align: left;
     letter-spacing: 0.02em;
     color: #474A57;
+    -webkit-line-clamp: 2;
   }
 
-  &__genres {
+  &__genre {
     font-weight: 500;
     font-size: 12px;
     text-align: left;
@@ -276,10 +276,15 @@ function getItemViewModel(item: V1GetByQueryResponseContent): ItemViewModel {
   &__language-container {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    overflow: hidden;
+    width: 100%;
+    height: 23px;
     gap: 8px;
   }
 
   &__language-unit {
+    width: fit-content;
     background: #577399;
     border-radius: 4px;
     padding: 4px 8px;

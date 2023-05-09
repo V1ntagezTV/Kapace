@@ -1,6 +1,6 @@
-export enum ContentType {
-    Film = 0,
-    Documentary = 1,
-    Serial = 2,
-    Show = 3,
-}
+export const ContentType = {
+    Film: 'Film',
+    Documentary: 'Documentary',
+    Serial: 'Serial',
+    Show: 'Show',
+} as const;

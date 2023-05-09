@@ -1,5 +1,5 @@
-export enum ContentStatus {
-    Released = 0,
-    Ongoing = 1,
-    Finished = 2,
-}
+export const ContentStatus = {
+    Released: "Released",
+    Ongoing: "Ongoing",
+    Finished: "Finished",
+} as const;
