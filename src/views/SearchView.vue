@@ -12,9 +12,9 @@
         :watch-show-filters="watchableShowFilters"
         @delete:filter="EmitDeleteSingleFilter"
       />
-      <SearchContent v-if="isDataReady" :items-content="initPageContent.Content" />
-      <div v-else>
-        TODO: Loading...
+      <SearchContent v-if="isDataReady && initPageContent.Content.length > 0" :items-content="initPageContent.Content" />
+      <div v-else-if="isDataReady">
+        TODO: Empty response
       </div>
     </div>
 
