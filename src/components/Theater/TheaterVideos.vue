@@ -17,14 +17,16 @@
         <router-link
           :to="{ name: 'episode', params: { episode: video.Id }}"
           class="theater-videos__video-image"
-        />
+        >
+          <img :src="!StringExtensions.isNullOrEmpty(video.Image) ? video.Image : require('@/assets/images/DefaultImage.png')" />
+        </router-link>
 
         <BaseTextButton>
           <router-link
             class="theater-videos__video-name"
             :to="{ name: 'episode', params: { episode: video.Id }}"
           >
-            {{ video.Number + " " + video.Title }}
+            Серия {{ video.Number + ": " + video.Title }}
           </router-link>
         </BaseTextButton>
       </div>
@@ -37,6 +39,7 @@ import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import {PropType} from "vue";
 import {V1GetFullContentEpisode} from "@/api/Responses/V1GetFullContentResponse";
+import {StringExtensions} from "@/helpers/StringExtensions";
 
 const props = defineProps({
   videos: {type: Array as PropType<Array<V1GetFullContentEpisode>>, required: true}
@@ -65,10 +68,15 @@ const props = defineProps({
   &__videos-main {
     display: grid;
     width: 100%;
-    grid-template-rows: repeat(1, 1fr);
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, 180px);
+    grid-auto-flow: dense;
     column-gap: 15px;
     row-gap: 15px;
+
+    &:hover {
+      color: var(--primary);
+      cursor: pointer;
+    }
   }
 
   &__videos-row {
@@ -84,24 +92,42 @@ const props = defineProps({
   }
 
   &__video-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
     width: 100%;
     height: 110px;
-    background-color: var(--dark-primary);
     border-radius: 6px;
-    transition: border 0.1s;
+    transition: border 0.1s, width 0.25s;
 
-    &:hover {
-      border: 3px solid var(--secondary);
-      cursor: pointer;
+    & img {
+      transition: width 0.25s;
+      width: 100%;
+
+      &:hover {
+        width: 105%;
+      }
     }
   }
 
   &__video-name {
     display: flex;
-    text-align: center;
     padding-top: 10px;
     padding-bottom: 6px;
     align-items: center;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: start;
+
+    &:hover {
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: underline;
+    }
   }
 }
 

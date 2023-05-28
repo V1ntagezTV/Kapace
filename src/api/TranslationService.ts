@@ -8,6 +8,6 @@ export class TranslationService extends ApiService {
     }
 
     async V1GetByEpisodeAsync(request: V1GetByEpisodeRequest) : Promise<V1GetByEpisodeResponse> {
-        return await this.CallHandlerAsync<V1GetByEpisodeRequest, V1GetByEpisodeResponse>(request, "get-by-episode");
+        return await this.CallHandlerAsync<V1GetByEpisodeResponse, V1GetByEpisodeRequest>(request, "get-by-episode");
     }
 }

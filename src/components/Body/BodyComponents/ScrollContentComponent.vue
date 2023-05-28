@@ -20,7 +20,10 @@
             
         <div class="scroll-content-component__card-content">
           <router-link class="scroll-content-component__image" :to="{ name: 'theater', params: { id: content.Id }}">
-            <img :src="content.Image" :alt="content.Title+' изображение'">
+            <img
+              :src="!StringExtensions.isNullOrEmpty(content.Image) ? content.Image : require('@/assets/images/DefaultImage.png')"
+              :alt="'изображение'"
+            >
           </router-link>
 
           <div class="scroll-content-component__footer">
@@ -49,7 +52,7 @@
             </div>
           </div>
 
-          <div class="scroll-content-component__rating">
+          <div v-if="content.ImportStars > 0" class="scroll-content-component__rating">
             <p class="scroll-content-component__rating-value">
               {{ content.ImportStars }}
             </p>
@@ -68,6 +71,7 @@ import EyeIcon from '../../Icons/EyeIcon.vue';
 import StarIcon from '../../Icons/StarIcon.vue';
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import {V1GetMainPageContent} from "@/api/Responses/V1GetMainPageContentResponse";
+import {StringExtensions} from "@/helpers/StringExtensions";
 
 const props = defineProps({
   scrollTitle: {
@@ -79,6 +83,8 @@ const props = defineProps({
     required: true,
   }
 })
+
+
 </script>
 
 <style lang="scss" scoped>
@@ -265,6 +271,7 @@ const props = defineProps({
     &__image {
       display: flex;
       justify-content: center;
+      align-items: center;
       overflow: hidden;
       height: 100%;
       width: 100%;

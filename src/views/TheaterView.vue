@@ -21,16 +21,12 @@ import TheaterDetails from "@/components/Theater/TheaterDetails.vue";
 import {inject, onMounted, ref} from "vue";
 import TheaterVideos from "@/components/Theater/TheaterVideos.vue";
 import ImageColumn from "@/components/Theater/TheaterAvatar.vue";
-import {TheaterInfoToUser, FullContentDetails, VideoUnit} from "@/api/Models/FullContentDetails";
-import {TheaterContentTypes} from "@/models/TheaterContentTypes";
-import {TheaterContentStatus} from "@/models/TheaterContentStatus";
-import {Tag} from "@/api/Models/Tag";
 import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
 import {ContentService} from "@/api/ContentService";
+
 const route = useRoute();
 const id = ref(+route.params.id);
 const contentService: ContentService = inject("content-service");
-
 
 let isDataReady = ref(false);
 

@@ -1,92 +1,127 @@
 <template>
-  <BaseBackground class="episode__main">
-    <div v-if="details" class="episode__title-main">
-      <div class="episode__title-primary">
-        <router-link :to="{ name: 'theater', params: { id: details.ContentId}}">
-          <h1 class="episode__title">
-            {{ details.Title }}
-          </h1>
-        </router-link>
+  <div>
+    <BaseBackground v-if="dataIsReady" class="episode__main">
+      <div class="episode__title-main">
+        <div class="episode__title-primary">
+          <router-link :to="{ name: 'theater', params: { id: details.ContentId }}">
+            <h1 class="episode__title">
+              {{ title }}
+            </h1>
+          </router-link>
+        </div>
 
-        <HeartSVG
-          :is-selected="isInFavorite"
-          class="episode__icon-style"
-          @click="heartOnClick()"
-        />
-      </div>
+        <div v-if="selectedEpisode" class="episode__title-primary">
+          <h2 class="episode__title">
+            {{ "Эпизод " + selectedEpisode.Number }}
+          </h2>
+        </div>
 
-      <div class="episode__title-secondary">
-        <p v-if="details.ImportStars >= 1" class="episode__title-rating">
-          {{ details.ImportStars }}
-        </p>
-        <p>{{ details.Country }}</p>
-        <p>{{ moment(new Date(details.ReleasedAt)).format('YYYY') }}</p>
-        <p v-if="details.Genres?.length > 0">
-          {{ details.Genres[0]?.Name ?? "123" }}
-        </p>
-        <p v-if="details.MinAgeLimit > 0">
-          {{ '+' + details.MinAgeLimit }}
-        </p>
-      </div>
-    </div>
-
-    <div class="episode__video-main">
-      <iframe
-        class="episode__video"
-        src="https://www.youtube.com/embed/EjYFSq90Iic"
-        title="НИКС О РОСТИКЕ И ТУРНИРЕ СТРИМЕРОВ"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen
-      />
-      <div class="episode__video-translations">
-        <div v-for="translation in translations" :key="translation">
-          Перевод
+        <div class="episode__title-secondary">
+          <p v-if="details.ImportStars >= 1" class="episode__title-rating">
+            {{ details.ImportStars }}
+          </p>
+          <p>{{ details.Country }}</p>
+          <p>{{ moment(new Date(details.ReleasedAt)).format('YYYY') }}</p>
+          <p v-if="details.Genres?.length > 0">
+            {{ details.Genres[0]?.Name ?? "123" }}
+          </p>
+          <p v-if="details.MinAgeLimit > 0">
+            {{ '+' + details.MinAgeLimit }}
+          </p>
         </div>
       </div>
-    </div>
-  </BaseBackground>
+      <div v-if="selectedTranslation" class="episode__video-main">
+        <div>
+          <iframe
+            :src="selectedTranslation.Link"
+            width="640" height="360"
+            frameborder="0"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            allowfullscreen
+          />
+        </div>
+        <BaseBackground :type="3" class="episode__video-translations">
+          <div class="episode__video-tabs">
+            <BaseButton :button-type="3">
+              Субтитры
+            </BaseButton>
+            <BaseButton :button-type="3">
+              Озвучка
+            </BaseButton>
+          </div>
+
+          <div v-for="translation in translations.Translations" :key="translation">
+            <router-link :to="{ name: 'episode', params: { episode: translation.EpisodeId, translation: translation.TranslationId } }">
+              <base-button class="episode__video-translate" :button-type="3">
+                {{ translation.Translator }} / {{ translation.Quality }}p  / {{ translation.Language }}
+              </base-button>
+            </router-link>
+          </div>
+        </BaseBackground>
+      </div>
+    </BaseBackground>
+
+    <TheaterVideos v-if="details" :videos="details.Episodes" />
+  </div>
 </template>
 
 <script lang="ts" setup>
-import {inject, onMounted, ref} from "vue";
+import {computed, inject, onMounted, ref, watch} from "vue";
 import {ContentService} from "@/api/ContentService";
-import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
+import {V1GetFullContentEpisode, V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
 import {TranslationService} from "@/api/TranslationService"
 import {useRoute} from "vue-router";
 import moment from "moment/moment";
-import HeartSVG from "@/components/Icons/HeartSVG.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import {V1GetByEpisodeRequest} from "@/api/Requests/V1GetByEpisodeRequest";
-import {V1GetByEpisodeResponse} from "@/api/Responses/V1GetByEpisodeResponse";
+import {V1GetByEpisodeResponse, V1GetByEpisodeTranslation} from "@/api/Responses/V1GetByEpisodeResponse";
+import BaseButton from "@/components/Base/BaseButton.vue";
+import TheaterVideos from "@/components/Theater/TheaterVideos.vue";
 
 const route = useRoute();
-const episodeId = ref(route.params.episode as number);
-const translationId = ref((+route.params.translation) >= 0
-  ? (+route.params.translation)
-  : 0);
+let episodeId = route.params.episode as number;
+let translationId = +route.params.translation > 0 ? (+route.params.translation) : 1;
 
-console.log("episode: " + episodeId.value);
-console.log("translation: " + translationId.value);
+console.log("episode: " + episodeId);
+console.log("translation: " + translationId);
 
 const contentService: ContentService = inject('content-service');
 const translationService: TranslationService = inject('translation-service');
 
+const dataIsReady = ref<boolean>(false);
 const details = ref<V1GetFullContentResponse>(null);
 const translations = ref<V1GetByEpisodeResponse>(null);
-let isInFavorite = ref<boolean>(true);
+const selectedEpisode = ref<V1GetFullContentEpisode>(null);
+const selectedTranslation = ref<V1GetByEpisodeTranslation>(null);
 
-onMounted(async() => {
-  details.value = await contentService.V1GetFullContentAsync(episodeId.value, 0);
-  translations.value = await translationService.V1GetByEpisodeAsync(new V1GetByEpisodeRequest(episodeId.value));
+onMounted(async() => { await SetContents() });
+
+async function SetContents() {
+  episodeId = route.params.episode as number;
+  translationId = +route.params.translation > 0 ? (+route.params.translation) : 1;
+
+  dataIsReady.value = false;
+  details.value = await contentService.V1GetFullContentAsync(episodeId, 0);
+  translations.value = await translationService.V1GetByEpisodeAsync(new V1GetByEpisodeRequest(episodeId));
+
+  selectedEpisode.value = details.value.Episodes.find(x => x.Id === episodeId);
+  selectedTranslation.value = translations.value.Translations.find(x => x.TranslationId === translationId);
+
+  console.log(translationId);
+  console.log(selectedTranslation.value);
+  dataIsReady.value = true;
+}
+
+const title = computed(() => {
+	return !selectedEpisode.value?.Title
+		? details.value.Title
+		: details.value.Title + ": " + selectedEpisode.value.Title;
+});
+
+watch(() => route.params, async () => {
+  await SetContents();
 })
 
-function heartOnClick() {
-  /*
-props.details.contentInfoToUser.isInFavourite = !props.details.contentInfoToUser.isInFavourite;
-isInFavorite.value = !isInFavorite.value;
-	 */
-}
 </script>
 
 <style lang="scss" scoped>
@@ -118,7 +153,6 @@ isInFavorite.value = !isInFavorite.value;
   &__title {
     font-style: normal;
     font-weight: 700;
-    font-size: 34px;
     text-align: left;
 
     padding: 0;
@@ -173,9 +207,39 @@ isInFavorite.value = !isInFavorite.value;
   }
 
   &__video-translations {
-    width: 150px;
-    height: 150px;
-    background: #112D3D;
+		display: flex;
+		flex-direction: column;
+    width: 100%;
+		border-radius: 6px;
+    max-height: inherit;
+  }
+
+  &__video-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, 2fr);
+    border-bottom: 1px solid var(--font-gray-v1);
+  }
+
+  &__video-translate {
+    font-weight: 500;
+    color: var(--font-gray);
+    text-align: start;
+    border-radius: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    transition: none;
+
+    &:hover {
+      background: var(--white);
+      text-decoration: underline;
+      color: var(--primary);
+      text-underline: var(--primary);
+      border: none;
+    }
+  }
+  
+  &__episodes {
+    display: grid;
   }
 }
 

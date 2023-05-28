@@ -4,7 +4,7 @@
       <div>
         <img
           class="image-column__image"
-          :src="props.imageLink"
+          :src="!StringExtensions.isNullOrEmpty(props.imageLink) ? props.imageLink : require('@/assets/images/DefaultImage.png')"
         />
       </div>
     </BaseBackground>
@@ -58,6 +58,7 @@ import BaseButton from "@/components/Base/BaseButton.vue";
 import {V1GetFullContentUserInfo} from "@/api/Responses/V1GetFullContentResponse";
 import BaseDropMenu from "@/components/Base/BaseDropMenu.vue";
 import DropArrow from "@/components/Icons/DropArrow.vue";
+import {StringExtensions} from "@/helpers/StringExtensions";
 
 const props = defineProps({
   imageLink: {type: String, required: true},
