@@ -22,16 +22,25 @@
       </BaseTextButton>
     </nav>
 
-    <UnauthorizedUserComponent class="nav-main" />
+    <UnauthorizedUserComponent
+      v-if="OptionsApi.HIDE_USER_ACTIVITIES"
+      class="nav-main"
+    />
   </div>
 </template>
 
 <script>
 import UnauthorizedUserComponent from "./UnauthorizedUserComponent.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
+import {OptionsApi} from "@/options/OptionsApi";
 
 export default {
 name: 'App',
+  computed: {
+    OptionsApi() {
+      return OptionsApi
+    }
+  },
 components: {
   BaseTextButton,
     UnauthorizedUserComponent

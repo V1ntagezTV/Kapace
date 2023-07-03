@@ -35,14 +35,8 @@ const props = defineProps({
   filter: {type: Object as PropType<FilterUnitModel>, required: true},
 });
 
-const inputValues = ref(props.filter.values);
+const inputValues = ref(props.filter.selectableValues);
 let show = ref(props.show);
-
-watch(() => props.clearTrigger, () => {
-  for (let key of  props.filter?.values.keys()) {
-    inputValues.value.set(key, false);
-  }
-})
 
 function updateShow(show: boolean) {
   this.show = show;

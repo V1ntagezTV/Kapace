@@ -12,7 +12,10 @@
         :watch-show-filters="watchableShowFilters"
         @delete:filter="EmitDeleteSingleFilter"
       />
-      <SearchContent v-if="isDataReady && initPageContent.Content.length > 0" :items-content="initPageContent.Content" />
+      <SearchContent
+        v-if="isDataReady && initPageContent.Content.length > 0"
+        :items-content="initPageContent.Content"
+      />
       <div v-else-if="isDataReady">
         TODO: Empty response
       </div>
@@ -94,7 +97,7 @@ function GetArrayByFilterType<T>(filterType: FilterTypes) {
 	const response: typeof T[] = []
 
 	for (const filter of filtersV2.value) {
-		filter.values.forEach((value, key) => {
+		filter.selectableValues.forEach((value, key) => {
 			if (value && filter.type === filterType) {
 				console.log(key);
 				response.push(key as typeof T);
@@ -112,8 +115,8 @@ async function EmitAcceptFilters() {
 
 function EmitCleanFilters() {
 	for (const filter of filtersV2.value) {
-		filter.values.forEach((value, key) => {
-			filter.values.set(key, false);
+		filter.selectableValues.forEach((value, key) => {
+			filter.selectableValues.set(key, false);
 		})
 	}
 

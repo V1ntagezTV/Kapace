@@ -50,7 +50,7 @@ const acceptedFiltersByFilterType = ref<Map<typeof FilterTypes, string[]>>(new M
 watch(() => props.watchShowFilters, () => {
 	acceptedFiltersByFilterType.value = new Map<typeof FilterTypes, string[]>();
 	for (const filter of props.filters) {
-		filter.values.forEach((value: boolean, key: string) => {
+		filter.selectableValues.forEach((value: boolean, key: string) => {
 			if (value) {
 				const byFilter = acceptedFiltersByFilterType.value.get(filter.type);
 

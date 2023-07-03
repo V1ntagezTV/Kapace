@@ -42,6 +42,8 @@ provide('translation-service', new TranslationService());
   --header-hover-text: #577399;
 
   --font-gray-v4: #969BAB;
+
+  --placeholder: #999;
 }
 
 * {

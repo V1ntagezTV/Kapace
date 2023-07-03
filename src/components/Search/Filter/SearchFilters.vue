@@ -42,8 +42,8 @@ function onClickCleanFilters() {
 	console.log('onClick clean')
   filters.value.forEach((value, index) => {
 		const filterUnit = filters.value[index];
-		for (const filterKey in filterUnit.values) {
-			filterUnit.values.set(filterKey, false);
+		for (const filterKey in filterUnit.selectableValues) {
+			filterUnit.selectableValues.set(filterKey, false);
 		}
   });
 

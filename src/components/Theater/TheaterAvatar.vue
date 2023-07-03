@@ -9,11 +9,16 @@
       </div>
     </BaseBackground>
 
-    <BaseButton :button-type="2">
-      Начать просмотр
+    <BaseButton v-if="firstEpisodeId > 0" :button-type="2">
+      <router-link
+        class="theater-videos__video-name"
+        :to="{ name: 'episode', params: { episode: firstEpisodeId }}"
+      >
+        Начать просмотр
+      </router-link>
     </BaseButton>
 
-    <BaseDropMenu>
+    <BaseDropMenu v-if="OptionsApi.HIDE_USER_ACTIVITIES">
       <template #header="{onClick}">
         <BaseButton
           class="image-column__drop-button"
@@ -44,7 +49,6 @@
       </template>
     </BaseDropMenu>
 
-
     <BaseButton v-if="userInfo != null && userInfo.LastViewedSeries > 0" :button-type="3">
       Продолжить просмотр <br> с {{ props.userInfo.LastViewedSeries }}-ой серии
     </BaseButton>
@@ -59,9 +63,11 @@ import {V1GetFullContentUserInfo} from "@/api/Responses/V1GetFullContentResponse
 import BaseDropMenu from "@/components/Base/BaseDropMenu.vue";
 import DropArrow from "@/components/Icons/DropArrow.vue";
 import {StringExtensions} from "@/helpers/StringExtensions";
+import {OptionsApi} from "@/options/OptionsApi";
 
 const props = defineProps({
   imageLink: {type: String, required: true},
+  firstEpisodeId: {type: Number, default: -1},
   userInfo: {
     type: Object as PropType<V1GetFullContentUserInfo>,
     required: true,

@@ -1,8 +1,9 @@
 <template>
   <div class="theater__main">
     <div>
-      <ImageColumn
-        v-if="isDataReady"
+      <TheaterAvatar
+        v-if="isDataReady && details"
+        :first-episode-id="getFirstEpisodeIdOrDefault(details?.Episodes, null)"
         :image-link="details.Image"
         :user-info="details.UserInfo"
       />
@@ -20,24 +21,25 @@ import {useRoute} from 'vue-router'
 import TheaterDetails from "@/components/Theater/TheaterDetails.vue";
 import {inject, onMounted, ref} from "vue";
 import TheaterVideos from "@/components/Theater/TheaterVideos.vue";
-import ImageColumn from "@/components/Theater/TheaterAvatar.vue";
-import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
+import TheaterAvatar from "@/components/Theater/TheaterAvatar.vue";
+import {V1GetFullContentEpisode, V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
 import {ContentService} from "@/api/ContentService";
 
 const route = useRoute();
 const id = ref(+route.params.id);
 const contentService: ContentService = inject("content-service");
 
-let isDataReady = ref(false);
-
-let details = ref<V1GetFullContentResponse>(null);
+const isDataReady = ref(false);
+const details = ref<V1GetFullContentResponse>(null);
 onMounted(async() => {
   details.value = await contentService.V1GetFullContentAsync(id.value, 1);
 
   isDataReady.value = true;
 })
 
-
+function getFirstEpisodeIdOrDefault(episodes: V1GetFullContentEpisode[], defaultValue: null) {
+  return !episodes || episodes.length <= 0 ? defaultValue : episodes[0].Id;
+}
 </script>
 
 <style scoped lang="scss">

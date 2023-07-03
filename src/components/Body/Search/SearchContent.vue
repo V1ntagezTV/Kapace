@@ -1,8 +1,6 @@
 <template>
   <div class="search-content__container">
-    <div 
-      class="search-content__items-column"
-    >
+    <div class="search-content__items-column">
       <SearchItem
         v-for="item in firstColumnContent()"
         :key="item"

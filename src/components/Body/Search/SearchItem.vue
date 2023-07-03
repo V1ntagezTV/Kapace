@@ -45,10 +45,10 @@
         <div v-if="viewModel.SeriesCounter" class="search-item__min-age-container">
           <span class="search-item__min-age">{{ viewModel.SeriesCounter }}</span>
         </div>
-        <button class="search-item__icon-button">
+        <button v-if="OptionsApi.HIDE_USER_ACTIVITIES" class="search-item__icon-button">
           <FavoriteIcon class="search-item__icon" />
         </button>
-        <button class="search-item__icon-button">
+        <button v-if="OptionsApi.HIDE_USER_ACTIVITIES" class="search-item__icon-button">
           <DetailsIcon class="search-item__icon" />
         </button>
       </div>
@@ -63,11 +63,9 @@ import BaseBackground from "@/components/Base/BaseBackground.vue";
 import DetailsIcon from "@/components/Icons/DetailsIcon.vue";
 import {V1GetByQueryResponseContent} from "@/api/Requests/V1GetByQueryResponse";
 import moment from "moment/moment";
-import {V1GetByEpisodeTranslation} from "@/api/Responses/V1GetByEpisodeResponse";
-import {types} from "sass";
-import List = types.List;
 import {Country} from "@/api/Enums/Country";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
+import {OptionsApi} from "@/options/OptionsApi";
 
 const props = defineProps({
   item: {type: Object as PropType<V1GetByQueryResponseContent>, required: true}
@@ -298,7 +296,7 @@ function getItemViewModel(item: V1GetByQueryResponseContent): ItemViewModel {
   &__buttons {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: center;
     gap: 10px;
 

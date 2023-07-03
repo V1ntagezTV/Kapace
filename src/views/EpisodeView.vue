@@ -3,7 +3,7 @@
     <BaseBackground v-if="dataIsReady" class="episode__main">
       <div class="episode__title-main">
         <div class="episode__title-primary">
-          <router-link :to="{ name: 'theater', params: { id: details.ContentId }}">
+          <router-link v-if="details" :to="{ name: 'theater', params: { id: details.ContentId }}">
             <h1 class="episode__title">
               {{ title }}
             </h1>
@@ -118,7 +118,11 @@ const title = computed(() => {
 		: details.value.Title + ": " + selectedEpisode.value.Title;
 });
 
-watch(() => route.params, async () => {
+watch(() => route.params.episode, async () => {
+  if (!route.params.episode) {
+    return;
+  }
+
   await SetContents();
 })
 

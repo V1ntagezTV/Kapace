@@ -1,8 +1,12 @@
 <template>
-  <div class="drop-menu__main">
-    <slot name="header" :onClick="onClick" />
+  <div class="drop-menu__box">
+    <slot
+      name="header"
+      :onClick="onClick"
+    />
     <slot
       v-if="isActive"
+      class="drop-menu__menu"
       name="menu"
       :onClick="onDragLeave"
     />
@@ -25,9 +29,15 @@ function onDragLeave() {
 
 <style lang="scss" scoped>
 .drop-menu {
-  &__main {
+  &__box {
     height: 100%;
     position: relative;
+  }
+
+  &__menu {
+    position: absolute;
+    left: 0;
+    top: 0;
   }
 
   &__button {
