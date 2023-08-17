@@ -15,11 +15,10 @@ import {TranslationService} from './api/TranslationService';
 import PrimaryHeader from './components/Headers/PrimaryHeader.vue';
 import SecondaryHeader from './components/Headers/SecondaryHeader.vue';
 import {ContentService} from "@/api/ContentService";
-
 import {provide} from "vue";
+
 provide('content-service', new ContentService());
 provide('translation-service', new TranslationService());
-
 </script>
 
 <style lang="scss">
