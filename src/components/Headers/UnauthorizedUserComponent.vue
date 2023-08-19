@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!loggedIn" class="user-main__header">
+  <div v-if="!store.$state.loggedIn" class="user-main__header">
     <router-link class="user-main__header-button" to="/login">
       Войти
     </router-link>
@@ -34,7 +34,7 @@
           <router-link
             to="/"
             class="user-main__menu-item user-main__menu-item-exit"
-            @click="LogOut"
+            @click="store.LogOut"
           >
             <LogOutIcon />
             Выйти
@@ -45,29 +45,16 @@
   </div>
 </template>
 
-<script>
-import { mapState, mapMutations } from 'vuex'
+<script setup lang="ts">
 import BaseDropMenu from "@/components/Base/BaseDropMenu.vue";
 import UserIcon from "@/components/Icons/UserIcon.vue";
 import LogOutIcon from "@/components/Icons/LogOutIcon.vue";
 import DropArrow from "@/components/Icons/DropArrow.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
+import {userStore} from "@/store/UserStore";
 
-export default {
-  name: 'App',
-  components: {BaseBackground, BaseButton, DropArrow, LogOutIcon, UserIcon, BaseDropMenu},
-  computed: {
-    ...mapState({
-        loggedIn: state => state.loggedIn,
-    })
-  },
-  methods: {
-    ...mapMutations([
-        'LogOut'
-    ]),
-  }
-}
+const store = userStore();
 </script>
 
 <style lang="scss" scoped>

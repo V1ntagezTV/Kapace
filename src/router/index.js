@@ -7,7 +7,7 @@ import RegistrationView from "@/views/RegistrationView.vue";
 import TheaterView from "@/views/TheaterView.vue";
 import RestorePasswordView from "@/views/RestorePasswordView.vue";
 import EpisodeView from "@/views/EpisodeView.vue";
-import UpsertContentView from "@/views/UpsertContentView.vue";
+import EditsView from "@/views/EditsView.vue";
 import UpsertSeriesView from "@/views/UpsertSeriesView.vue";
 
 const routes = [
@@ -53,13 +53,8 @@ const routes = [
   },
   {
     name: "edit",
-    path: "/edit/content",
-    component: UpsertContentView,
-  },
-  {
-    name: "edit-series",
-    path: "/edit/series",
-    component: UpsertSeriesView,
+    path: "/edits",
+    component: EditsView,
   }
 ]
 

@@ -28,9 +28,9 @@
 
       <div class="login-view__line-breaker" />
 
-      <BaseButton :button-type="2" @click="LogIn">
+      <BaseButton :button-type="2" @click="store.LogIn">
         <router-link class="login-view__login-button" to="/">
-          Войти
+          Войти + {{ store.$state.loggedIn }}
         </router-link>
       </BaseButton>
 
@@ -46,34 +46,19 @@
   </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
-import {defineComponent} from "vue";
-import {mapMutations, mapState} from 'vuex'
+import {ref} from "vue";
+import {userStore} from "@/store/UserStore"
 
-export default defineComponent({
-  components: {
-    BaseBackground,
-    BaseButton
-  },
-  data() {
-    return {
-      isRememberMe: false
-    }
-  },
-  computed: {
-    ...mapState({loggedIn: (state: any) => state.loggedIn})
-  },
-  methods: {
-    ...mapMutations([
-      'LogIn',
-    ]),
-    RememberMeClickHandler() {
-      this.isRememberMe = !this.isRememberMe;
-    }
-  }
-})
+const store = userStore();
+
+const isRememberMe = ref(false)
+
+function RememberMeClickHandler() {
+  isRememberMe.value = !isRememberMe.value;
+}
 </script>
 
 <style lang="scss" scoped>

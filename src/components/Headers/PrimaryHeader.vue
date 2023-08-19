@@ -4,7 +4,7 @@
       <img class="primary-header__logo" src="@/assets/images/Logo.svg" />
     </router-link>
 
-    <router-link to="/edit/content">
+    <router-link to="/edits">
       <button class="primary-header__button">
         BECOME AN EDITOR
       </button>
