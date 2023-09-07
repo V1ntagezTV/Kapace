@@ -1,5 +1,5 @@
-import {ContentType} from "./Enums/ContentType"
-import {Country} from "./Enums/Country"
+import {ContentType} from "../Enums/ContentType"
+import {Country} from "../Enums/Country"
 
 export type V1CreateContentRequest = {
     readonly ContentId: number,

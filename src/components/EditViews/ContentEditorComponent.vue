@@ -176,7 +176,7 @@ import {ImageService} from "@/api/ImageService";
 import {ChangesHistoryService} from "@/api/ChangesHistoryService";
 import {Linter} from "eslint";
 import FlatConfigFileSpec = Linter.FlatConfigFileSpec;
-import {V1ChangeableFields} from "@/api/V1CreateContentRequest";
+import {V1ChangeableFields} from "@/api/Requests/V1CreateContentRequest";
 import moment from "moment/moment";
 
 let showEngTitleInputField = ref(true);
