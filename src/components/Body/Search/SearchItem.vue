@@ -1,10 +1,18 @@
 <template>
-  <BaseBackground :type="3" class="search-item__container">
+  <BaseBackground
+    :type="3"
+    class="search-item__container"
+  >
     <router-link
       :to="{ name: 'theater', params: { id: item.Id}}"
       class="search-item__image-wrapper"
     >
-      <img class="search-item__image" :src="viewModel.Image">
+      <img
+        class="search-item__image"
+        :src="image"
+        :alt="viewModel.Title"
+        @error="() => { image = require('@/assets/images/DefaultImage.png') }"
+      >
     </router-link>
 
     <div class="search-item__details-container">
@@ -57,7 +65,7 @@
 </template>
 
 <script lang="ts" setup>
-import {defineProps, PropType} from "vue";
+import {defineProps, inject, PropType, ref} from "vue";
 import FavoriteIcon from "@/components/Icons/FavoriteIcon.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import DetailsIcon from "@/components/Icons/DetailsIcon.vue";
@@ -66,24 +74,19 @@ import moment from "moment/moment";
 import {Country} from "@/api/Enums/Country";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import {OptionsApi} from "@/options/OptionsApi";
+import {ImageService} from "@/api/ImageService";
+import {SearchItemViewModel} from "@/components/Body/Search/ViewModels/SearchItemViewModel";
+
+const imageService: ImageService = inject<ImageService>("image-service");
 
 const props = defineProps({
   item: {type: Object as PropType<V1GetByQueryResponseContent>, required: true}
-})
+});
 
-const viewModel = getItemViewModel(props.item);
+let viewModel: SearchItemViewModel = getItemViewModel(props.item);
+const image = ref(viewModel.Image);
 
-type ItemViewModel = {
-  Image: string
-  Title: string
-  Description: string | null
-  Translates: string[]
-  Genres: string | null
-  MinAge: number | null
-  SeriesCounter: string | null
-}
-
-function getItemViewModel(item: V1GetByQueryResponseContent): ItemViewModel {
+function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewModel {
   const releaseYear = moment(new Date(item.ReleasedAt)).format('YYYY');
 
   let description: string[] = [];
@@ -104,8 +107,10 @@ function getItemViewModel(item: V1GetByQueryResponseContent): ItemViewModel {
     seriesCounter = item.OutSeries + '/' + seriesCounter;
   }
 
+  let image: string = imageService.getImageLink(item.ImageId, item.Id);
+
   return {
-    Image: item.Image,
+    Image: image,
     Title: item.Title,
     Description: description.join(' / '),
     Translates: item.Translations.map(x => x.Language.toString()),

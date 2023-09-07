@@ -17,7 +17,7 @@ export class V1GetByQueryResponseContent {
         public Description: string,
         public Type: typeof ContentType,
         public Status: typeof ContentStatus,
-        public Image: string,
+        public ImageId: number,
         public ImportStars: number,
         public OutSeries: number,
         public PlannedSeries: number,

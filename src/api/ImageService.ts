@@ -22,7 +22,7 @@ export class ImageService extends ApiService {
         );
     }
 
-    public async getImageLink(imageId: bigint, contentId: bigint) : Promise<string> {
+    public getImageLink(imageId: number, contentId: number): string {
         return `http://localhost:5000/image/content/get-avatar?ImageId=${imageId}&ContentId=${contentId}`;
     }
 }
