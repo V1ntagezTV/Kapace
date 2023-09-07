@@ -114,7 +114,7 @@ import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseInput from "@/components/Base/BaseInput.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import BaseTextArea from "@/components/Base/BaseTextArea.vue";
-import YearPicker from "@/components/Base/YearPicker.vue";
+import YearPicker from "@/components/Base/DatePicker.vue";
 import BaseSelector from "@/components/Base/BaseSelector.vue";
 import {Country} from "@/api/Enums/Country";
 import BaseButton from "@/components/Base/BaseButton.vue";

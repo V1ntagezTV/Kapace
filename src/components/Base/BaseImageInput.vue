@@ -24,11 +24,20 @@
 <script setup lang="ts">
 import UploadArrow from "@/components/Icons/UploadArrow.vue";
 import {ref} from "vue";
+import {defineEmits} from "vue/dist/vue";
+
+
+const emits = defineEmits<{
+  (emitName: 'on:update', image: ArrayBufferLike) : void
+}>()
 
 const imageUrl = ref<string | null>(null)
-function onChange(event){
+
+function onChange(event) {
   imageUrl.value = URL.createObjectURL(event.target.files[0]);
+  emits("on:update", event.target.files[0]);
 }
+
 </script>
 
 <style lang="scss">

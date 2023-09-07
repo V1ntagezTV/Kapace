@@ -31,4 +31,19 @@ export class ApiService {
 
         return response;
     }
+
+    protected async CallHandlerByFormDataAsync<TResponse>(
+        handlerPath: string,
+        formData: FormData,
+    ) {
+        const path = this.hostPath + this.servicePath + handlerPath;
+
+        await fetch(path, {
+            method: "POST",
+            body: formData
+        })
+            .then(result => console.log(result))
+            .catch(error => console.log("error", error)
+        );
+    }
 }

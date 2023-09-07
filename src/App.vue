@@ -16,9 +16,13 @@ import PrimaryHeader from './components/Headers/PrimaryHeader.vue';
 import SecondaryHeader from './components/Headers/SecondaryHeader.vue';
 import {ContentService} from "@/api/ContentService";
 import {provide} from "vue";
+import {ImageService} from "@/api/ImageService";
+import {ChangesHistoryService} from "@/api/ChangesHistoryService";
 
 provide('content-service', new ContentService());
 provide('translation-service', new TranslationService());
+provide('image-service', new ImageService());
+provide('changes-history-service', new ChangesHistoryService());
 </script>
 
 <style lang="scss">
@@ -28,6 +32,7 @@ provide('translation-service', new TranslationService());
   --light-primary: #BDD5EA;
   --dark-primary: #495867;
   --secondary: #FF776F;
+  --warning-red: #d20000;
   --white: #F7F7FF;
 
   --font-black: #18191F;

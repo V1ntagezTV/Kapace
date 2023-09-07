@@ -1,15 +1,29 @@
 <template>
   <div class="input__box">
     <label v-if="label" class="input__label">{{ label }}</label>
-    <input type="date" class="input">
+    <input
+      type="date"
+      class="input"
+      @input="onInput($event.target.value)"
+    >
   </div>
 </template>
 
 <script lang="ts" setup>
+import {} from 'vue';
+
+const emits = defineEmits<{(emit: 'update:modelValue', value: Date)}>();
 
 const props = defineProps({
   label: {type: String, required: false, default: null},
-})
+  modelValue: {type: Date, default: null},
+});
+
+function onInput(value: string) {
+  const split = value.split('-'), year = Number(split[0]), month = Number(split[1]), day = Number(split[2]);
+
+  emits('update:modelValue', new Date(year, month, day));
+}
 </script>
 
 <style lang="scss" scoped>

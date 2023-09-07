@@ -1,5 +1,5 @@
 <template>
-  <div class="selector__box">
+  <div :class="{'selector__box': !markAsInvalidInput, 'selector__box selector__invalid-box': markAsInvalidInput }">
     <label v-if="label" class="selector__label">{{ label }}</label>
 
     <button
@@ -38,11 +38,15 @@
 import {PropType, ref} from "vue";
 import DropArrow from "@/components/Icons/DropArrow.vue";
 
+const emits = defineEmits<{(emit: 'update:modelValue', value: string)}>();
+
 const props = defineProps({
   title: {type: String, required: true},
-  selectableValues: {type: Array as PropType<String[]>, required: true},
   label: {type: String, required: false, default: null},
-})
+  selectableValues: {type: Array as PropType<String[]>, required: true},
+  modelValue: {type: String, default: ""},
+  markAsInvalidInput: {type: Boolean, default: false},
+});
 
 const isActive = ref(false);
 const titleRef = ref(props.title);
@@ -57,6 +61,7 @@ function onClickOnMenu() {
 
 function selectValue(value: string) {
   titleRef.value = value;
+  emits('update:modelValue', value);
 }
 
 </script>
@@ -153,8 +158,11 @@ function selectValue(value: string) {
     &:focus-within {
       border: 1px solid var(--primary);
       color: var(--primary);
-
     }
+  }
+
+  &__invalid-box {
+    border: 1px solid var(--warning-red);
   }
 
   &__label {

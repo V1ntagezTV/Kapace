@@ -1,14 +1,28 @@
 <template>
   <div class="textarea__box">
     <label v-if="label" class="textarea__label">{{ label }}</label>
-    <textarea class="textarea__text-area" placeholder="Описание" />
+    <textarea
+      :value="modelValue"
+      class="textarea__text-area"
+      :class="{
+        'textarea__text-area': !markAsInvalidInput,
+        'textarea__text-area textarea__invalid-box': markAsInvalidInput
+      }"
+      placeholder="Описание"
+      @input="$emit('update:modelValue', $event.target.value)"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
+import {defineEmits} from "vue";
+
+defineEmits(['update:modelValue'])
 const props = defineProps({
   label: {type: String, required: false, default: null},
-})
+  modelValue: {type: String, default: ""},
+  markAsInvalidInput: {type: Boolean, default: false},
+});
 </script>
 
 <style lang="scss" scoped>
@@ -44,6 +58,10 @@ const props = defineProps({
     &:focus-within {
       outline: 1px solid var(--primary);
     }
+  }
+
+  &__invalid-box {
+    outline: 1px solid var(--warning-red);
   }
 
   &__label {

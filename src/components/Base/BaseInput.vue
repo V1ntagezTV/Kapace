@@ -1,24 +1,28 @@
 <template>
-  <div class="input__input-box">
+  <div :class="{'input__input-static-box': !markAsInvalidInput, 'input__input-static-box input__input-invalid-box': markAsInvalidInput }">
     <label v-if="label" class="input__label">{{ label }}</label>
     <input
-      v-model="inputValue"
+      :value="modelValue"
       v-bind="$attrs"
       class="input__input"
-      :placeholder="props.placeHolder"
+      :placeholder="placeHolder"
       :type="type"
+      @input="$emit('update:modelValue', $event.target.value)"
     >
   </div>
 </template>
 
 <script lang="ts" setup>
-import {ref} from "vue";
-const inputValue = ref("");
+import {defineEmits} from "vue";
 
-const props = defineProps({
+defineEmits(['update:modelValue'])
+
+defineProps({
   placeHolder: {type: String, required: true, default: 'Введите текст'},
   label: {type: String, required: false, default: undefined},
-  type: {type: String, required: false, default: "text"}
+  type: {type: String, required: false, default: "text"},
+  modelValue: {type:String, default: ""},
+  markAsInvalidInput: {type: Boolean, default: false},
 });
 </script>
 
@@ -64,7 +68,7 @@ const props = defineProps({
     padding-right: 4px;
   }
 
-  &__input-box {
+  &__input-static-box {
     display: flex;
     height: 48px;
     width: 100%;
@@ -86,6 +90,10 @@ const props = defineProps({
       outline: 1px solid var(--primary);
       color: var(--primary);
     }
+  }
+
+  &__input-invalid-box {
+    outline: 1px solid var(--warning-red);
   }
 
   &__input {
