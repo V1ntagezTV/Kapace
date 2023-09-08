@@ -18,18 +18,6 @@
       <p class="new-content-component__details-description">
         {{ currentDescription }}
       </p>
-
-      <div class="new-content-component__scroll-circles-bar">
-        <span
-          v-for="(idx) in images"
-          :key="idx"
-          :class="{
-            'new-content-component__circle': true,
-            'new-content-component__circle--active': idx === currentSlideNumber
-          }"
-          @click="selectSlide(idx)"
-        />
-      </div>
     </div>
 
     <BaseBackground class="new-content-component__left-button" @click="leftSlide">
@@ -143,10 +131,6 @@ export default {
         &:hover {
             cursor: pointer;
         }
-
-        &:hover H2{
-            color: #FF776F;
-        }
     }
 
     &__details {
@@ -175,10 +159,12 @@ export default {
         }
 
         &-description {
-            margin: 0 30px;
-            font-weight: 500;
-            font-size: 14px;
-            line-height: 17px;
+          font-weight: 500;
+          font-size: 14px;
+          line-height: 20px;
+          text-align: justify;
+          letter-spacing: 0.04em;
+          margin: 0 30px;
         }
     }
 

@@ -3,7 +3,7 @@ import {MainPageType} from "@/api/Enums/MainPageType";
 export class V1GetMainPageContent {
     constructor(
         public Id: number,
-        public Image: string,
+        public ImageId: number,
         public Title: string,
         public Views: number,
         public ImportStars: number,

@@ -3,12 +3,12 @@ import {ContentStatus as Status} from "@/api/Enums/ContentStatus";
 
 export class V1GetFullContentResponse {
     constructor(
-        public ContentId: bigint,
+        public ContentId: number,
         public Title: string,
         public Description: string,
         public ContentType: typeof Type,
         public ContentStatus: typeof Status,
-        public Image: string,
+        public ImageId: number,
         public ImportStars: number,
         public OutSeries: number,
         public PlannedSeries: number,

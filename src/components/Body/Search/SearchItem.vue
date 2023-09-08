@@ -87,13 +87,15 @@ let viewModel: SearchItemViewModel = getItemViewModel(props.item);
 const image = ref(viewModel.Image);
 
 function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewModel {
-  const releaseYear = moment(new Date(item.ReleasedAt)).format('YYYY');
-
   let description: string[] = [];
+
+  if (item.ReleasedAt) {
+    description.push(moment(new Date(item.ReleasedAt)).format('YYYY'));
+  }
   if (item.EngTitle) {
     description.push(item.EngTitle);
   }
-  description.push(releaseYear);
+
   if (item.Country && item.Country.toString() != Country.Null.toString()) {
     description.push(item.Country.toString())
   }

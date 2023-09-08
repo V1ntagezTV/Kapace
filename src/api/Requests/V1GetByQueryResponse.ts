@@ -23,7 +23,7 @@ export class V1GetByQueryResponseContent {
         public PlannedSeries: number,
         public Views: number,
         public Country: typeof CountryEnum,
-        public ReleasedAt: number,
+        public ReleasedAt: number | null,
         public CreatedAt: number,
         public LastUpdateAt: number,
         public MinAgeLimit: number,

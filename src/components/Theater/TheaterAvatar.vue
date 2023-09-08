@@ -4,7 +4,8 @@
       <div>
         <img
           class="image-column__image"
-          :src="!StringExtensions.isNullOrEmpty(props.imageLink) ? props.imageLink : require('@/assets/images/DefaultImage.png')"
+          :src="imageService.getImageLink(imageId, contentId)"
+          @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
         />
       </div>
     </BaseBackground>
@@ -56,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import {defineProps, PropType} from 'vue';
+import {defineProps, inject, PropType} from 'vue';
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import {V1GetFullContentUserInfo} from "@/api/Responses/V1GetFullContentResponse";
@@ -64,9 +65,13 @@ import BaseDropMenu from "@/components/Base/BaseDropMenu.vue";
 import DropArrow from "@/components/Icons/DropArrow.vue";
 import {StringExtensions} from "@/helpers/StringExtensions";
 import {OptionsApi} from "@/options/OptionsApi";
+import {ImageService} from "@/api/ImageService";
+
+const imageService: ImageService = inject<ImageService>("image-service");
 
 const props = defineProps({
-  imageLink: {type: String, required: true},
+  imageId: {type: Number, required: true},
+  contentId: {type: Number, required: true},
   firstEpisodeId: {type: Number, default: -1},
   userInfo: {
     type: Object as PropType<V1GetFullContentUserInfo>,

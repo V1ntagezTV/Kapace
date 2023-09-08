@@ -11,15 +11,6 @@
           Поиск
         </BaseTextButton>
       </router-link>
-      <BaseTextButton class="secondary-header__text-button">
-        Популярное
-      </BaseTextButton>
-      <BaseTextButton class="secondary-header__text-button">
-        Категории
-      </BaseTextButton>
-      <BaseTextButton class="secondary-header__text-button">
-        По жанрам
-      </BaseTextButton>
     </nav>
 
     <UnauthorizedUserComponent

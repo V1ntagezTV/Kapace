@@ -21,8 +21,9 @@
         <div class="scroll-content-component__card-content">
           <router-link class="scroll-content-component__image" :to="{ name: 'theater', params: { id: content.Id }}">
             <img
-              :src="!StringExtensions.isNullOrEmpty(content.Image) ? content.Image : require('@/assets/images/DefaultImage.png')"
-              :alt="'изображение'"
+              :src="imageService.getImageLink(content.ImageId, content.Id)"
+              :alt="content.Title"
+              @error="$event.target.src=require('@/assets/images/DefaultImage.png')"
             >
           </router-link>
 
@@ -65,13 +66,15 @@
 </template>
 
 <script lang="ts" setup>
-import {defineProps, PropType} from 'vue';
+import {defineProps, inject, PropType} from 'vue';
 import Calendar from '../../Icons/Calendar.vue';
 import EyeIcon from '../../Icons/EyeIcon.vue';
 import StarIcon from '../../Icons/StarIcon.vue';
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import {V1GetMainPageContent} from "@/api/Responses/V1GetMainPageContentResponse";
-import {StringExtensions} from "@/helpers/StringExtensions";
+import {ImageService} from "@/api/ImageService";
+
+const imageService: ImageService = inject('image-service');
 
 const props = defineProps({
   scrollTitle: {
@@ -83,8 +86,6 @@ const props = defineProps({
     required: true,
   }
 })
-
-
 </script>
 
 <style lang="scss" scoped>

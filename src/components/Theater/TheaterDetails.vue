@@ -23,7 +23,7 @@
           {{ props.details.Genres[0]?.Name ?? "123" }}
         </p>
         <p v-if="props.details.MinAgeLimit > 0">
-          {{ '+' + props.details.MinAgeLimit }}
+          {{ props.details.MinAgeLimit + '+' }}
         </p>
       </div>
     </div>
@@ -200,8 +200,13 @@ function getTagsFromDetails(details: V1GetFullContentResponse) : Map<string, str
   }
 
   &__icon-style {
-    color: var(--primary);
+    height: 24px;
+    width: 24px;
 
+    min-height: 24px;
+    min-width: 24px;
+
+    color: var(--primary);
     &:hover {
       cursor: pointer;
       color: var(--secondary);

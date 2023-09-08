@@ -4,7 +4,8 @@
       <TheaterAvatar
         v-if="isDataReady && details"
         :first-episode-id="getFirstEpisodeIdOrDefault(details?.Episodes, null)"
-        :image-link="details.Image"
+        :image-id="details.ImageId"
+        :content-id="details.ContentId"
         :user-info="details.UserInfo"
       />
     </div>

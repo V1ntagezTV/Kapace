@@ -4,7 +4,7 @@
       :slides="slides"
       @select="onSelect($event)"
     />
-    <template v-if="content != null && content.Contents != undefined">
+    <template v-if="content != null && content.Contents !== undefined">
       <ScrollContentComponent
         v-for="(pageTypeKey, index) in getContentKeys(content)"
         :key="index"
@@ -25,11 +25,8 @@ import {MainPageType} from "@/api/Enums/MainPageType";
 
 const contentService: ContentService = inject('content-service');
 
-const slides = [
-    {image: "/images/film_test.png", title: "1", description: "~"},
-    {image: "/images/162_o.jpg", title: "2", description: "~"},
-    {image: "/images/177_o.jpg", title: "3", description: "~"}
-];
+const slide = {image: "/images/film_test.png", title: "Болтун", description: "Таким образом, повышение уровня гражданского сознания требует от нас анализа экономической целесообразности принимаемых решений. Практический опыт показывает, что реализация намеченного плана развития обеспечивает широкому кругу специалистов участие в формировании соответствующих условий активизации! Задача организации, в особенности..."};
+const slides = [slide, slide, slide];
 
 function getMainPageTypeTitle(pageType: MainPageType) : string {
   switch (pageType) {
