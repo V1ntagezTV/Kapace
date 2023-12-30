@@ -23,20 +23,20 @@ const props = defineProps({
 <style lang="scss">
 .base-background__default {
   background: #FFFFFF;
-  border-radius: 6px;
+  border-radius: 16px;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 16%);
   overflow: hidden;
 }
 
 .base-background__secondary {
   background: #FFFFFF;
-  border-radius: 6px;
+  border-radius: 16px;
   overflow: hidden;
 }
 
 .base-background__bordered {
   background: #FFFFFF;
-  border-radius: 6px;
+  border-radius: 16px;
   border: 1px solid var(--font-gray-v1);
   overflow: hidden;
 }
