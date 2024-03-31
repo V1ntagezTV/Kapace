@@ -8,7 +8,6 @@ import TheaterView from "@/views/TheaterView.vue";
 import RestorePasswordView from "@/views/RestorePasswordView.vue";
 import EpisodeView from "@/views/EpisodeView.vue";
 import EditsView from "@/views/EditsView.vue";
-import UpsertSeriesView from "@/views/UpsertSeriesView.vue";
 
 const routes = [
   {
@@ -48,7 +47,7 @@ const routes = [
   },
   {
     name: "episode",
-    path: '/episode/:episode/:translation(\\d+)*',
+    path: '/episode/:content/:episode/:translation(\\d+)*',
     component: EpisodeView,
   },
   {

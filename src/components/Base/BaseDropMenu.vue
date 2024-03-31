@@ -1,8 +1,14 @@
 <template>
-  <div class="drop-menu__box">
+  <div
+    ref="parent"
+    class="drop-menu__box"
+    :style="{ height: height }"
+  >
     <slot
+      ref="child"
       name="header"
-      :onClick="onClick"
+      class="drop-menu__button"
+      :onClick="onDropClick"
     />
     <slot
       v-if="isActive"
@@ -16,9 +22,13 @@
 <script lang="ts" setup>
 import {ref} from "vue";
 
-let isActive = ref(false);
+const isActive = ref(false);
 
-function onClick() {
+defineProps({
+  height: {type: String, required: true}
+});
+
+function onDropClick() {
   isActive.value = !isActive.value;
 }
 
@@ -30,7 +40,7 @@ function onDragLeave() {
 <style lang="scss" scoped>
 .drop-menu {
   &__box {
-    height: 100%;
+    display: flex;
     position: relative;
   }
 
@@ -38,10 +48,6 @@ function onDragLeave() {
     position: absolute;
     left: 0;
     top: 0;
-  }
-
-  &__button {
-    height: 100%;
   }
 }
 </style>

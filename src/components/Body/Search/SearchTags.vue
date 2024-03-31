@@ -41,33 +41,37 @@ import {defineEmits, PropType, ref, watch} from "vue";
 import FilterUnitModel from "@/components/Search/Models/FilterUnitModel";
 import {FilterTypes} from "@/components/Search/Models/FilterTypes";
 
+const props = defineProps({
+  watchShowFilters: {type: Boolean, required: true},
+  filters: {type: Object as PropType<Array<FilterUnitModel>>, required: true}
+});
+
 const emits = defineEmits<{
 	(emitName: 'delete:filter', filterType: typeof FilterTypes, tag: string) : void,
 }>()
 
 const acceptedFiltersByFilterType = ref<Map<typeof FilterTypes, string[]>>(new Map<typeof FilterTypes, string[]>());
 
-watch(() => props.watchShowFilters, () => {
-	acceptedFiltersByFilterType.value = new Map<typeof FilterTypes, string[]>();
-	for (const filter of props.filters) {
-		filter.selectableValues.forEach((value: boolean, key: string) => {
-			if (value) {
-				const byFilter = acceptedFiltersByFilterType.value.get(filter.type);
+if (props.watchShowFilters) {
+  watch(() => props.watchShowFilters, () => {
+    acceptedFiltersByFilterType.value = new Map<typeof FilterTypes, string[]>();
 
-				if (byFilter) {
-					byFilter.push(key);
-				} else {
-					acceptedFiltersByFilterType.value.set(filter.type, [key]);
-				}
-			}
-		})
-	}
-})
+    for (const filter of props.filters) {
+      filter.selectableValues.forEach((value: boolean, key: string) => {
+        if (value) {
+          const byFilter = acceptedFiltersByFilterType.value.get(filter.type);
 
-const props = defineProps({
-	watchShowFilters: {type: Boolean, required: true},
-	filters: {type: Object as PropType<Array<FilterUnitModel>>, required: true}
-});
+          if (byFilter) {
+            byFilter.push(key);
+          } else {
+            acceptedFiltersByFilterType.value.set(filter.type, [key]);
+          }
+        }
+      })
+    }
+  })
+}
+
 
 function onClickTag(filterType: typeof FilterTypes, tag: string) {
 	emits('delete:filter', filterType, tag);

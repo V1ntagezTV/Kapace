@@ -1,6 +1,9 @@
 export class V1GetByEpisodeRequest {
     constructor(
-        public EpisodeId: number
+        public ContentId: number,
+        public EpisodeId: number | null = null,
+        public TranslatorId: number | null = null,
     ) {
     }
+
 }

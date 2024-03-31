@@ -13,7 +13,7 @@
     <BaseButton v-if="firstEpisodeId > 0" :button-type="2">
       <router-link
         class="theater-videos__video-name"
-        :to="{ name: 'episode', params: { episode: firstEpisodeId }}"
+        :to="{ name: 'episode', params: { content: contentId, episode: firstEpisodeId }}"
       >
         Начать просмотр
       </router-link>
@@ -112,6 +112,10 @@ const props = defineProps({
         background: #F4F5F7;
       }
     }
+  }
+
+  &__start-watching {
+    color: white;
   }
 }
 </style>

@@ -25,19 +25,28 @@ const props = defineProps({
   background: #FFFFFF;
   border-radius: 16px;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 16%);
-  overflow: hidden;
 }
 
 .base-background__secondary {
   background: #FFFFFF;
   border-radius: 16px;
-  overflow: hidden;
 }
 
 .base-background__bordered {
   background: #FFFFFF;
   border-radius: 16px;
   border: 1px solid var(--font-gray-v1);
-  overflow: hidden;
+}
+
+.box {
+  &__inline {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: min-content;
+    grid-auto-flow: column;
+
+    width: fit-content;
+    height: fit-content;
+  }
 }
 </style>

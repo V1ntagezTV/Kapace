@@ -59,12 +59,15 @@ const props = defineProps({
   &__dark {
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 16%);
     background: #576999;
-    color: white;
     transition: background-color 0.25s, color 0.25s;
 
     &:hover {
       cursor: pointer;
       background: #6686B3;
+    }
+
+    * {
+      color: white;
     }
   }
 

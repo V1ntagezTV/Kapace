@@ -69,7 +69,7 @@
 import {defineProps, inject, PropType} from 'vue';
 import Calendar from '../../Icons/Calendar.vue';
 import EyeIcon from '../../Icons/EyeIcon.vue';
-import StarIcon from '../../Icons/StarIcon.vue';
+import StarIcon from '../../Icons/StarsTagIcon.vue';
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import {V1GetMainPageContent} from "@/api/Responses/V1GetMainPageContentResponse";
 import {ImageService} from "@/api/ImageService";

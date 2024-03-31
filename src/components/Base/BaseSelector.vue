@@ -36,7 +36,7 @@
 
 <script lang="ts" setup>
 import {PropType, ref} from "vue";
-import DropArrow from "@/components/Icons/DropArrow.vue";
+import DropArrow from "@/components/Icons/DropArrow.vue"; 
 
 const emits = defineEmits<{(emit: 'update:modelValue', value: string)}>();
 

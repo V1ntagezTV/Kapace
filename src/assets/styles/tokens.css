@@ -102,6 +102,12 @@
   --md-ref-palette-error98: #fff8f7;
   --md-ref-palette-error99: #fffbff;
   --md-ref-palette-error100: #ffffff;
+  /* containers */
+  --surface-container-lowest100: #FFFFFF;
+  --surface-container-low96: #F5F2FA;
+  --surface-container-default94: #EFEDF4;
+  --surface-container-high92: #E9E7EF;
+  --surface-container-highest90: #E4E1E9;
   /* light */
   --md-sys-color-primary-light: #4b57a9;
   --md-sys-color-on-primary-light: #ffffff;

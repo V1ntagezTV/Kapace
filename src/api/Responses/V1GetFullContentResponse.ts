@@ -37,7 +37,7 @@ export class V1GetFullContentEpisode {
         public Id: number,
         public Title: string,
         public Image: string,
-        public Number: number
+        public Number: number,
     ) { }
 }
 

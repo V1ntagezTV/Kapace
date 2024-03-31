@@ -26,8 +26,16 @@ provide('changes-history-service', new ChangesHistoryService());
 </script>
 
 <style lang="scss">
+@import url(@/assets/styles/tokens.css);
+@import url(@/assets/styles/colors.module.css);
+@import url(@/assets/styles/typography.module.css);
+@import url(@/assets/styles/theme.light.css) (prefers-color-scheme: light);
+@import url(@/assets/styles/theme.dark.css) (prefers-color-scheme: dark);
+@import url(@/assets/styles/layers.css);
+@import url(@/assets/styles/elevation.css);
+
 :root {
-  background: #EDEDED;
+  background: #FBF8FF;
   --primary: #577399;
   --light-primary: #BDD5EA;
   --dark-primary: #495867;
@@ -56,6 +64,17 @@ provide('changes-history-service', new ChangesHistoryService());
     color: var(--dark-primary);
     text-decoration: none;
   }
+  
+  p {
+    padding: 0;
+    margin: 0;
+  }
+
+  button {
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
 }
 
 #app {
@@ -67,6 +86,16 @@ provide('changes-history-service', new ChangesHistoryService());
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+
+.material {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 150%;
+  letter-spacing: 0.01em;
+  text-align: justify;
+  color: #474a57;
 }
 
 .wrapper {

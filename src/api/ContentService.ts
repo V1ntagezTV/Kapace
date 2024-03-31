@@ -25,7 +25,7 @@ export class ContentService extends ApiService {
         );
     }
 
-    async V1GetFullContentAsync(contentId: number, userId: number): Promise<V1GetFullContentResponse> {
+    async V1GetById(contentId: number, userId: number): Promise<V1GetFullContentResponse> {
         const request = new V1GetFullContentRequest(
             contentId,
             ContentSelectedInfo.ContentGenres | ContentSelectedInfo.UserInfo | ContentSelectedInfo.Episodes,

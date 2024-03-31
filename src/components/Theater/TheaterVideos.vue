@@ -15,7 +15,7 @@
         class="theater-videos__videos-item"
       >
         <router-link
-          :to="{ name: 'episode', params: { episode: video.Id }}"
+          :to="{ name: 'episode', params: { content: contentId, episode: video.Id }}"
           class="theater-videos__video-image"
         >
           <img :src="!StringExtensions.isNullOrEmpty(video.Image) ? video.Image : require('@/assets/images/DefaultImage.png')" />
@@ -24,7 +24,7 @@
         <BaseTextButton>
           <router-link
             class="theater-videos__video-name"
-            :to="{ name: 'episode', params: { episode: video.Id }}"
+            :to="{ name: 'episode', params: { content: contentId, episode: video.Id }}"
           >
             Серия {{ video.Number + ": " + video.Title }}
           </router-link>
@@ -42,6 +42,7 @@ import {V1GetFullContentEpisode} from "@/api/Responses/V1GetFullContentResponse"
 import {StringExtensions} from "@/helpers/StringExtensions";
 
 const props = defineProps({
+  contentId: {type: Number, required: true},
   videos: {type: Array as PropType<Array<V1GetFullContentEpisode>>, required: true}
 })
 </script>
