@@ -3,11 +3,11 @@
 .m3-radius-2 { border-radius: 16px; }
 .m3-radius {border-radius: 100px;}
 /* containers */
-.bg-1 { background: var(--surface-container-lowest100); }
-.bg-2 { background: var(--surface-container-low96); }
-.bg-3 { background: var(--surface-container-default94); }
-.bg-4 { background: var(--surface-container-highest90); }
-.bg-5 { background: var(--surface-container-high92); }
+.m3-bg-1 { background: var(--surface-container-lowest100); }
+.m3-bg-2 { background: var(--surface-container-low96); }
+.m3-bg-3 { background: var(--surface-container-default94); }
+.m3-bg-4 { background: var(--surface-container-highest90); }
+.m3-bg-5 { background: var(--surface-container-high92); }
 /* elevations */
 .level-1 {
     box-shadow: 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
