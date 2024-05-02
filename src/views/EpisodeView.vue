@@ -101,6 +101,9 @@ import TranslationsListComponent from "@/components/UseReadyComponents/Translati
 const route = useRoute();
 let episodeId = route.params.episode as number;
 let contentId = route.params.content as number;
+
+console.log("EPISODE: " + episodeId + "\nCONTENT: " + contentId);
+
 let translationId = +route.params.translation > 0 ? (+route.params.translation) : 1;
 
 const contentService: ContentService = inject('content-service');
@@ -135,7 +138,7 @@ async function SetContents() {
   }
 
   details.value = contentsResponse.Content.find(x => x.Id == contentId);
-  translations.value = await translationService.V1GetByEpisodeAsync(new V1GetByEpisodeRequest(episodeId));
+  translations.value = await translationService.V1GetByEpisodeAsync(new V1GetByEpisodeRequest(contentId, episodeId));
   selectedEpisode.value = details.value.Episodes.find(x => x.Id == episodeId);
 
   console.log(translations.value);
@@ -153,10 +156,9 @@ function getCurrentEpisodeTranslation(
     throw new Error("Translations not found!")
   }
 
-  const episode = episodesWithTranslations.find(episode => episode.Id === episodeId);
-  if (pathTranslationId === 0) {
-    console.log(episodesWithTranslations)
+  const episode = episodesWithTranslations.find(episode => episode.Id == episodeId);
 
+  if (pathTranslationId > 0) {
     const selectedTranslator = episode.Translations.find(translation => translation.Id === pathTranslationId);
     if (selectedTranslator != undefined) {
       return selectedTranslator;
@@ -173,6 +175,7 @@ function mapToEpisodeListViewModel(
   translators: V1GetByEpisodeResponseTranslator[])
   : EpisodeListViewModel {
   console.log(selectedTranslator)
+
   return <EpisodeListViewModel>({
     contentId: contentId,
     currentTranslatorId: selectedTranslator.Id,
