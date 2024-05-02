@@ -1,10 +1,10 @@
 <template>
   <div class="select-menu__box">
     <filter-chips
+      class="m3-bg-5"
       ref="filterChips"
       :text="text"
       :enable-menu-icon="true"
-      class="bg-2"
       @click="OnClickCloseMenu"
     >
       <template #menu-icon>
@@ -15,7 +15,7 @@
     <template v-if="isMenuShowed">
       <div
         class="select-menu__menu"
-        :class="{'select-menu__menu select-menu__menu': isUnitSelected, }"
+        :class="{'select-menu__menu select-menu__menu': isUnitSelected }"
         @click="onClickSelect"
       >
         <template v-for="unit in props.list" :key="unit">

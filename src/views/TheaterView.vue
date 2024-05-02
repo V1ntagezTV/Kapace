@@ -12,11 +12,6 @@
 
     <div class="theater__body">
       <TheaterDetails v-if="isDataReady" :details="details" />
-      <TheaterVideos
-        v-if="isDataReady" :videos="details.Episodes"
-        :content-id="details.ContentId"
-      />
-
       <translations-list-component
         v-if="isDataReady"
         :content-id="id"

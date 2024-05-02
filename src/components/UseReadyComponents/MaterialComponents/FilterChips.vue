@@ -1,6 +1,6 @@
 <template>
   <button class="filter-chips__box">
-    <div v-if="enableTextIcon" :class="{'filter-chips__icon': enableTextIcon}">
+    <div v-if="enableTextIcon" class="filter-chips__icon">
       <slot name="text-icon" />
     </div>
 
@@ -27,13 +27,14 @@ const props = defineProps({
     grid-template-columns: repeat(3, auto);
     grid-template-rows: 32px;
     height: 32px;
-    width: fit-content;
+    width: min-content;
     justify-content: center;
     align-items: center;
 
     margin: 0;
     padding: 0 8px;
 
+    background: none;
     border-radius: 8px;
     color: #38383C;
     cursor: pointer;

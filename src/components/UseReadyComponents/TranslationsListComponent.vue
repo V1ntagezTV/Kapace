@@ -1,8 +1,8 @@
 <template>
   <div
-    class="material bg-1 main__box"
+    class="material m3-radius-2 m3-bg-1 main__box"
     :class="{
-      'material bg-1 main__box-with-paging': episodeTranslations.length > currentOffset
+      'material m3-bg-1 main__box-with-paging': episodeTranslations.length < currentOffset
     }"
   >
     <div class="main__header-box main__margins">
@@ -15,8 +15,16 @@
         </h4>
       </div>
       <div class="main__filters">
-        <select-menu :text="'Переводчик'" :list="translators.map(x => x.Name)" />
-        <select-menu :text="'Сортировка'" :list="['Привет', 'Здравсвуйте', '5 Элемент']" />
+        <select-menu
+          class="main__filter-button m3-radius-1 m3-bg-2"
+          :text="'Переводчик'"
+          :list="translators.map(x => x.Name)"
+        />
+        <select-menu
+          class="m3-radius-1 m3-bg-3"
+          :text="'Сортировка'"
+          :list="['По возрастанию', 'По убыванию', 'По просмотрам', 'По оценке']"
+        />
       </div>
     </div>
     <div>
@@ -136,20 +144,24 @@ onMounted(async () => {
 
     border-radius: 100px;
     padding: 6px 12px;
-    height: 32px;
   }
 
   &__box {
     display: grid;
     grid-template-rows: 64px 1fr;
     align-items: center;
+    overflow: hidden;
+    padding: 0 0 16px 0;
 
     &-with-paging {
       grid-template-rows: 64px 1fr 64px;
     }
   }
 
-
+  &__filter-button {
+    height: fit-content;
+    width: fit-content;
+  }
 
   &__episode-box {
     display: grid;

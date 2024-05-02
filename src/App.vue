@@ -35,7 +35,7 @@ provide('changes-history-service', new ChangesHistoryService());
 @import url(@/assets/styles/elevation.css);
 
 :root {
-  background: #FBF8FF;
+  background: #F2EFF7;
   --primary: #577399;
   --light-primary: #BDD5EA;
   --dark-primary: #495867;
