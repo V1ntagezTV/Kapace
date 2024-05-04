@@ -27,12 +27,9 @@
         />
       </div>
     </div>
-    <div>
+    <div class="main__episodes-box">
       <template v-for="episodeTranslation in episodeTranslations" :key="episodeTranslation">
-        <router-link
-          :to="{ name: 'episode', params: { content: contentId, episode: episodeTranslation.EpisodeId }}"
-          class="theater-videos__video-image"
-        >
+        <router-link :to="{ name: 'episode', params: { content: contentId, episode: episodeTranslation.EpisodeId }}">
           <div class="box__inline main__episode-box">
             <div class="box__inline main__episode-attribute">
               {{ episodeTranslation.Number }} cерия: {{ episodeTranslation.Title }}
@@ -116,6 +113,11 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .main {
+  &__episodes-box {
+    border-top: 1px solid #EEEFF4;
+    padding: 16px 0;
+  }
+
   &__episode-attribute {
     display: grid;
     width: 100%;
@@ -151,7 +153,6 @@ onMounted(async () => {
     grid-template-rows: 64px 1fr;
     align-items: center;
     overflow: hidden;
-    padding: 0 0 16px 0;
 
     &-with-paging {
       grid-template-rows: 64px 1fr 64px;
@@ -182,8 +183,9 @@ onMounted(async () => {
 
   &__header-box {
     display: grid;
-    justify-content: space-between;
     grid-template-columns: auto auto;
+    justify-content: space-between;
+    align-items: center;
   }
 
   &__title-box {

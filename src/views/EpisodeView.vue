@@ -58,14 +58,6 @@
       </div>
     </BaseBackground>
 
-    <EpisodeListComponent v-if="dataIsReady" :view-model="episodeListViewModel" />
-
-    <TheaterVideos
-      v-if="dataIsReady"
-      :content-id="contentId"
-      :videos="details.Episodes"
-    />
-
     <TranslationsListComponent
       v-if="dataIsReady"
       :content-id="contentId"
@@ -232,6 +224,7 @@ watch(() => route.params.episode, async () => {
     flex-direction: column;
     width: 100%;
     height: fit-content;
+    overflow: hidden;
   }
 
   &__title-main {
