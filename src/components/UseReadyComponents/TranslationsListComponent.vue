@@ -190,6 +190,8 @@ onMounted(async () => {
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: max-content;
+    justify-content: center;
+    align-items: center;
     gap: 24px;
   }
 
