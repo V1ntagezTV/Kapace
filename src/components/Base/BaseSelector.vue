@@ -3,16 +3,10 @@
     <label v-if="label" class="selector__label">{{ label }}</label>
 
     <button
-      v-if="titleRef === title"
-      class="selector__title"
-      @click="onClickOnHeader"
-    >
-      {{ titleRef }}
-      <drop-arrow />
-    </button>
-    <button
-      v-else
-      class="selector__title selector__title-selected"
+      :class="{
+        'selector__title': titleRef === title,
+        'selector__title selector__title-selected': titleRef !== title
+      }"
       @click="onClickOnHeader"
     >
       {{ titleRef }}
@@ -77,12 +71,6 @@ function selectValue(value: string) {
 
     padding: 6px 10px 6px 10px;
     align-items: center;
-
-    font-style: normal;
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 24px;
-    color: #777777;
 
     text-decoration: none;
     border: none;
