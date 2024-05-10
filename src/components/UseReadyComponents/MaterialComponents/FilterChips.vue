@@ -46,7 +46,7 @@ const props = defineProps({
     line-height: 143%;
     letter-spacing: 0.04em;
     text-align: center;
-
+    white-space: nowrap;
     color: #001d32;
 
     padding: 0 8px 0 8px;
