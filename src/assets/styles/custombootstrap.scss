@@ -1,0 +1,37 @@
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.space-between {
+  justify-content: space-between;
+}
+
+.left-center {
+  justify-content: start;
+  align-items: center;
+}
+
+// Горизонтальные стили
+.h {
+  &__space-between {
+    justify-content: space-between;
+  }
+}
+
+// Вертикальные стили
+.v {
+  &__center {
+    align-items: center;
+  }
+
+  &__bottom {
+    align-items: end;
+  }
+}
+
+.gap {
+ &-26 {
+   gap: 26px;
+ }
+}

@@ -1,109 +1,111 @@
 <template>
-  <div class="edit__right-box">
-    <h3 class="edit__page-header">
+  <div class="edit-episode__right-box">
+    <h3 class="edit-episode__page-header">
       Основная информация
     </h3>
 
-    <template v-if="isCreateNewEpisode === null">
-      <div class="edit__unit-box">
-        <div class="edit__details">
-          <h4>Изображение</h4>
-          <label>Выберите изображение для профиля содержимого</label>
-        </div>
-        <div class="edit__box-activities-column">
-          <BaseButton :button-type="2" @click="clickToChooseEpisode">
-            Выбрать эпизод
-          </BaseButton>
-          <BaseButton style="height: min-content;" :button-type="3" @click="clickToChooseCreateEpisode">
-            Создать эпизод
-          </BaseButton>
-        </div>
+    <div class="edit-episode__unit-box">
+      <div class="edit-episode__box-activities">
+        <p class="body-large">
+          Дорама*
+        </p>
+        <p class="body-large">
+          Серия*
+        </p>
+        <async-search-selector
+          class="edit-episode__bg m-radius-1"
+          :placeholder="'Выберите дораму'"
+          :values="contentSelectableValues"
+          :is-invalid="contentIsInvalid"
+          @change:input="onChangeContentInput"
+        />
+        <BaseInput
+          v-model="episodeSelectedTitle"
+          class="edit-episode__bg m3-bg-1 m-radius-1"
+          :mark-as-invalid-input="episodeIsInvalid"
+          :place-holder="'Выберите серию'"
+          type="number"
+        />
       </div>
-    </template>
+    </div>
 
-    <!-- Выбор эпизода -->
-    <template v-if="isCreateNewEpisode === false">
-      <div class="edit__unit-box">
-        <div class="edit__details">
-          <h4>Изображение</h4>
-          <label>Выберите изображение для профиля содержимого</label>
-        </div>
-        <div class="edit__box-activities">
-          <BaseInput :place-holder="'Выберите дораму'" />
-          <BaseInput place-holder="Серия" type="number" />
-        </div>
-      </div>
-    </template>
-
-    <!-- Создание эпизода -->
-    <template v-if="isCreateNewEpisode === true">
-      <div class="edit__unit-box">
-        <div class="edit__details">
-          <h4>Изображение</h4>
-          <label>Выберите изображение для профиля содержимого</label>
-        </div>
-        <div class="edit__box-activities-column">
-          <BaseInput :place-holder="'Выберите дораму'" />
-          <BaseImageInput />
-          <BaseInput place-holder="Выберите эпизод" type="number" />
-        </div>
-      </div>
-    </template>
-
-    <div class="edit__unit-box">
-      <div class="edit__details">
-        <h4>Номер серии / Язык перевода</h4>
-        <label>???</label>
-      </div>
-      <div class="edit__box-activities">
-        <BaseSelector
-          class="edit__selector"
-          :title="'Тип перевода'"
-          :selectable-values="['Озвучка', 'Субтитры', 'Auto-сабы']"
-          :label="'Тип перевода'"
+    <div class="edit-episode__unit-box">
+      <div class="edit-episode__box-activities">
+        <p class="body-large">
+          Переводчик*
+        </p>
+        <p class="body-large">
+          Тип перевода*
+        </p>
+        <async-search-selector
+          v-model="translatorSelectedTitle"
+          class="edit-episode__bg m-radius-1"
+          :placeholder="'Выберите переводчика'"
+          :values="translatorSelectableValues"
+          :is-invalid="translatorIsInvalid"
+          @change:input="onChangeTranslatorInput"
         />
         <BaseSelector
-          class="edit__selector"
+          v-model="translationType"
+          class="edit-episode__bg m-radius-1"
+          :title="'Выберите тип перевода'"
+          :is-disabled="translatorSelectableValues === undefined"
+          :mark-as-invalid-input="translationTypeIsInvalid"
+          :selectable-values="translationTypeSelectableValues"
+        />
+      </div>
+    </div>
+
+    <div class="edit-episode__unit-box">
+      <div class="edit-episode__box-activities">
+        <p class="body-large">
+          Язык перевода
+        </p>
+        <p class="body-large">
+          Качество видео
+        </p>
+        <BaseSelector
+          v-model="language"
+          class="edit-episode__bg m-radius-1"
           :title="'Выберите язык'"
-          :selectable-values="[Country.Japan, Country.China, Country.Korea]"
-          :label="'Язык'"
+          :mark-as-invalid-input="languageIsInvalid"
+          :selectable-values="languageSelectableValues"
+        />
+        <BaseSelector
+          v-model="quality"
+          class="edit-episode__bg m3-bg-1 m-radius-1"
+          :title="'Выберите качество'"
+          :selectable-values="[VideoQuality['720p'], VideoQuality['1080p'], VideoQuality['1440p'], VideoQuality['2160p']]"
         />
       </div>
     </div>
 
-    <div class="edit__unit-box">
-      <div class="edit__details">
-        <h4>Ссылка/Скрипт видео</h4>
-        <label>???</label>
+    <div class="edit-episode__unit-box">
+      <div class="edit-episode__details">
+        <p class="body-large">
+          Скрипт видео*
+        </p>
       </div>
-      <div class="edit__box-activities-column">
-        <BaseTextArea
-          class="edit__description-input"
-          :label="'Видео'"
-        />
-      </div>
-    </div>
-
-    <h3>Вторичная информация</h3>
-
-    <div class="edit__unit-box">
-      <div class="edit__details">
-        <h4>Качество видео / Язык перевода</h4>
-        <label>???</label>
-      </div>
-      <BaseSelector
-        class="edit__selector"
-        :title="'Выберите качество'"
-        :selectable-values="['720p', '1080p', '2K', '4K']"
-        :label="''"
+      <BaseTextArea
+        v-model="videoScript"
+        class="edit-episode__description-input edit-episode__bg m-radius-1"
+        :placeholder="'Вставьте скрип-видео'"
+        :mark-as-invalid-input="videoScriptIsInvalid"
       />
     </div>
 
-    <div class="edit__buttons-box">
-      <base-button :button-type="2">
+    <div class="edit-episode__buttons-box">
+      <base-button
+        class="m-radius-circle"
+        :variant="'filled'"
+        @click="onClickUpsertEpisode"
+      >
         Отправить
       </base-button>
-      <base-button>
+      <base-button
+        :variant="'outline'"
+        class="m-radius-circle"
+      >
         Сбросить
       </base-button>
     </div>
@@ -114,24 +116,166 @@
 import BaseInput from "@/components/Base/BaseInput.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import BaseTextArea from "@/components/Base/BaseTextArea.vue";
-import BaseSelector from "@/components/Base/BaseSelector.vue";
-import BaseImageInput from "@/components/Base/BaseImageInput.vue";
-import {Country} from "@/api/Enums/Country";
-import {ref} from "vue";
+import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
+import {inject, ref} from "vue";
+import {TranslationType} from "@/api/Enums/TranslationType";
+import {Language, VideoQuality} from "@/api/Enums/Language";
+import {ChangesHistoryService} from "@/api/ChangesHistoryService";
+import {ContentService, V1SearchByResponseUnit} from "@/api/ContentService";
+import AsyncSearchSelector from "@/components/Base/Selector/AsyncSearchSelector.vue";
+import {EpisodeService, V1EpisodeQueryRequest} from "@/api/EpisodeService";
+import {TranslatorService, V1TranslatorQueryResponseUnit} from "@/api/TranslatorService";
 
-const isCreateNewEpisode = ref<boolean | null>(null);
+const changesHistoryApi = inject<ChangesHistoryService>('changes-history-service');
+const contentApi = inject<ContentService>("content-service");
+const episodesApi = inject<EpisodeService>('episode-service');
+const translatorApi = inject<TranslatorService>('translator-service');
 
-function clickToChooseCreateEpisode() {
-  isCreateNewEpisode.value = true
+/* Дорама */
+let searchContentList: V1SearchByResponseUnit[] = [];
+const contentSelectableValues = ref<string[]>([]);
+const contentIsInvalid = ref<boolean>(false);
+const contentSelectedTitle = ref<string | undefined>();
+
+/* Серия */
+const episodeSelectableValues = ref<string[]>([]);
+const episodeIsInvalid = ref<boolean>(false);
+const episodeSelectedTitle = ref<string>('');
+
+/* Переводчик */
+let translatorsList: V1TranslatorQueryResponseUnit[] = [];
+const translatorSelectableValues = ref<string[]>([]);
+const translatorIsInvalid = ref<boolean>(false);
+const translatorSelectedTitle = ref<string>('');
+
+/* Тип перевода */
+const translationType = ref<string>();
+const translationTypeIsInvalid = ref<boolean>(false);
+const translationTypeSelectableValues = [
+  TranslationType.Subtitles,
+  TranslationType.AutoSubtitles,
+  TranslationType.Original,
+  TranslationType.VoiceActing
+];
+
+/* Качество */
+const quality = ref<string>('');
+
+/* Язык */
+const language = ref<string>();
+const languageIsInvalid = ref<boolean>(false);
+const languageSelectableValues = [Language.Russian, Language.English, Language.Korean, Language.Chinese, Language.Japanese];
+
+/* Видео */
+const videoScript = ref<string>();
+const videoScriptIsInvalid = ref<boolean>(false);
+
+async function onClickUpsertEpisode() {
+  const isValidString = (value: string) => value != null && value.trim() != "";
+
+  contentIsInvalid.value = !isValidString(contentSelectedTitle.value);
+  /* Эпизод валидный только если выбран контент и эпизод */
+  episodeIsInvalid.value = !isValidString(episodeSelectedTitle.value) || contentIsInvalid.value;
+  translatorIsInvalid.value = !isValidString(translatorSelectedTitle.value);
+  languageIsInvalid.value = !isValidString(language.value);
+  translationTypeIsInvalid.value = !isValidString(translationType.value);
+
+  if (!contentIsInvalid.value &&
+    !episodeIsInvalid.value &&
+    !translatorIsInvalid.value &&
+    !translationTypeIsInvalid.value &&
+    !languageIsInvalid.value) {
+    const content = searchContentList.find(content => content.Title === contentSelectedTitle.value);
+    const episode = episodeSelectedTitle.value as number;
+    const languageType = language.value as typeof Language;
+    const translationTypeValue = translationType.value as typeof TranslationType;
+    const qualityNumber = quality.value as VideoQuality as number;
+    const translatorId = translatorsList
+      .find(translator => translator.Name === translatorSelectedTitle.value)
+      .TranslatorId;
+
+    // TODO: Если передали iframe а не ссылку на видео из src то нужно вытащить из него ссылку
+    await changesHistoryApi.createEpisodeChange({
+      ChangeableFields: {
+        Number: episode,
+        VideoScript: videoScript.value,
+        Language: languageType,
+        TranslationType: translationTypeValue,
+        EpisodeId: null,
+        TranslatorId: translatorId,
+        Quality: qualityNumber,
+      },
+      ContentId: content.ContentId,
+      CreatedBy: 0
+    });
+    return;
+  }
+
+  console.log('invalid')
 }
 
-function clickToChooseEpisode() {
-  isCreateNewEpisode.value = false;
+/* Вызывается при изменении input дорамы */
+async function onChangeContentInput(newInput: string, isSelected: boolean) {
+  contentSelectedTitle.value = isSelected ? newInput : undefined;
+
+  if (newInput.length === 0) {
+    contentSelectableValues.value = [];
+    return;
+  }
+
+  if (isSelected) {
+    const selectedContent = searchContentList.find(content => content.Title === newInput);
+    const episodesRequest = new V1EpisodeQueryRequest();
+    episodesRequest.ContentIds = [selectedContent.ContentId];
+    const episodes = await episodesApi.query(episodesRequest);
+
+    episodeSelectableValues.value = episodes.map(ep => ep.Number.toString());
+    return;
+  } else {
+    episodeSelectableValues.value = [];
+  }
+
+  searchContentList = (await contentApi.searchBy(newInput)).Units;
+  contentSelectableValues.value = searchContentList.map(x => x.Title);
+}
+
+/* Вызывается при изменении input переводчика */
+async function onChangeTranslatorInput(newInput: string, isSelected: boolean) {
+  translatorSelectedTitle.value = isSelected ? newInput : undefined;
+
+  if (newInput.length === 0) {
+    translatorsList = [];
+    return;
+  }
+
+  const translatorsResponse = await translatorApi.query({
+    Limit: 7,
+    Offset: null,
+    Search: newInput,
+    TranslatorIds: null
+  });
+  translatorSelectableValues.value = translatorsResponse.Translators.map(x => x.Name);
+  translatorsList = translatorsResponse.Translators;
 }
 </script>
 
 <style lang="scss" scoped>
-.edit {
+.edit-episode {
+  &__buttons-rowed {
+    display: flex;
+    height: fit-content;
+    gap: 8px;
+  }
+
+  &__bg {
+    background: var(--surface-container-default94);
+    transition: background-color 0.2s;
+
+    &:hover {
+      background: var(--surface-container-high92);
+    }
+  }
+
   &__page-header {
     color: var(--dark-primary);
   }
@@ -142,7 +286,7 @@ function clickToChooseEpisode() {
     grid-template-columns: min-content;
     grid-auto-flow: column;
     grid-gap: 20px;
-    justify-content: end;
+    justify-content: start;
 
     & button {
       width: fit-content;
@@ -151,29 +295,28 @@ function clickToChooseEpisode() {
     }
   }
 
-  &__selector {
-    width: 100%;
-  }
-
   &__box-activities {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-gap: 10px;
+    row-gap: 8px;
+    column-gap: 16px;
     grid-auto-columns: 1fr;
     grid-auto-flow: row;
+    text-align: start;
   }
 
   &__box-activities-column {
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: fit-content(100%);
-    grid-gap: 20px;
+    grid-gap: 8px;
     grid-auto-columns: 1fr;
     grid-auto-flow: row;
   }
 
   &__text-button {
-    color: #6686B3;
+    width: fit-content;
+    color: var(--primary40);
   }
 
   &__splitter {
@@ -187,49 +330,34 @@ function clickToChooseEpisode() {
     grid-template-columns: 250px 1px 1fr;
     grid-template-rows: max-content;
     height: fit-content;
-    margin-top: 20px;
-    margin-bottom: 20px;
   }
 
   &__right-box {
     display: grid;
+    background: var(--surface-container-lowest100);
     grid-template-rows: min-content;
     grid-auto-rows: min-content;
-    gap: 20px;
-    padding: 0 26px 26px 20px;
+    gap: 30px;
+    padding-left: 80px;
+    padding-right: 80px;
+    padding-bottom: 60px;
   }
 
   &__unit-box {
     display: grid;
     height: fit-content;
-    grid-template-columns: repeat(2, 2fr);
-    grid-column: 1;
-    grid-gap: 10px;
-    column-gap: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--font-gray-v1);;
+    grid-gap: 16px;
   }
 
   &__details {
     display: grid;
     justify-items: start;
     grid-auto-rows: min-content;
-    gap: 6px;
 
+    text-align: start;
     & * {
       padding: 0;
       margin: 0;
-    }
-
-    & h4 {
-      color: var(--dark-primary);
-      height: fit-content;
-    }
-
-    & label {
-      color: var(--dark-primary);
-      height: fit-content;
-      text-align: start;
     }
   }
 

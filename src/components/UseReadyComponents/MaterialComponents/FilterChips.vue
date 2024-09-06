@@ -3,9 +3,9 @@
     <div v-if="enableTextIcon" class="filter-chips__icon">
       <slot name="text-icon" />
     </div>
-
-    <p class="filter-chips__text" v-text="text" />
-
+    <p class="filter-chips__text">
+      {{ text }}
+    </p>
     <div v-if="enableMenuIcon" :class="{'filter-chips__icon': enableMenuIcon}">
       <slot name="menu-icon" />
     </div>
@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts" setup>
-const props = defineProps({
+defineProps({
   text: {type: String, required: true},
   enableTextIcon: {type: Boolean, required: false, default: false},
   enableMenuIcon: {type: Boolean, required: false, default: false},
@@ -34,7 +34,6 @@ const props = defineProps({
     margin: 0;
     padding: 0 8px;
 
-    background: none;
     border-radius: 8px;
     color: #38383C;
     cursor: pointer;
@@ -47,7 +46,7 @@ const props = defineProps({
     letter-spacing: 0.04em;
     text-align: center;
     white-space: nowrap;
-    color: #001d32;
+    color: currentColor;
 
     padding: 0 8px 0 8px;
     margin: 0;

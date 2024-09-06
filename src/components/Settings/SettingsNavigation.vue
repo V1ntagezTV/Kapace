@@ -9,7 +9,7 @@
       <div class="settings-nav__category-box">
         <label class="settings-nav__label">Создание</label>
         <div class="settings-nav__category">
-          <div class="settings-nav__category-button" @click="updateSelectedPage(SettingsPageTypes.Creates)">
+          <div class="settings-nav__category-button" @click="updateSelectedPage(SettingsPageTypes.Edits)">
             Мой список
           </div>
           <div class="settings-nav__category-button" @click="updateSelectedPage(SettingsPageTypes.CreateContent)">

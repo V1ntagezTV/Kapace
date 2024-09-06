@@ -38,5 +38,23 @@ export class ContentService extends ApiService {
     async V1GetByQuery(request: V1GetByQueryRequest) : Promise<V1GetByQueryResponse> {
         return this.CallHandlerAsync<V1GetByQueryResponse, V1GetByQueryRequest>(request, "get-by-query")
     }
+
+    async searchBy(searchInput: string) {
+        return this.CallHandlerAsync<V1SearchByResponse, V1SearchByRequest>({Search: searchInput} as V1SearchByRequest, "search-by")
+    }
+}
+
+interface V1SearchByRequest {
+    Search: string
+}
+
+interface V1SearchByResponse {
+    Units: V1SearchByResponseUnit[]
+}
+
+export interface V1SearchByResponseUnit {
+    ContentId: number;
+    Title: string;
+    ImageId: number;
 }
 

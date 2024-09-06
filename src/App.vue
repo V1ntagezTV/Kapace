@@ -18,20 +18,23 @@ import {ContentService} from "@/api/ContentService";
 import {provide} from "vue";
 import {ImageService} from "@/api/ImageService";
 import {ChangesHistoryService} from "@/api/ChangesHistoryService";
+import {EpisodeService} from "@/api/EpisodeService";
+import {TranslatorService} from "@/api/TranslatorService";
 
 provide('content-service', new ContentService());
 provide('translation-service', new TranslationService());
 provide('image-service', new ImageService());
 provide('changes-history-service', new ChangesHistoryService());
+provide('episode-service', new EpisodeService());
+provide('translator-service', new TranslatorService());
 </script>
 
 <style lang="scss">
-@import url(@/assets/styles/tokens.css);
-@import url(@/assets/styles/colors.module.css);
+@import "@/assets/styles/mstyles.scss";
+@import "@/assets/styles/custombootstrap.scss";
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+@import url(@/assets/styles/token.css);
 @import url(@/assets/styles/typography.module.css);
-@import url(@/assets/styles/theme.light.css) (prefers-color-scheme: light);
-@import url(@/assets/styles/theme.dark.css) (prefers-color-scheme: dark);
-@import url(@/assets/styles/layers.css);
 @import url(@/assets/styles/elevation.css);
 
 :root {
@@ -71,14 +74,17 @@ provide('changes-history-service', new ChangesHistoryService());
   }
 
   button {
+    text-decoration: none;
     border: none;
+    outline: none;
+    background: none;
     padding: 0;
     margin: 0;
   }
 }
 
 #app {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Inter, sans-serif;
   font-weight: 500;
   font-size: 14px;
   letter-spacing: 0.04em;
@@ -89,12 +95,7 @@ provide('changes-history-service', new ChangesHistoryService());
 }
 
 .material {
-  font-family: "Inter", sans-serif;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 150%;
-  letter-spacing: 0.01em;
-  text-align: justify;
+  font-family: 'Roboto', sans-serif;
   color: #474a57;
 }
 

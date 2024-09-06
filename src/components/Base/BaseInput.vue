@@ -1,6 +1,15 @@
 <template>
-  <div :class="{'input__input-static-box': !markAsInvalidInput, 'input__input-static-box input__input-invalid-box': markAsInvalidInput }">
-    <label v-if="label" class="input__label">{{ label }}</label>
+  <div
+    class="input__input-static-box"
+    :class="{'input__input-invalid-box': markAsInvalidInput }"
+  >
+    <label
+      v-if="label"
+      class="material body-small input__label"
+      :class="{'input__label-errored': markAsInvalidInput }"
+    >
+      {{ label }}
+    </label>
     <input
       :value="modelValue"
       v-bind="$attrs"
@@ -26,46 +35,28 @@ defineProps({
 });
 </script>
 
-<style lang="scss" scoped >
+<style lang="scss" scoped>
 .input {
-  &__close-box {
-    display: flex;
-    width: 40px;
-    height: 40px;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-
-    & svg {
-      height: fit-content;
-      width: fit-content;
-    }
-
-    &:hover::after {
-      opacity: 0;
-    }
-
-    &:hover {
-      content: "";
-      border-radius: 50%;
-      background-color: #adadad;
-      opacity: 1;
-    }
-  }
-
   &__label {
     background: white;
     position: absolute;
     left: 12px;
     top: -9px;
     width: fit-content;
+    padding: 0 4px;
 
-    font-style: normal;
-    font-weight: 400;
-    font-size: 12px;
-    line-height: 16px;
-    padding-left: 4px;
-    padding-right: 4px;
+    font-family: var(--body-small-font-family-name);
+    font-style: var(--body-small-font-family-style);
+    font-weight: var(--body-small-font-weight);
+    font-size: var(--body-small-font-size);
+    letter-spacing: var(--body-small-letter-spacing);
+    line-height: var(--body-small-line-height);
+
+    color: var(--on-surface-variant-light);
+
+    &-errored {
+      border: 1px solid var(--warning-red);
+    }
   }
 
   &__input-static-box {
@@ -76,24 +67,7 @@ defineProps({
     justify-content: center;
     align-items: center;
     gap: 10px;
-    outline: 1px solid var(--font-gray-v1);
-    border-radius: 4px;
     position: relative;
-    transition: outline-width 0.3s, outline-color 0.3s;
-
-    &:hover {
-      outline: 1px solid var(--primary);
-      color: var(--primary);
-    }
-
-    &:focus-within {
-      outline: 1px solid var(--primary);
-      color: var(--primary);
-    }
-  }
-
-  &__input-invalid-box {
-    outline: 1px solid var(--warning-red);
   }
 
   &__input {
@@ -109,9 +83,14 @@ defineProps({
     line-height: 24px;
     border: none;
     outline: none;
+    background: none;
 
     &:hover {
       outline: none;
+    }
+
+    &-invalid-box {
+      border: 1px solid var(--error40);
     }
   }
 }

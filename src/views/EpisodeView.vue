@@ -81,8 +81,6 @@ import {
   V1GetByEpisodeResponseTranslator
 } from "@/api/Responses/V1GetByEpisodeResponse";
 import BaseButton from "@/components/Base/BaseButton.vue";
-import TheaterVideos from "@/components/Theater/TheaterVideos.vue";
-import EpisodeListComponent from "@/components/Body/EpisodeListComponent.vue";
 import {EpisodeListViewModel} from "@/components/Body/ViewModels/EpisodeListViewModel";
 import {TranslationType} from "@/api/Enums/TranslationType";
 import {V1GetByQueryResponseContent} from "@/api/Requests/V1GetByQueryResponse";

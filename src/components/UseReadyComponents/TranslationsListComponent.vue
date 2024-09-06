@@ -1,6 +1,6 @@
 <template>
   <div
-    class="material m3-radius-2 m3-bg-1 main__box"
+    class="material m-radius-2 m3-bg-1 main__box"
     :class="{
       'material m3-bg-1 main__box-with-paging': episodeTranslations.length < currentOffset
     }"
@@ -15,15 +15,17 @@
         </h4>
       </div>
       <div class="main__filters">
-        <select-menu
-          class="main__filter-button m3-radius-1 m3-bg-2"
-          :text="'Переводчик'"
-          :list="translators.map(x => x.Name)"
+        <base-selector
+          v-model="translatorFilter"
+          class="main__filter-button m-radius-1 m3-bg-3"
+          :title="'Переводчик'"
+          :selectable-values="translators.map(x => x.Name)"
         />
-        <select-menu
-          class="m3-radius-1 m3-bg-3"
-          :text="'Сортировка'"
-          :list="['По возрастанию', 'По убыванию', 'По просмотрам', 'По оценке']"
+        <base-selector
+          v-model="orderByFilter"
+          class="main__filter-button m-radius-1 m3-bg-3"
+          :title="'Сортировка'"
+          :selectable-values="[Order.ByNumber, Order.ByAge, Order.ByStars, Order.ByWatches]"
         />
       </div>
     </div>
@@ -54,11 +56,16 @@
 import {inject, onMounted, ref} from 'vue';
 import {TranslationService} from "@/api/TranslationService";
 import {V1GetByEpisodeRequest} from "@/api/Requests/V1GetByEpisodeRequest";
-import SelectMenu from "@/components/UseReadyComponents/MaterialComponents/SelectMenu.vue";
 import Star from "@/components/Icons/MaterialIcons/Star.vue";
 import Eye from "@/components/Icons/MaterialIcons/Eye.vue";
+import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 
-const translationsService: TranslationService = inject("translation-service");
+const translationsService = inject<TranslationService>("translation-service");
+if (translationsService === undefined) {
+  const error = new Error();
+    error.message = "TranslationService not found not imported";
+    throw error;
+}
 
 export type Translation = {
   EpisodeId: number,
@@ -67,6 +74,13 @@ export type Translation = {
   Views: number,
   Stars: number,
 }
+
+const Order = {
+  ByAge: 'По возрастанию',
+  ByWatches: 'По просмотрам',
+  ByNumber: 'По убыванию',
+  ByStars: 'По оценке',
+} as const;
 
 export type Translator = {
   TranslatorId: number,
@@ -85,6 +99,9 @@ const episodeTranslations = ref<Translation[]>([]);
 const translators = ref<Translator[]>([]);
 const totalCount = ref<Number>(20);
 const currentOffset = ref(0);
+
+const translatorFilter = ref<string>();
+const orderByFilter = ref<typeof Order>();
 
 const unknownTranslatorName = "Unknown";
 
@@ -152,7 +169,6 @@ onMounted(async () => {
     display: grid;
     grid-template-rows: 64px 1fr;
     align-items: center;
-    overflow: hidden;
 
     &-with-paging {
       grid-template-rows: 64px 1fr 64px;
@@ -160,8 +176,12 @@ onMounted(async () => {
   }
 
   &__filter-button {
-    height: fit-content;
+    height: auto;
     width: fit-content;
+
+    &:hover {
+      background: var(--surface-container-highest90);
+    }
   }
 
   &__episode-box {
@@ -215,10 +235,11 @@ onMounted(async () => {
 
   &__filters {
     display: grid;
-    grid-template-columns: min-content auto;
+    grid-template-rows: 1fr;
+    grid-template-columns: auto;
+    grid-auto-flow: column;
     height: 32px;
     gap: 16px;
   }
 }
-
 </style>

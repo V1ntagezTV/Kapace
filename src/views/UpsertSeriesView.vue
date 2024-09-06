@@ -1,7 +1,5 @@
 <template>
   <div class="edit__box">
-    <BaseBackground :type="2">
-    </BaseBackground>
     <BaseBackground class="edit__right-box" :type="2">
       <h3>Основная информация</h3>
       <div class="edit__unit-box">
@@ -115,7 +113,7 @@ import BaseInput from "@/components/Base/BaseInput.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import BaseTextArea from "@/components/Base/BaseTextArea.vue";
 import YearPicker from "@/components/Base/DatePicker.vue";
-import BaseSelector from "@/components/Base/BaseSelector.vue";
+import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import {Country} from "@/api/Enums/Country";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import TimePicker from "@/components/Base/TimePicker.vue";

@@ -10,11 +10,12 @@
 <style scoped lang="scss">
 .text-button {
   &__text {
-    color: var(--dark-primary);
+    padding: 10px 12px;
+    color: var(--primary40);
     transition: color 0.25s;
 
     &:hover {
-      color: var(--primary);
+      background: rgba(82, 90, 146, 0.08);
       cursor: pointer;
     }
   }

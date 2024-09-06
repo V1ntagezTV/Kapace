@@ -1,20 +1,21 @@
 <template>
-  <BaseBackground class="edit__box">
+  <div class="edit__box">
     <SettingsNavigation @update:selectedPage="updateSelectedPage" />
     <div class="edit__splitter" />
+    <EditListComponent v-if="selectedPage === SettingsPageTypes.Edits" />
     <ContentEditorComponent v-if="selectedPage === SettingsPageTypes.CreateContent" />
     <EpisodeEditorComponent v-if="selectedPage === SettingsPageTypes.CreateEpisode" />
-  </BaseBackground>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import {ref} from "vue";
 
-import BaseBackground from "@/components/Base/BaseBackground.vue";
 import SettingsNavigation from "@/components/Settings/SettingsNavigation.vue";
 import ContentEditorComponent from "@/components/EditViews/ContentEditorComponent.vue";
 import {SettingsPageTypes} from "@/models/SettingsPageTypes";
 import EpisodeEditorComponent from "@/components/EditViews/EpisodeEditorComponent.vue";
+import EditListComponent from "@/components/EditViews/EditListComponent.vue";
 
 const selectedPage = ref(SettingsPageTypes.CreateContent);
 function updateSelectedPage(selectedComponent: SettingsPageTypes) {
@@ -23,7 +24,7 @@ function updateSelectedPage(selectedComponent: SettingsPageTypes) {
 }
 </script>
 
-<style lang="scss" scoped >
+<style lang="scss" scoped>
 .edit {
   &__buttons-box {
     display: grid;
@@ -73,11 +74,10 @@ function updateSelectedPage(selectedComponent: SettingsPageTypes) {
 
   &__box {
     display: grid;
-    grid-template-columns: 250px 1px 1fr;
+    grid-template-columns: 275px 1px 1fr;
     grid-template-rows: max-content;
     height: fit-content;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    background: var(--surface-container-lowest100);
   }
   
   &__right-box {

@@ -28,6 +28,11 @@ export class ApiService {
         return response;
     }
 
+    protected async CallPostHandlerAsync<TRequest>(requestBody: TRequest, handlerPath: string) {
+        const response = await this.CallHandler<Object, TRequest>(requestBody, handlerPath);
+        console.log({path: this.servicePath + handlerPath, request: requestBody, response: response});
+    }
+
     protected async CallHandlerByFormDataAsync<TResponse>(
         handlerPath: string,
         formData: FormData,

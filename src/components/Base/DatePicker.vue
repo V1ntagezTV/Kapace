@@ -3,15 +3,13 @@
     <label v-if="label" class="input__label">{{ label }}</label>
     <input
       type="date"
-      class="input"
+      class="material input"
       @input="onInput($event.target.value)"
     >
   </div>
 </template>
 
 <script lang="ts" setup>
-import {} from 'vue';
-
 const emits = defineEmits<{(emit: 'update:modelValue', value: Date)}>();
 
 const props = defineProps({
@@ -40,19 +38,20 @@ function onInput(value: string) {
   text-align: center;
   justify-content: center;
 
+  background: none;
   text-decoration: none;
   border: none;
-  outline: 1px solid var(--font-gray-v1);
-  border-radius: 6px;
+  outline: none;
   transition: outline-width 0.3s, outline-color 0.3s;
 
   &:hover {
-    outline: 1px solid var(--primary);
+    outline: none;
   }
 
   &:focus-within {
-    outline: 1px solid var(--primary);
+    outline: none;
   }
+
   &::-webkit-calendar-picker-indicator {
     display: none;
   }
@@ -61,7 +60,6 @@ function onInput(value: string) {
     display: grid;
     position: relative;
     height: 48px;
-
   }
 
   &__label {

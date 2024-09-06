@@ -1,159 +1,189 @@
 <template>
-  <div class="edit__right-box">
+  <div class="content-edit__right-box">
     <h3 class="edit__page-header">
       Основная информация
     </h3>
 
-    <div class="edit__unit-box">
-      <div class="edit__details">
-        <h4>Изображение</h4>
-        <label>Выберите изображение для профиля содержимого</label>
+    <div class="content-edit__unit-box">
+      <div class="content-edit__details">
+        <p class="body-large">
+          Изображение
+        </p>
+        <label class="body-medium">Выберите изображение для профиля содержимого</label>
       </div>
       <BaseImageInput @on:update="updateImage" />
     </div>
 
-    <div class="edit__unit-box">
-      <div class="edit__details">
-        <h4>Название</h4>
-        <label>Название обязательно должно быть на русском</label>
+    <div class="content-edit__unit-box">
+      <div class="material content-edit__details">
+        <p class="body-large">
+          Название
+        </p>
+        <label class="body-medium">
+          * Русское название - обязательное<br>
+          * Не стесняйтесь пользоваться переводчиком
+        </label>
       </div>
-      <div class="edit__box-activities-column">
+      <div class="content-edit__box-activities-column">
         <BaseInput
           v-model="changeableFields.Title"
+          class="content-edit__bg m3-bg-1 m-radius-1"
           :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.Title"
-          :place-holder="'Введите название'"
-          :label="'ru-Название'"
+          :place-holder="'Введите русское название *'"
         />
-        <BaseTextButton
-          v-show="showEngTitleInputField"
-          class="edit__text-button"
-          @click="showEngTitleInput"
-        >
-          Добавить en-название
-        </BaseTextButton>
         <BaseInput
           v-show="!showEngTitleInputField"
           v-model="changeableFields.EngTitle"
-          :place-holder="'Введите название'"
-          :label="'en-Название'"
+          class="content-edit__bg m3-bg-1 m-radius-1"
+          :place-holder="'Введите английское название'"
         />
-
-        <BaseTextButton
-          v-show="showOriginTitleInputValue"
-          class="edit__text-button"
-          @click="showOriginTitleInput"
-        >
-          Добавить оригинальное название
-        </BaseTextButton>
         <BaseInput
           v-show="!showOriginTitleInputValue"
           v-model="changeableFields.OriginalTitle"
-          :place-holder="'Введите название'"
-          :label="'org-Название'"
+          class="content-edit__bg m3-bg-1 m-radius-1"
+          :place-holder="'Введите оригинальное название'"
         />
+
+        <div class="content-edit__buttons-rowed">
+          <BaseTextButton
+            v-show="showEngTitleInputField"
+            class="material m-radius-circle content-edit__text-button"
+            @click="showEngTitleInput"
+          >
+            Добавить английское название
+          </BaseTextButton>
+          <BaseTextButton
+            v-show="showOriginTitleInputValue"
+            class="material m-radius-circle content-edit__text-button"
+            @click="showOriginTitleInput"
+          >
+            Добавить оригинальное название
+          </BaseTextButton>
+        </div>
       </div>
     </div>
 
-    <div class="edit__unit-box">
-      <div class="edit__details">
-        <h4>Страна / Тип дорамы</h4>
-      </div>
-      <div class="edit__box-activities">
+    <div class="content-edit__unit-box">
+      <div class="content-edit__box-activities">
+        <p class="body-large">
+          Страна
+        </p>
+        <label class="body-large">
+          Тип дорамы
+        </label>
         <BaseSelector
           v-model="changeableFields.Country"
-          class="edit__selector"
+          class="content-edit__bg m-radius-1"
           :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.Country"
           :title="'Выберите страну'"
           :selectable-values="[Country.Japan, Country.China, Country.Korea]"
-          :label="'Страна'"
         />
         <BaseSelector
           v-model="changeableFields.ContentType"
-          class="edit__selector"
+          class="content-edit__bg m-radius-1"
           :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.ContentType"
           :title="'Выберите тип'"
           :selectable-values="[ContentType.Serial, ContentType.Film, ContentType.Show, ContentType.Documentary]"
-          :label="'Тип'"
         />
       </div>
     </div>
 
-    <div class="edit__unit-box">
-      <div class="edit__details">
-        <h4>Описание</h4>
-        <label>Постарайтесь уместиться в 300 символов</label>
+    <div class="content-edit__unit-box">
+      <div class="content-edit__details">
+        <p class="body-large">
+          Описание
+        </p>
       </div>
       <BaseTextArea
         v-model="changeableFields.Description"
-        class="edit__description-input"
-        :label="'Описание'"
+        class="content-edit__description-input content-edit__bg m-radius-1"
+        :placeholder="'Введите описание'"
         :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.Description"
       />
     </div>
 
     <h3>Вторичная информация</h3>
 
-    <div class="edit__unit-box">
-      <div class="edit__details">
-        <h4>Длительность / Дата релиза</h4>
-        <label>Можно указать год или полную дату релиза.</label>
+    <div class="content-edit__unit-box">
+      <div class="content-edit__box-activities">
+        <p class="body-large">
+          Длительность серии
+        </p>
+        <p class="body-large">
+          Дата релиза
+        </p>
       </div>
-      <div class="edit__box-activities">
+      <div class="content-edit__box-activities">
         <TimePicker
           v-model="changeableFields.Duration"
-          label="Длительность"
+          class="content-edit__bg m-radius-1"
         />
         <YearPicker
           v-model="changeableFields.ReleasedAt"
-          label="Дата релиза"
+          class="content-edit__bg m-radius-1"
         />
       </div>
     </div>
 
-    <div class="edit__unit-box">
-      <div class="edit__details">
-        <h4>Планируемое количество серий</h4>
+    <div class="content-edit__unit-box">
+      <div class="content-edit__details">
+        <p class="body-large">
+          Планируемое количество серий
+        </p>
       </div>
       <BaseInput
         v-model="changeableFields.PlannedSeries"
         type="number"
-        label="Количество серий"
         place-holder="Введите число"
+        class="content-edit__bg m3-bg-1 m-radius-1"
       />
     </div>
 
-    <div class="edit__unit-box">
-      <div class="edit__details">
-        <h4>Жанры</h4>
-        <label>Подсказка: детектив, драма, триллер</label>
+    <div class="content-edit__unit-box">
+      <div class="content-edit__details">
+        <p class="body-large">
+          Жанры
+        </p>
+        <label class="body-medium">
+          * Подсказка: детектив, драма, триллер<br>
+          * Вводите жанры через пробел
+        </label>
       </div>
       <BaseInput
-        :place-holder="'Введите имя жанра'"
-        :label="'Жанр'"
+        :place-holder="'Введите жанры'"
+        class="content-edit__bg m3-bg-1 m-radius-1"
       />
     </div>
 
-    <div class="edit__unit-box">
-      <div class="edit__details">
-        <h4>Возрастное ограничение</h4>
-        <label>Нужно ввести минимально разрешённый возраст</label>
+    <div class="content-edit__unit-box">
+      <div class="content-edit__details">
+        <p class="body-large">
+          Возрастное ограничение
+        </p>
+        <label class="body-medium">
+          Минимально разрешённый возраст
+        </label>
       </div>
       <BaseInput
         v-model="changeableFields.MinAge"
         type="number"
-        label="Возраст"
         place-holder="Введите число"
+        class="content-edit__bg m3-bg-1 m-radius-1"
       />
     </div>
 
-    <div class="edit__buttons-box">
+    <div class="content-edit__buttons-box">
       <base-button
-        :button-type="2"
+        class="m-radius-circle"
+        :variant="'filled'"
         @click="onClickInsertContent(changeableFields)"
       >
         Отправить
       </base-button>
-      <base-button>
+      <base-button
+        :variant="'outline'"
+        class="m-radius-circle"
+      >
         Сбросить
       </base-button>
     </div>
@@ -166,7 +196,7 @@ import BaseButton from "@/components/Base/BaseButton.vue";
 import TimePicker from "@/components/Base/TimePicker.vue";
 import YearPicker from "@/components/Base/DatePicker.vue";
 import BaseTextArea from "@/components/Base/BaseTextArea.vue";
-import BaseSelector from "@/components/Base/BaseSelector.vue";
+import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import {Country} from "@/api/Enums/Country";
 import {ContentType} from "@/api/Enums/ContentType";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
@@ -177,7 +207,8 @@ import {ChangesHistoryService} from "@/api/ChangesHistoryService";
 import {Linter} from "eslint";
 import FlatConfigFileSpec = Linter.FlatConfigFileSpec;
 import {V1ChangeableFields} from "@/api/Requests/V1CreateContentRequest";
-import moment from "moment/moment";
+import '@material/web/button/filled-button.js';
+
 
 let showEngTitleInputField = ref(true);
 let showOriginTitleInputValue = ref(true);
@@ -256,7 +287,22 @@ function showOriginTitleInput() { showOriginTitleInputValue.value = !showOriginT
 </script>
 
 <style lang="scss" scoped>
-.edit {
+.content-edit {
+  &__buttons-rowed {
+    display: flex;
+    height: fit-content;
+    gap: 8px;
+  }
+
+  &__bg {
+    background: var(--surface-container-default94);
+    transition: background-color 0.2s;
+
+    &:hover {
+      background: var(--surface-container-high92);
+    }
+  }
+
   &__page-header {
     color: var(--dark-primary);
   }
@@ -267,7 +313,7 @@ function showOriginTitleInput() { showOriginTitleInputValue.value = !showOriginT
     grid-template-columns: min-content;
     grid-auto-flow: column;
     grid-gap: 20px;
-    justify-content: end;
+    justify-content: start;
 
     & button {
       width: fit-content;
@@ -276,29 +322,28 @@ function showOriginTitleInput() { showOriginTitleInputValue.value = !showOriginT
     }
   }
 
-  &__selector {
-    width: 100%;
-  }
-
   &__box-activities {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-gap: 10px;
+    row-gap: 8px;
+    column-gap: 16px;
     grid-auto-columns: 1fr;
     grid-auto-flow: row;
+    text-align: start;
   }
 
   &__box-activities-column {
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: fit-content(100%);
-    grid-gap: 20px;
+    grid-gap: 8px;
     grid-auto-columns: 1fr;
     grid-auto-flow: row;
   }
 
   &__text-button {
-    color: #6686B3;
+    width: fit-content;
+    color: var(--primary40);
   }
 
   &__splitter {
@@ -312,49 +357,34 @@ function showOriginTitleInput() { showOriginTitleInputValue.value = !showOriginT
     grid-template-columns: 250px 1px 1fr;
     grid-template-rows: max-content;
     height: fit-content;
-    margin-top: 20px;
-    margin-bottom: 20px;
   }
 
   &__right-box {
     display: grid;
+    background: var(--surface-container-lowest100);
     grid-template-rows: min-content;
     grid-auto-rows: min-content;
-    gap: 20px;
-    padding: 0 26px 26px 20px;
+    gap: 30px;
+    padding-left: 80px;
+    padding-right: 80px;
+    padding-bottom: 60px;
   }
 
   &__unit-box {
     display: grid;
     height: fit-content;
-    grid-template-columns: repeat(2, 2fr);
-    grid-column: 1;
-    grid-gap: 10px;
-    column-gap: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--font-gray-v1);;
+    grid-gap: 16px;
   }
 
   &__details {
     display: grid;
     justify-items: start;
     grid-auto-rows: min-content;
-    gap: 6px;
 
+    text-align: start;
     & * {
       padding: 0;
       margin: 0;
-    }
-
-    & h4 {
-      color: var(--dark-primary);
-      height: fit-content;
-    }
-
-    & label {
-      color: var(--dark-primary);
-      height: fit-content;
-      text-align: start;
     }
   }
 

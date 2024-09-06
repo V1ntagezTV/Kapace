@@ -1,10 +1,10 @@
 <template>
-  <div class="input__box">
-    <label v-if="label" class="input__label">{{ label }}</label>
+  <div class="time-picker__box">
+    <label v-if="label" class="time-picker__label">{{ label }}</label>
     <input
       type="time"
-      class="input"
-      @input="onChange($event.target.value)"
+      class="material time-picker"
+      @time-picker="onChange($event.target.value)"
     >
   </div>
 </template>
@@ -29,7 +29,7 @@ function onChange(value: String) {
 </script>
 
 <style lang="scss" scoped>
-.input {
+.time-picker {
   display: grid;
   height: 48px;
 
@@ -42,19 +42,12 @@ function onChange(value: String) {
   text-align: center;
   justify-content: center;
 
+  background: none;
   text-decoration: none;
   border: none;
-  outline: 1px solid var(--font-gray-v1);
-  border-radius: 6px;
+  outline: none;
   transition: outline-width 0.3s, outline-color 0.3s;
 
-  &:hover {
-    outline: 1px solid var(--primary);
-  }
-
-  &:focus-within {
-    outline: 1px solid var(--primary);
-  }
   &::-webkit-calendar-picker-indicator {
     display: none;
   }
@@ -63,6 +56,7 @@ function onChange(value: String) {
     display: grid;
     position: relative;
     height: 48px;
+    background: none;
   }
 
   &__label {

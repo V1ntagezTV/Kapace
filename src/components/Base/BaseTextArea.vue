@@ -1,14 +1,13 @@
 <template>
-  <div class="textarea__box">
+  <div
+    class="textarea__box m-radius-1"
+    :class="{'textarea__invalid-box': markAsInvalidInput }"
+  >
     <label v-if="label" class="textarea__label">{{ label }}</label>
     <textarea
       :value="modelValue"
-      class="textarea__text-area"
-      :class="{
-        'textarea__text-area': !markAsInvalidInput,
-        'textarea__text-area textarea__invalid-box': markAsInvalidInput
-      }"
-      placeholder="Описание"
+      class="textarea__text-area material textarea__text-area"
+      :placeholder="placeholder"
       @input="$emit('update:modelValue', $event.target.value)"
     />
   </div>
@@ -22,6 +21,7 @@ const props = defineProps({
   label: {type: String, required: false, default: null},
   modelValue: {type: String, default: ""},
   markAsInvalidInput: {type: Boolean, default: false},
+  placeholder: {type: String, default: null}
 });
 </script>
 
@@ -30,38 +30,29 @@ const props = defineProps({
   &__box {
     display: flex;
     position: relative;
-    height: 100%;
+    height: fit-content;
   }
 
   &__text-area {
     display: flex;
-    height: 100%;
     width: 100%;
     resize: vertical;
-    padding: 10px 16px 10px 16px;
+    padding: 8px 16px 8px 16px;
 
     text-decoration: none;
     font-style: normal;
     font-weight: 400;
     font-size: 16px;
     line-height: 24px;
+    background: none;
 
+    outline: none;
     border: none;
-    outline: 1px solid var(--font-gray-v1);
-    border-radius: 6px;
     transition: outline-width 0.3s, outline-color 0.3s;
-
-    &:hover {
-      outline: 1px solid var(--primary);
-    }
-
-    &:focus-within {
-      outline: 1px solid var(--primary);
-    }
   }
 
   &__invalid-box {
-    outline: 1px solid var(--warning-red);
+    border: 1px solid var(--warning-red);
   }
 
   &__label {
