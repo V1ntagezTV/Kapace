@@ -1,28 +1,43 @@
 <template>
-  <BaseBackground
-    :type="3"
-    class="search-item__container"
-  >
-    <router-link
-      :to="{ name: 'theater', params: { id: item.Id}}"
-      class="search-item__image-wrapper"
-    >
-      <img
-        class="search-item__image"
-        :src="image"
-        :alt="viewModel.Title"
-        @error="() => { image = require('@/assets/images/DefaultImage.png') }"
+  <BaseBackground class="search-item__box" :type="3">
+    <router-link :to="{ name: 'theater', params: { id: item.Id}}">
+      <div
+        class="search-item__image-box"
       >
-    </router-link>
+        <img
+          class="search-item__image"
+          :src="image"
+          :alt="viewModel.Title"
+          @error="() => { image = require('@/assets/images/DefaultImage.png') }"
+        >
+      </div>
 
-    <div class="search-item__details-container">
-      <div class="search-item__details">
+      <div class="search-item__details-box">
+        <div
+          v-if="viewModel.Translates !== null && viewModel.Translates.length > 0"
+          class="search-item__tags-box"
+        >
+          <div v-if="viewModel.MinAge" class="search-item__language-unit">
+            <span class="label-medium search-item__tag">{{ viewModel.MinAge }}+</span>
+          </div>
+          <div v-if="viewModel.SeriesCounter" class="search-item__language-unit">
+            <span class="label-medium search-item__tag">{{ viewModel.SeriesCounter }}</span>
+          </div>
+          <div
+            v-for="lang in viewModel.Translates"
+            :key="lang"
+            class="search-item__language-unit"
+          >
+            <p class="label-medium search-item__tag">
+              {{ lang }}
+            </p>
+          </div>
+        </div>
+
         <div class="search-item__title-container">
-          <router-link :to="{ name: 'theater', params: { id: item.Id}}">
-            <BaseTextButton class="search-item__title search-item__line-breaker">
-              {{ viewModel.Title }}
-            </BaseTextButton>
-          </router-link>
+          <BaseTextButton class="search-item__title search-item__line-breaker">
+            {{ viewModel.Title }}
+          </BaseTextButton>
         </div>
 
         <a class="search-item__description search-item__line-breaker">
@@ -33,26 +48,6 @@
           {{ viewModel.Genres }}
         </p>
 
-        <div class="search-item__language-container">
-          <div
-            v-for="lang in viewModel.Translates"
-            :key="lang"
-            class="search-item__language-unit"
-          >
-            <p class="search-item__language">
-              {{ lang }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="search-item__buttons">
-        <div v-if="viewModel.MinAge" class="search-item__min-age-container">
-          <span class="search-item__min-age">{{ viewModel.MinAge }}+</span>
-        </div>
-        <div v-if="viewModel.SeriesCounter" class="search-item__min-age-container">
-          <span class="search-item__min-age">{{ viewModel.SeriesCounter }}</span>
-        </div>
         <button v-if="OptionsApi.HIDE_USER_ACTIVITIES" class="search-item__icon-button">
           <FavoriteIcon class="search-item__icon" />
         </button>
@@ -60,7 +55,7 @@
           <DetailsIcon class="search-item__icon" />
         </button>
       </div>
-    </div>
+    </router-link>
   </BaseBackground>
 </template>
 
@@ -76,6 +71,7 @@ import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import {OptionsApi} from "@/options/OptionsApi";
 import {ImageService} from "@/api/ImageService";
 import {SearchItemViewModel} from "@/components/Body/Search/ViewModels/SearchItemViewModel";
+import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 
 const imageService: ImageService = inject<ImageService>("image-service");
 
@@ -126,80 +122,59 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
 <style lang="scss" scoped>
 
 .search-item {
+  &__box {
+    display: flex;
+    flex-direction: column;
 
-  &__image-wrapper {
+    width: 100%;
+    height: fit-content;
+
+    overflow: hidden;
+    border: none;
+  }
+
+  &__image-box {
     display: flex;
     justify-content: center;
     align-content: center;
-    height: 100%;
-    min-width: 117px;
-    max-width: 117px;
+    width: 100%;
+    min-height: 300px;
+    max-height: 350px;
     overflow: hidden;
     background: #112D3D;
   }
 
   &__image {
     object-fit: cover;
-    height: 100%;
+    width: 100%;
+    min-height: 300px;
+    max-height: 350px;
     display: flex;
     align-self: center;
     justify-self: center;
     transition: width 0.25s, height 0.25s;
-
-    &:hover {
-      height: 110%;
-      width: 110%;
-    }
   }
 
   &__image-container {
     width: 100%;
-    min-width: 117px;
-    max-width: 117px;
+    min-width: 120px;
+    max-width: 120px;
     height: fit-content;
   }
 
-  &__details-container {
+  &__details-box {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
     height: 100%;
-    width: 100%;
-    justify-content: space-between;
 
-    gap: 6px;
-    display: flex;
-    flex-direction: row;
-    padding: 12px 12px;
-  }
-
-  &__container {
-    display: flex;
-    flex-direction: row;
-
-    width: 100%;
-    height: 165px;
-    overflow: hidden;
-    transition: border 0.25s;
-
-    &:hover {
-      border: 1.5px solid var(--font-gray-v4);
-    }
+    gap: 8px;
+    padding: 16px;
   }
 
   &__details {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    align-items: start;
-    gap: 6px;
 
-    grid-row-start: 1;
-    grid-row-end: 2;
-    grid-column-start: 1;
-    grid-column-end: 2;
-
-    p {
-      padding: 0;
-      margin: 0;
-    }
+    gap: 8px;
   }
 
   &__title-container {
@@ -270,27 +245,22 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
     color: #969BAB;
   }
 
-  &__language {
-    font-weight: 500;
-    font-size: 12px;
-    text-align: left;
-    letter-spacing: 0.02em;
+  &__tag {
     color: white;
   }
 
-  &__language-container {
+  &__tags-box {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     overflow: hidden;
     width: 100%;
-    height: 23px;
     gap: 8px;
   }
 
   &__language-unit {
     width: fit-content;
-    background: #577399;
+    background: var(--primary40);
     border-radius: 4px;
     padding: 4px 8px;
   }

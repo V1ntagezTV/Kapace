@@ -1,5 +1,5 @@
 <template>
-  <div class="search-tags">
+  <div v-if="props.filters.length > 0" class="search-tags">
     <template v-for="([filterType, values], index) in acceptedFiltersByFilterType" :key="index">
       <template v-for="filter in values" :key="filter">
         <BaseBackground

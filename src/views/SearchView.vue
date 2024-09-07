@@ -1,5 +1,5 @@
 <template>
-  <div class="material search-page__container">
+  <div class="material search-page__box">
     <div class="search-page__body">
       <async-search-selector
         v-model="searchInput"
@@ -10,16 +10,22 @@
         @keyup.enter="PressSearchEnter"
       />
       <SearchTags
-        v-if="filtersV2.length > 0"
         :filters="filtersV2"
         :watch-show-filters="watchableShowFilters"
         @delete:filter="EmitDeleteSingleFilter"
       />
-      <SearchContent
+      <div
         v-if="isDataReady && initPageContent.Content.length > 0"
-        :items-content="initPageContent.Content"
-      />
+        class="search-page__content-box"
+      >
+        <SearchItem
+          v-for="item in initPageContent.Content"
+          :key="item"
+          :item="item"
+        />
+      </div>
       <div v-else-if="isDataReady">
+        // TODO: EMPTY SEARCH RESPONSE
         TODO: Empty response
       </div>
     </div>
@@ -49,6 +55,7 @@ import {Country} from "@/api/Enums/Country";
 import {FilterTypes} from "@/components/Search/Models/FilterTypes";
 import FilterUnitModel from "@/components/Search/Models/FilterUnitModel";
 import AsyncSearchSelector from "@/components/Base/Selector/AsyncSearchSelector.vue";
+import SearchItem from "@/components/Body/Search/SearchItem.vue";
 
 const contentService: ContentService = inject("content-service")
 
@@ -149,6 +156,22 @@ async function PressSearchEnter() {
 
 <style lang="scss">
 .search-page {
+  &__box {
+    padding: 20px 0;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  &__content-box {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-auto-columns: max-content;
+    gap: 16px;
+  }
+
   &__search {
     background: var(--surface-container-lowest100);
     border: 1px solid var(--outline-variant-light);
@@ -168,19 +191,11 @@ async function PressSearchEnter() {
     }
   }
 
-  &__container {
-    padding: 20px 0;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
   &__body {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 8px;
 
     width: 100%;
   }
