@@ -105,7 +105,7 @@ provide('translator-service', new TranslatorService());
   min-width: 1120px;
   width: 100%;
   display: grid;
-  grid-template-columns: 1fr 20px auto 20px 1fr;
+  grid-template-columns: 1fr 20px 1200px 20px 1fr;
   grid-template-rows: 46px 46px auto;
 }
 

@@ -59,7 +59,7 @@
     <div class="edit-episode__unit-box">
       <div class="edit-episode__box-activities">
         <p class="body-large">
-          Язык перевода
+          Язык перевода*
         </p>
         <p class="body-large">
           Качество видео

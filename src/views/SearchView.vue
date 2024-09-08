@@ -25,8 +25,7 @@
         />
       </div>
       <div v-else-if="isDataReady">
-        // TODO: EMPTY SEARCH RESPONSE
-        TODO: Empty response
+        Ничего не найдено
       </div>
     </div>
 
@@ -94,6 +93,7 @@ onMounted(async () => {
 })
 
 async function searchBy(newInput: string, isSelected: boolean) {
+  searchInput.value = newInput;
   const response = await contentService.searchBy(newInput);
   searchSelectableValues.value = response.Units;
 

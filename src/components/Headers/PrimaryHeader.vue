@@ -1,17 +1,18 @@
 <template>
   <div class="primary-header__main">
     <router-link to="/">
-      <img class="primary-header__logo" src="@/assets/images/Logo.svg" />
+      <img
+        class="primary-header__logo"
+        src="@/assets/images/Logo.svg"
+        alt="Главная"
+      >
     </router-link>
 
     <router-link to="/edits">
-      <button class="primary-header__button">
-        BECOME AN EDITOR
+      <button class="material primary-header__button">
+        РЕДАКТОР
       </button>
     </router-link>
-    <button class="primary-header__button">
-      WRITE AN UPDATE
-    </button>
   </div>
 </template>
 
@@ -28,13 +29,14 @@
   &__button {
     font-size: 10px;
     font-weight: 500;
-    letter-spacing: 0.1em;
     color: white;
     height: 22px;
-    background: transparent;
+
     border: 1px solid white;
     border-radius: 4px;
     transition: border 0.25s, color 0.25s;
+
+    padding: 0 8px;
 
     &:hover {
       cursor: pointer;

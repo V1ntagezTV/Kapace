@@ -1,44 +1,45 @@
 <template>
   <BaseBackground class="search-item__box" :type="3">
     <router-link :to="{ name: 'theater', params: { id: item.Id}}">
-      <div
-        class="search-item__image-box"
-      >
-        <img
-          class="search-item__image"
-          :src="image"
-          :alt="viewModel.Title"
-          @error="() => { image = require('@/assets/images/DefaultImage.png') }"
-        >
-      </div>
-
-      <div class="search-item__details-box">
+      <div class="search-item__image-box-1">
         <div
-          v-if="viewModel.Translates !== null && viewModel.Translates.length > 0"
+          v-if="viewModel.MinAge || viewModel.SeriesCounter"
           class="search-item__tags-box"
         >
-          <div v-if="viewModel.MinAge" class="search-item__language-unit">
-            <span class="label-medium search-item__tag">{{ viewModel.MinAge }}+</span>
+          <div class="search-item__first-tags-box">
+            <div v-if="viewModel.MinAge" class="search-item__tag">
+              <span class="label-medium">{{ viewModel.MinAge }}+</span>
+            </div>
+            <div v-if="viewModel.SeriesCounter" class="search-item__tag">
+              <span class="label-medium">{{ viewModel.SeriesCounter }}</span>
+            </div>
           </div>
-          <div v-if="viewModel.SeriesCounter" class="search-item__language-unit">
-            <span class="label-medium search-item__tag">{{ viewModel.SeriesCounter }}</span>
-          </div>
+
           <div
             v-for="lang in viewModel.Translates"
             :key="lang"
-            class="search-item__language-unit"
+            class="search-item__tag"
           >
-            <p class="label-medium search-item__tag">
+            <p class="label-medium">
               {{ lang }}
             </p>
           </div>
         </div>
-
-        <div class="search-item__title-container">
-          <BaseTextButton class="search-item__title search-item__line-breaker">
-            {{ viewModel.Title }}
-          </BaseTextButton>
+        <div class="search-item__image-box">
+          <img
+            class="search-item__image"
+            :src="image"
+            :alt="viewModel.Title"
+            @error="() => { image = require('@/assets/images/DefaultImage.png') }"
+          >
         </div>
+      </div>
+
+
+      <div class="search-item__details-box">
+        <BaseTextButton class="title-large search-item__title search-item__line-breaker">
+          {{ viewModel.Title }}
+        </BaseTextButton>
 
         <a class="search-item__description search-item__line-breaker">
           {{ viewModel.Description }}
@@ -91,19 +92,14 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
   if (item.EngTitle) {
     description.push(item.EngTitle);
   }
-
+  if (item.OriginTitle){
+    description.push(item.OriginTitle);
+  }
   if (item.Country && item.Country.toString() != Country.Null.toString()) {
     description.push(item.Country.toString())
   }
 
-  let seriesCounter = '';
-  if (item.PlannedSeries > 0) {
-    seriesCounter = item.PlannedSeries.toString();
-  }
-
-  if (item.OutSeries > 0) {
-    seriesCounter = item.OutSeries + '/' + seriesCounter;
-  }
+  let seriesCounter = item.OutSeries + '/' + item.PlannedSeries;
 
   let image: string = imageService.getImageLink(item.ImageId, item.Id);
 
@@ -120,8 +116,13 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
 </script>
 
 <style lang="scss" scoped>
-
 .search-item {
+  &__first-tags-box {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+  }
+
   &__box {
     display: flex;
     flex-direction: column;
@@ -133,6 +134,14 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
     border: none;
   }
 
+  &__image-box-1 {
+    display: grid;
+    height: 350px;
+    align-items: end;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+  }
+
   &__image-box {
     display: flex;
     justify-content: center;
@@ -141,7 +150,11 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
     min-height: 300px;
     max-height: 350px;
     overflow: hidden;
-    background: #112D3D;
+
+    grid-row-start: 2;
+    grid-row-end: 3;
+    grid-column-start: 1;
+    grid-column-end: 3;
   }
 
   &__image {
@@ -155,13 +168,6 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
     transition: width 0.25s, height 0.25s;
   }
 
-  &__image-container {
-    width: 100%;
-    min-width: 120px;
-    max-width: 120px;
-    height: fit-content;
-  }
-
   &__details-box {
     display: flex;
     flex-direction: column;
@@ -172,60 +178,23 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
     padding: 16px;
   }
 
-  &__details {
-
-    gap: 8px;
-  }
-
-  &__title-container {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    align-items: flex-start;
-    justify-items: left;
-  }
-
   &__title {
-    font-style: normal;
-    font-weight: 900;
-    font-size: 18px;
     color: #474A57;
     -webkit-line-clamp: 2;
 
     &:hover {
       cursor: pointer;
-      text-decoration: underline;
       color: var(--secondary);
     }
   }
 
   &__line-breaker {
-    letter-spacing: 0.02em;
     text-align: start;
     word-wrap: break-word;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-  }
-  
-
-  &__min-age-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: fit-content;
-
-    padding: 4px;
-    gap: 12px;
-    border-radius: 4px;
-    background: #474A57;
-  }
-
-  &__min-age {
-    font-weight: 500;
-    font-size: 12px;
-    color: white;
   }
 
   &__description {
@@ -246,23 +215,27 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
   }
 
   &__tag {
+    width: fit-content;
     color: white;
+    background: var(--primary40);
+    border-radius: 4px;
+    padding: 4px 8px;
   }
 
   &__tags-box {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: wrap;
+    z-index: 1;
     overflow: hidden;
-    width: 100%;
+    height: fit-content;
     gap: 8px;
-  }
+    padding: 16px;
 
-  &__language-unit {
-    width: fit-content;
-    background: var(--primary40);
-    border-radius: 4px;
-    padding: 4px 8px;
+    grid-row-start: 2;
+    grid-row-end: 3;
+    grid-column-start: 1;
+    grid-column-end: 3;
   }
 
   &__icon {
