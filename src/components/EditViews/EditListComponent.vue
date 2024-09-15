@@ -206,7 +206,7 @@ function getVideoLinkByChangesComparisons(units: ChangeUnit): string {
   return units.FieldsComparisons.find(unit => unit.Name === 'Видео').NewValue;
 }
 
-async function searchBy(input: string, isSelected: boolean) {
+async function searchByInput(input: string, isSelected: boolean) {
   const response = await contentService.searchBy(input);
   searchSelectableValueModels.value = response.Units;
 

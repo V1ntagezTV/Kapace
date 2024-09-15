@@ -22,10 +22,10 @@
 }
 
 .m-border {
-  border: 1px solid var(--outline-light);
+  border: 1px solid var(--outline-variant-light);
   transition:
-          border-top-width 0.1s, border-bottom-width 0.1s, border-left-width 0.1s, border-right-width 0.05s,
-          border-bottom-color 0.1s, border-top-color 0.1s, border-right-color 0.1s, border-left-color 0.1s;
+    border-top-width 0.1s, border-bottom-width 0.1s, border-left-width 0.1s, border-right-width 0.05s,
+    border-bottom-color 0.1s, border-top-color 0.1s, border-right-color 0.1s, border-left-color 0.1s;
 }
 
 .m-border-hover {

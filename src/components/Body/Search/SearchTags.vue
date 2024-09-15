@@ -1,9 +1,8 @@
 <template>
-  <div v-if="props.filters.length > 0" class="search-tags">
+  <div v-if="props.filters.length > 0" class="material search-tags">
     <template v-for="([filterType, values], index) in acceptedFiltersByFilterType" :key="index">
       <template v-for="filter in values" :key="filter">
-        <BaseBackground
-          :type="3"
+        <div
           class="search-tags__container"
           @click="onClickTag(filterType, filter)"
         >
@@ -28,15 +27,14 @@
             />
           </svg>
 
-          <a>{{ filterType }} {{ filter }} {{ index }}</a>
-        </BaseBackground>
+          <a class="label-medium">{{ filterType }} {{ filter }} {{ index }}</a>
+        </div>
       </template>
     </template>
   </div>
 </template>
 
 <script lang="ts" setup>
-import BaseBackground from '../../Base/BaseBackground.vue';
 import {defineEmits, PropType, ref, watch} from "vue";
 import FilterUnitModel from "@/components/Search/Models/FilterUnitModel";
 import {FilterTypes} from "@/components/Search/Models/FilterTypes";
@@ -96,15 +94,11 @@ function onClickTag(filterType: typeof FilterTypes, tag: string) {
     justify-content: center;
     padding: 0 8px;
     gap: 4px;
-    font-weight: 600;
-    font-size: 14px;
-    line-height: 12px;
 
 		transition: border 0.25s, color 0.25s;
 
 		&:hover {
 			cursor: pointer;
-			background-color: #EEEFF4;
 			border: 1.5px solid var(--font-gray-v4);
 		}
   }

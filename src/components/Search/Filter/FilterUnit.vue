@@ -1,34 +1,20 @@
 <template>
-  <div>
-    <button
-      class="filter-unit__header-button"
-      @click="updateShow(!show)"
-    >
-      <p>{{ filter.name }}</p>
-      <DropArrow class="filter-unit__arrow-icon" />
-    </button>
-
-    <transition name="content">
-      <div v-if="show">
-        <div
-          v-for="([key, value], index) in inputValues"
-          :key="index"
-          class="filter-unit__input-container"
-          @click="inputClick(key.toString(), value)"
-        >
-          <input :checked="value" type="checkbox">
-          <label class="filter-unit__label">{{ key }} / {{ value }}</label>
-        </div>
-      </div>
-    </transition>
+  <div class="filter-unit__header-button">
+    <BaseSelector
+      class="m3-bg-1 m-radius-1 m-border m-border-hover"
+      :title="filter.name"
+      :menu-alignment="MenuAlignment.Right"
+      :selectable-values="getKeyValues()"
+      @update:model-value="selectClick"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
-import {PropType, ref, watch} from 'vue'
-import DropArrow from "@/components/Icons/DropArrow.vue";
+import {PropType, ref} from 'vue'
 import FilterUnitModel from "@/components/Search/Models/FilterUnitModel";
-import {SearchEmits} from "@/components/Search/Models/SearchEmits";
+import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
+import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 
 const props = defineProps({
   show: {type: Boolean, default: true, required: false},
@@ -36,13 +22,18 @@ const props = defineProps({
 });
 
 const inputValues = ref(props.filter.selectableValues);
-let show = ref(props.show);
 
-function updateShow(show: boolean) {
-  this.show = show;
+function getKeyValues(): string[] {
+  const result = [];
+  for (const value of props.filter.selectableValues.keys()) {
+    result.push(value)
+  }
+
+  return result;
 }
 
-function inputClick(key: string, value: boolean) : void {
+function selectClick(key: string) : void {
+  const value = inputValues.value[key];
   inputValues.value.set(key, !value);
 }
 
@@ -53,30 +44,7 @@ function inputClick(key: string, value: boolean) : void {
 .filter-unit {
   &__header-button {
     display: flex;
-    justify-content: space-between;
     width: 250px;
-    height: 40px;
-    align-items: center;
-    padding: 0 20px;
-    border-width: 0;
-    background: transparent;
-
-    border-top: 1px solid #eaeaea;
-
-    & p {
-      font-weight: 600;
-      letter-spacing: 1px;
-      font-size: 14px;
-      line-height: 17px;
-      color: #474A57;
-      padding: 0;
-    }
-
-    &:hover {
-      cursor: pointer;
-      color: var(--secondary);
-      background: #F4F5F7;
-    }
   }
 
   &__arrow-icon {

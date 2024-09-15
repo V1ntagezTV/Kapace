@@ -72,7 +72,6 @@ import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import {OptionsApi} from "@/options/OptionsApi";
 import {ImageService} from "@/api/ImageService";
 import {SearchItemViewModel} from "@/components/Body/Search/ViewModels/SearchItemViewModel";
-import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 
 const imageService: ImageService = inject<ImageService>("image-service");
 

@@ -14,7 +14,7 @@
           'selector__disabled': props.isDisabled }"
         :text="titleRef"
         :enable-menu-icon="true"
-        @click.stop="clickOnHeader(!isActive)"
+        @click.stop="clickOnHeader(!isDroppedRef)"
       >
         <template #menu-icon>
           <material-drop-arrow :class="{'selector__disabled': props.isDisabled }" />
@@ -24,7 +24,7 @@
 
     <!-- Menu -->
     <div
-      v-if="isActive && selectableValues.length > 0"
+      v-show="isDroppedRef && selectableValues.length > 0"
       class="selector__menu selector__title-bordered"
       :class="getMenuAlignmentClasses()"
       @click="clickOnMenu"
@@ -32,7 +32,7 @@
       <button
         v-for="value in selectableValues" :key="value"
         class="selector__menu-button"
-        @click="selectValue(value)"
+        @click="selectFilter(value)"
       >
         {{ value }}
       </button>
@@ -48,20 +48,29 @@ import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 
 const emits = defineEmits<{(emit: 'update:modelValue', value: string): void}>();
 
+//TODO: Хорошо бы стили относящиеся к дефолтной кнопке вынести в отдельную модельку типа defaultStyles: {title, label, buttonBorder, buttonBackground}
 const props = defineProps({
+  modelValue: {type: String, default: ""},
+
   title: {type: String, required: false, default: ""},
   label: {type: String, required: false, default: null},
-  selectableValues: {type: Array as PropType<String[]>, required: true},
-  modelValue: {type: String, default: ""},
-  markAsInvalidInput: {type: Boolean, default: false},
   buttonBorder: {type: Boolean, default: false},
   buttonBackground: {type: String, default: 'none'},
+  markAsInvalidInput: {type: Boolean, default: false},
+  isDisabled: {type: Boolean, default: false, required: false},
+
+  selectableValues: {type: Array as PropType<String[]>, required: true},
   menuAlignment: {type: Number as PropType<MenuAlignment>, default: MenuAlignment.Right},
-  isDisabled: {type: Boolean, default: false, required: false}
+  isDropped: {type: Boolean, default: false, required: false}
 });
 
-const isActive = ref(false);
 const titleRef = ref(props.title);
+const isDroppedRef = ref(false);
+
+// Синхронизация локального состояния с пропсом
+watch(() => props.isDropped, (newValue) => {
+  isDroppedRef.value = newValue;
+});
 
 /* Сбрасывает текущее выбранное значение если компонент был помечен isDisabled */
 watch(() => props.isDisabled, (isDisabled) => {
@@ -74,24 +83,25 @@ watch(() => props.isDisabled, (isDisabled) => {
 
 function clickOnHeader(isDropped: boolean) {
   if (props.isDisabled) {
-    isActive.value = false;
+    isDroppedRef.value = false;
     return;
   }
 
   if (props.selectableValues.length > 0) {
-    isActive.value = isDropped;
+    isDroppedRef.value = isDropped;
     return;
   }
 
-  isActive.value = false;
+  isDroppedRef.value = false;
 }
 
 function clickOnMenu() {
-  isActive.value = false;
+  isDroppedRef.value = false;
 }
 
-function selectValue(value: string) {
+function selectFilter(value: string) {
   titleRef.value = value;
+  isDroppedRef.value = false;
   emits('update:modelValue', value);
 }
 

@@ -1,18 +1,25 @@
 <template>
   <div class="search-filters__main">
-    <BaseBackground>
-      <FilterUnit
-        v-for="filter in filters"
-        :key="filter"
-        :filter="filter"
-      />
-    </BaseBackground>
+    <FilterUnit
+      v-for="filter in filters"
+      :key="filter"
+      :filter="filter"
+    />
 
     <div class="search-filters__actions-container">
-      <BaseButton :button-type="2" @click="onClickAcceptFilters">
+      <BaseButton
+        class="body-medium m-radius-circle"
+        :button-type="2"
+        :variant="'filled'"
+        @click="onClickAcceptFilters"
+      >
         Принять
       </BaseButton>
-      <BaseButton @click="onClickCleanFilters">
+      <BaseButton
+        class="m-radius-circle"
+        :variant="'outline'"
+        @click="onClickCleanFilters"
+      >
         Сбросить
       </BaseButton>
     </div>
@@ -70,8 +77,7 @@ function onClickAcceptFilters() {
   &__actions-container{
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    width: 100%;
+    gap: 8px;
   }
 }
 </style>
