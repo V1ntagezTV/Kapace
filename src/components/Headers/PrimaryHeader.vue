@@ -1,6 +1,6 @@
 <template>
   <div class="primary-header__main">
-    <router-link to="/">
+    <router-link class="row" to="/">
       <img
         class="primary-header__logo"
         src="@/assets/images/Logo.svg"
