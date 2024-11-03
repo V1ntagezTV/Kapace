@@ -134,7 +134,7 @@ const events = computed(() => clientEventStore.$state.events);
 
 .wrapper {
   margin: 0;
-  height: 100vh;
+  height: 100%;
   min-width: 1120px;
   width: 100%;
   display: grid;
