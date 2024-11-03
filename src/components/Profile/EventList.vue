@@ -31,6 +31,8 @@ import {DataClass} from "@/components/Profile/ViewModels/DataClass";
 import {LinkedProperty} from "@/components/Profile/ViewModels/LinkedProperty";
 import {PropType} from "vue";
 
+console.log('ЧТО ТУТ ПРОИСХОДИТ')
+
 const props = defineProps({
   sortProperties: {
     type: Object as PropType<GenericSortableDataClass<DataClass>>,

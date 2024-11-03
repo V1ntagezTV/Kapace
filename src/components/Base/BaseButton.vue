@@ -29,8 +29,8 @@ const props = defineProps({
   variant: {
     type: String,
     default: 'skip',
-    validator(value: String, props: Data): boolean {
-      return ['filled', 'outline'].some(x => x === value);
+    validator(value: string): boolean {
+      return ['skip', 'filled', 'outline'].some(x => x === value);
     }
   }
 })
@@ -46,8 +46,6 @@ const props = defineProps({
     justify-content: center;
     background: transparent;
     align-items: center;
-    border-width: 0;
-    border-radius: 4px;
 
     font-style: normal;
     font-weight: 600;
@@ -115,7 +113,6 @@ const props = defineProps({
 
   &__outline {
     color: var(--primary40);
-    border: 1px solid var(--outline-light);
     background-color: white;
 
     &:hover {

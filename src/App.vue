@@ -1,25 +1,57 @@
 <template>
-  <div class="wrapper">
+  <div class="material wrapper">
     <div class="primary-header__background" />
     <PrimaryHeader class="primary-header__grid" />
 
-    <div class="secondary-header__background" />
-    <SecondaryHeader class="secondary-header__grid" />
-
     <router-view class="body__grid" />
+    <div class="event__box gap-8">
+      <auto-hide
+        v-for="event in events"
+        :key="event"
+      >
+        <base-background
+          v-if="event.eventType === EventTypes.Info"
+          :type="2"
+          class="event__unit-info event__unit body-medium m3-bg-1 m-radius-1"
+        >
+          {{ event.text }}
+        </base-background>
+
+        <base-background
+          v-else-if="event.eventType === EventTypes.Success"
+          :type="2"
+          class="event__unit-success event__unit body-medium m3-bg-1 m-radius-1"
+        >
+          {{ event.text }}
+        </base-background>
+
+        <base-background
+          v-else-if="event.eventType === EventTypes.Error"
+          :type="2"
+          class="event__unit-error event__unit body-medium m3-bg-1 m-radius-1"
+        >
+          {{ event.text }}
+        </base-background>
+      </auto-hide>
+    </div>
+    <base-button @click="() => {clientEventStore.push('СООБЩЕНИЕ', EventTypes.Success)}">push message</base-button>
   </div>
 </template>
 
 <script setup>
 import {TranslationService} from './api/TranslationService';
 import PrimaryHeader from './components/Headers/PrimaryHeader.vue';
-import SecondaryHeader from './components/Headers/SecondaryHeader.vue';
 import {ContentService} from "@/api/ContentService";
-import {provide} from "vue";
+import {computed, provide} from "vue";
 import {ImageService} from "@/api/ImageService";
 import {ChangesHistoryService} from "@/api/ChangesHistoryService";
 import {EpisodeService} from "@/api/EpisodeService";
 import {TranslatorService} from "@/api/TranslatorService";
+import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
+import BaseBackground from "@/components/Base/BaseBackground.vue";
+import AutoHide from "@/components/AutoHide.vue";
+import {GenreService} from "@/api/GenreService";
+import BaseButton from "@/components/Base/BaseButton.vue";
 
 provide('content-service', new ContentService());
 provide('translation-service', new TranslationService());
@@ -27,6 +59,10 @@ provide('image-service', new ImageService());
 provide('changes-history-service', new ChangesHistoryService());
 provide('episode-service', new EpisodeService());
 provide('translator-service', new TranslatorService());
+provide('genre-service', new GenreService());
+
+const clientEventStore = new ClientEventStore();
+const events = computed(() => clientEventStore.$state.events);
 </script>
 
 <style lang="scss">
@@ -34,11 +70,9 @@ provide('translator-service', new TranslatorService());
 @import "@/assets/styles/custombootstrap.scss";
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 @import url(@/assets/styles/token.css);
-@import url(@/assets/styles/typography.module.css);
-@import url(@/assets/styles/elevation.css);
 
 :root {
-  background: #F2EFF7;
+  background: #F5F2FA;
   --primary: #577399;
   --light-primary: #BDD5EA;
   --dark-primary: #495867;
@@ -68,7 +102,7 @@ provide('translator-service', new TranslatorService());
     text-decoration: none;
   }
   
-  p {
+  * {
     padding: 0;
     margin: 0;
   }
@@ -96,7 +130,6 @@ provide('translator-service', new TranslatorService());
 
 .material {
   font-family: 'Roboto', sans-serif;
-  color: #474a57;
 }
 
 .wrapper {
@@ -106,7 +139,7 @@ provide('translator-service', new TranslatorService());
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 20px 1200px 20px 1fr;
-  grid-template-rows: 46px 46px auto;
+  grid-template-rows: 56px auto;
 }
 
 .header-grid {
@@ -118,36 +151,69 @@ provide('translator-service', new TranslatorService());
   height: 100%;
   width: 100%;
   grid-column: 3 / 3;
-  grid-row: 3 / 3;
+  grid-row: 2 / 2;
 }
 
 .primary-header__grid {
+  top: 0;
+  position: sticky;
+  z-index: 9999;
   grid-column: 3 / 3;
   grid-row: 1 / 1;
 }
 
 .primary-header__background {
+  top: 0;
+  position: sticky;
+  z-index: 9999;
   grid-column: 1 / 6;
   grid-row: 1 / 1;
-  background: linear-gradient(269.43deg, #577399 68.83%, #112D3D 121.29%);
+  background: #303036;
   height: 100%;
 }
 
-.secondary-header__grid {
-  top: 0;
-  position: sticky;
-  z-index: 999;
-  grid-column: 3 / 3;
-  grid-row: 2;
-}
+.event {
+  &__box {
+    display: flex;
+    width: fit-content;
+    height: fit-content;
+    flex-direction: column;
+    top: 40px;
+    justify-self: end;
 
-.secondary-header__background {
-  top: 0;
-  position: sticky;
+    padding: 20px 0;
+    gap: 8px;
+    position: sticky;
+    grid-column: 3 / 3;
+    grid-row: 2 / 2;
+  }
 
-  grid-column: 1 / 6;
-  grid-row: 2 / 2;
-  background:white;
-  height: 100%;
+  &__unit {
+    display: flex;
+    align-items: center;
+
+    padding: 12px 16px;
+    width: 344px;
+    height: fit-content;
+    text-align: start;
+    box-shadow:
+      0 1px 3px 0 rgba(0, 0, 0, 0.3),
+      0 4px 8px 3px rgba(0, 0, 0, 0.15);
+
+    &-info {
+      background: #303036;
+      color: white;
+    }
+
+    &-success {
+      color: white;
+      background: #4f9d00;
+    }
+
+    &-error {
+      background: #BA1A1A;
+      color: white;
+    }
+  }
 }
 </style>

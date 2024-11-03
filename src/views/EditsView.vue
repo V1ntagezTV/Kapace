@@ -1,26 +1,50 @@
 <template>
   <div class="edit__box">
-    <SettingsNavigation @update:selectedPage="updateSelectedPage" />
-    <div class="edit__splitter" />
+    <SettingsNavigation :current="selectedPage" />
     <EditListComponent v-if="selectedPage === SettingsPageTypes.Edits" />
-    <ContentEditorComponent v-if="selectedPage === SettingsPageTypes.CreateContent" />
-    <EpisodeEditorComponent v-if="selectedPage === SettingsPageTypes.CreateEpisode" />
+    <ContentEditorComponent
+      v-if="selectedPage === SettingsPageTypes.CreateContent"
+      :content-id="contentId"
+    />
+    <EpisodeEditorComponent
+      v-if="selectedPage === SettingsPageTypes.CreateEpisode"
+      :content-id="contentId"
+      :episode-id="episodeId"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
-import {ref} from "vue";
-
+import {ref, watch} from "vue";
 import SettingsNavigation from "@/components/Settings/SettingsNavigation.vue";
 import ContentEditorComponent from "@/components/EditViews/ContentEditorComponent.vue";
 import {SettingsPageTypes} from "@/models/SettingsPageTypes";
 import EpisodeEditorComponent from "@/components/EditViews/EpisodeEditorComponent.vue";
 import EditListComponent from "@/components/EditViews/EditListComponent.vue";
+import {useRoute} from "vue-router";
 
-const selectedPage = ref(SettingsPageTypes.CreateContent);
-function updateSelectedPage(selectedComponent: SettingsPageTypes) {
-  console.log(selectedComponent);
-  selectedPage.value = selectedComponent;
+const route = useRoute();
+
+const contentId = ref<number | null>(null);
+const episodeId = ref<number | null>(null);
+contentId.value = +route.params.content;
+episodeId.value = +route.params.episode;
+const selectedPage = ref<typeof SettingsPageTypes>(choosePage());
+
+watch(() => route.fullPath, () => {
+  selectedPage.value = choosePage();
+});
+
+function choosePage() : SettingsPageTypes {
+  if (route.fullPath.includes("content")) {
+    return SettingsPageTypes.CreateContent;
+  } else if (route.fullPath.includes("episode")) {
+    return SettingsPageTypes.CreateEpisode;
+  } else if (route.fullPath.includes("list")){
+    return SettingsPageTypes.Edits;
+  } else {
+    return SettingsPageTypes.Edits;
+  }
 }
 </script>
 
@@ -74,10 +98,11 @@ function updateSelectedPage(selectedComponent: SettingsPageTypes) {
 
   &__box {
     display: grid;
-    grid-template-columns: 275px 1px 1fr;
+    grid-template-columns: 275px 1fr;
     grid-template-rows: max-content;
     height: fit-content;
     background: var(--surface-container-lowest100);
+    padding-left: 12px;
   }
   
   &__right-box {

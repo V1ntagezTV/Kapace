@@ -39,9 +39,9 @@
         class="search-page__content-box"
       >
         <SearchItem
-          v-for="item in initPageContent.Content"
-          :key="item"
-          :item="item"
+          v-for="content in initPageContent.Content"
+          :key="content"
+          :content="SearchContentFactory.getContentViewModel(content)"
         />
       </div>
       <div v-else-if="isDataReady">
@@ -78,6 +78,7 @@ import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import MaterialDropArrow from "@/components/Icons/MaterialDropArrow.vue";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 import {useRoute, useRouter} from "vue-router";
+import {SearchContentFactory} from "@/components/Body/Search/SearchItemViewFactory";
 
 const contentService: ContentService = inject("content-service")
 

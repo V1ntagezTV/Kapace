@@ -45,13 +45,13 @@ import {PropType, ref, watch} from "vue";
 import MaterialDropArrow from "@/components/Icons/MaterialDropArrow.vue";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
+import {prop} from "vue-class-component";
 
 const emits = defineEmits<{(emit: 'update:modelValue', value: string): void}>();
 
 //TODO: Хорошо бы стили относящиеся к дефолтной кнопке вынести в отдельную модельку типа defaultStyles: {title, label, buttonBorder, buttonBackground}
 const props = defineProps({
-  modelValue: {type: String, default: ""},
-
+  modelValue: {required: true, default: ""},
   title: {type: String, required: false, default: ""},
   label: {type: String, required: false, default: null},
   buttonBorder: {type: Boolean, default: false},
@@ -64,14 +64,17 @@ const props = defineProps({
   isDropped: {type: Boolean, default: false, required: false}
 });
 
-const titleRef = ref(props.title);
+const titleRef = ref(((props.modelValue?.length ?? 0) > 0) ? props.modelValue : props.title ?? "");
 const isDroppedRef = ref(false);
 
+// Синхронизация локального состояния с пропсом
+watch(() => props.modelValue, (newValue) => {
+  titleRef.value = newValue;
+});
 // Синхронизация локального состояния с пропсом
 watch(() => props.isDropped, (newValue) => {
   isDroppedRef.value = newValue;
 });
-
 /* Сбрасывает текущее выбранное значение если компонент был помечен isDisabled */
 watch(() => props.isDisabled, (isDisabled) => {
   if (!isDisabled) {

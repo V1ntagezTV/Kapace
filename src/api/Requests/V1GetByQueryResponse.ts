@@ -3,6 +3,7 @@ import {ContentStatus} from "@/api/Enums/ContentStatus";
 import { TranslationType } from "../Enums/TranslationType";
 import { Country as CountryEnum } from "../Enums/Country";
 import {Language} from "@/api/Enums/Language";
+import {QueryContent} from "@/api/BaseQuery/QueryContent";
 
 export type V1GetByQueryResponse = {
     Content: Array<V1GetByQueryResponseContent>
@@ -10,29 +11,11 @@ export type V1GetByQueryResponse = {
 
 export class V1GetByQueryResponseContent {
     constructor(
-        public Id: number,
-        public Title: string,
-        public EngTitle: string,
-        public OriginTitle: string,
-        public Description: string,
-        public Type: typeof ContentType,
-        public Status: typeof ContentStatus,
-        public ImageId: number,
-        public ImportStars: number,
-        public OutSeries: number,
-        public PlannedSeries: number,
-        public Views: number,
-        public Country: typeof CountryEnum,
-        public ReleasedAt: number | null,
-        public CreatedAt: number,
-        public LastUpdateAt: number,
-        public MinAgeLimit: number,
-        public Duration: number | null,
+        public Content: QueryContent,
         public Translations: Array<V1GetByQueryResponseTranslation>,
         public Episodes: Array<V1GetByQueryResponseEpisode>,
         public Genres: Array<V1GetByQueryResponseGenre>,
     ) {}
-
 }
 
 export type V1GetByQueryResponseTranslation = {

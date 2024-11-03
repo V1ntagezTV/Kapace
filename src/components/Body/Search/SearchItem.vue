@@ -1,52 +1,54 @@
-<template>
+Ё<template>
   <BaseBackground class="search-item__box" :type="3">
-    <router-link :to="{ name: 'theater', params: { id: item.Id}}">
+    <router-link :to="{ name: 'theater', params: { id: content.Id}}">
       <div class="search-item__image-box-1">
         <div
-          v-if="viewModel.MinAge || viewModel.SeriesCounter"
+          v-if="content.MinAge || content.SeriesCounter"
           class="search-item__tags-box"
         >
           <div class="search-item__first-tags-box">
-            <div v-if="viewModel.MinAge" class="search-item__tag">
-              <span class="label-medium">{{ viewModel.MinAge }}+</span>
+            <div v-if="content.MinAge" class="search-item__tag">
+              <span class="label-medium">{{ content.MinAge }}+</span>
             </div>
-            <div v-if="viewModel.SeriesCounter" class="search-item__tag">
-              <span class="label-medium">{{ viewModel.SeriesCounter }}</span>
+            <div v-if="content.SeriesCounter" class="search-item__tag">
+              <span class="label-medium">{{ content.SeriesCounter }}</span>
             </div>
           </div>
 
-          <div
-            v-for="lang in viewModel.Translates"
-            :key="lang"
-            class="search-item__tag"
-          >
-            <p class="label-medium">
-              {{ lang }}
-            </p>
+          <div class="row row-dynamic gap-8">
+            <div
+              v-for="lang in removeDuplicates(content.Translates)"
+              :key="lang"
+              class="search-item__tag"
+            >
+              <p class="label-medium">
+                {{ lang }}
+              </p>
+            </div>
           </div>
+
         </div>
-        <div class="search-item__image-box">
+        <div class="search-item__image-box m-radius-16">
           <img
             class="search-item__image"
             :src="image"
-            :alt="viewModel.Title"
+            :alt="content.Title"
             @error="() => { image = require('@/assets/images/DefaultImage.png') }"
           >
         </div>
       </div>
 
-
       <div class="search-item__details-box">
         <BaseTextButton class="title-large search-item__title search-item__line-breaker">
-          {{ viewModel.Title }}
+          {{ content.Title }}
         </BaseTextButton>
 
         <a class="search-item__description search-item__line-breaker">
-          {{ viewModel.Description }}
+          {{ content.Description }}
         </a>
 
-        <p v-if="viewModel.Genres" class="search-item__genre search-item__line-breaker">
-          {{ viewModel.Genres }}
+        <p v-if="content.Genres" class="search-item__genre search-item__line-breaker">
+          {{ content.Genres }}
         </p>
 
         <button v-if="OptionsApi.HIDE_USER_ACTIVITIES" class="search-item__icon-button">
@@ -65,53 +67,22 @@ import {defineProps, inject, PropType, ref} from "vue";
 import FavoriteIcon from "@/components/Icons/FavoriteIcon.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import DetailsIcon from "@/components/Icons/DetailsIcon.vue";
-import {V1GetByQueryResponseContent} from "@/api/Requests/V1GetByQueryResponse";
-import moment from "moment/moment";
-import {Country} from "@/api/Enums/Country";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import {OptionsApi} from "@/options/OptionsApi";
 import {ImageService} from "@/api/ImageService";
 import {SearchItemViewModel} from "@/components/Body/Search/ViewModels/SearchItemViewModel";
 
-const imageService: ImageService = inject<ImageService>("image-service");
-
 const props = defineProps({
-  item: {type: Object as PropType<V1GetByQueryResponseContent>, required: true}
+  content: {type: Object as PropType<SearchItemViewModel>, required: true}
 });
 
-let viewModel: SearchItemViewModel = getItemViewModel(props.item);
-const image = ref(viewModel.Image);
-
-function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewModel {
-  let description: string[] = [];
-
-  if (item.ReleasedAt) {
-    description.push(moment(new Date(item.ReleasedAt)).format('YYYY'));
-  }
-  if (item.EngTitle) {
-    description.push(item.EngTitle);
-  }
-  if (item.OriginTitle){
-    description.push(item.OriginTitle);
-  }
-  if (item.Country && item.Country.toString() != Country.Null.toString()) {
-    description.push(item.Country.toString())
-  }
-
-  let seriesCounter = item.OutSeries + '/' + item.PlannedSeries;
-
-  let image: string = imageService.getImageLink(item.ImageId, item.Id);
-
-  return {
-    Image: image,
-    Title: item.Title,
-    Description: description.join(' / '),
-    Translates: item.Translations.map(x => x.Language.toString()),
-    Genres: item.Genres.map(x => x.Name).join(' '),
-    MinAge: item.MinAgeLimit >= 0 ? item.MinAgeLimit : null,
-    SeriesCounter: seriesCounter
-  };
+const removeDuplicates = (arr: string[]): string[] => {
+  return [...new Set(arr)];
 }
+
+const imageService: ImageService = inject<ImageService>("image-service");
+const imageLink = imageService.getImageLink(props.content.ImageId, props.content.Id);
+const image = ref<string>(imageLink);
 </script>
 
 <style lang="scss" scoped>
@@ -124,6 +95,7 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
 
   &__box {
     display: flex;
+    background: var(--primary99);
     flex-direction: column;
 
     width: 100%;
@@ -143,14 +115,14 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
 
   &__image-box {
     display: flex;
+    height: 100%;
+    width: auto;
     justify-content: center;
-    align-content: center;
-    width: 100%;
-    min-height: 300px;
-    max-height: 350px;
+    align-items: center;
+
     overflow: hidden;
 
-    grid-row-start: 2;
+    grid-row-start: 1;
     grid-row-end: 3;
     grid-column-start: 1;
     grid-column-end: 3;
@@ -158,13 +130,8 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
 
   &__image {
     object-fit: cover;
+    height: 100%;
     width: 100%;
-    min-height: 300px;
-    max-height: 350px;
-    display: flex;
-    align-self: center;
-    justify-self: center;
-    transition: width 0.25s, height 0.25s;
   }
 
   &__details-box {
@@ -281,6 +248,13 @@ function getItemViewModel(item: V1GetByQueryResponseContent): SearchItemViewMode
       justify-self: center;
       align-self: center;
     }
+  }
+
+  &__langs {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    gap: 8px;
   }
 }
 

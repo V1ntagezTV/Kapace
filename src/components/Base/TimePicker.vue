@@ -2,30 +2,33 @@
   <div class="time-picker__box">
     <label v-if="label" class="time-picker__label">{{ label }}</label>
     <input
+      v-model="refModel"
       type="time"
       class="material time-picker"
-      @time-picker="onChange($event.target.value)"
+      @input="onChange(refModel)"
     >
   </div>
 </template>
 
 <script lang="ts" setup>
-import {defineEmits, defineProps} from 'vue';
+import {defineEmits, defineProps, ref, watch} from 'vue';
 
-const emits = defineEmits<{(emit: 'update:modelValue', value: number)}>()
+const emits = defineEmits<{(emit: 'update:modelValue', value: string)}>()
 
 const props = defineProps({
   label: {type: String, required: false, default: null},
-  modelValue: {type: Number, default: null}
+  modelValue: {type: String, default: null}
 });
 
-function onChange(value: String) {
-  const values = value.split(':');
-  const hours: number = Number(values[0]);
-  const minutes: number = Number(values[1]);
-
-  emits('update:modelValue', hours * 60 + minutes);
+function onChange(input: string) {
+  emits('update:modelValue', input);
 }
+
+const refModel = ref<string>(props.modelValue);
+
+watch(() => props.modelValue, (newValue) =>  {
+  refModel.value = newValue;
+})
 </script>
 
 <style lang="scss" scoped>

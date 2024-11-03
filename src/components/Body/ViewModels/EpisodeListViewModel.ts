@@ -15,7 +15,6 @@ export type EpisodeListViewModel = {
 export type TranslatorViewModel = {
     title: string,
     type: typeof TranslationType,
-    player: string
 }
 
 export type EpisodeTranslationViewModel = {

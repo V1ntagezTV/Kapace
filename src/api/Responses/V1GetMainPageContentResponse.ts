@@ -1,27 +1,19 @@
 import {MainPageType} from "@/api/Enums/MainPageType";
+import {QueryContent} from "@/api/BaseQuery/QueryContent";
 
-export class V1GetMainPageContent {
+export class V1GetMainPageContentPair {
     constructor(
-        public Id: number,
-        public ImageId: number,
-        public Title: string,
-        public Views: number,
-        public ImportStars: number,
-        public SeriesOut: number,
-        public SeriesPlanned: number,
+        public MainPageType: MainPageType,
+        public ContentsInfo: V1GetMainPageContentContent[]
     ) {
     }
 }
 
-export class V1GetMainPagePair {
-    constructor(
-        public MainPageType: MainPageType,
-        public Content: V1GetMainPageContent[],
-    ) {
-    }
+export interface V1GetMainPageContentContent {
+    Content: QueryContent,
+    Genres: string[]
 }
 
 export class V1GetMainPageContentResponse {
-    constructor(public Contents: V1GetMainPagePair[]) {
-    }
+    constructor(public PageContent: V1GetMainPageContentPair[]) { }
 }

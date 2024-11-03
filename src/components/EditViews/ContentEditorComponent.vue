@@ -1,6 +1,6 @@
 <template>
-  <div class="content-edit__right-box">
-    <h3 class="edit__page-header">
+  <div class="content-edit__right-box m-radius-16">
+    <h3 class="title-large content-edit__header">
       Основная информация
     </h3>
 
@@ -9,53 +9,60 @@
         <p class="body-large">
           Изображение
         </p>
-        <label class="body-medium">Выберите изображение для профиля содержимого</label>
+        <label class="body-medium">Выберите изображение для главной страницы содержимого</label>
       </div>
-      <BaseImageInput @on:update="updateImage" />
+      <BaseImageInput class="m3-bg-2" @on:update="updateImage" />
     </div>
 
     <div class="content-edit__unit-box">
-      <div class="material content-edit__details">
-        <p class="body-large">
-          Название
-        </p>
-        <label class="body-medium">
-          * Русское название - обязательное<br>
-          * Не стесняйтесь пользоваться переводчиком
-        </label>
-      </div>
       <div class="content-edit__box-activities-column">
+        <div class="content-edit__box-activities row gap-16">
+          <p class="body-large">
+            Название
+          </p>
+          <p class="body-large">
+            Статус
+          </p>
+          <BaseInput
+            v-model="title"
+            class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+            :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.Title"
+            :place-holder="'Введите русское название*'"
+          />
+          <BaseSelector
+            v-model="contentStatus"
+            class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+            :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.ContentStatus"
+            :title="'Выберите статус'"
+            :selectable-values="[ContentStatus.Announced, ContentStatus.Ongoing, ContentStatus.Stopped, ContentStatus.Finished]"
+          />
+        </div>
+
         <BaseInput
-          v-model="changeableFields.Title"
-          class="content-edit__bg m3-bg-1 m-radius-1"
-          :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.Title"
-          :place-holder="'Введите русское название *'"
-        />
-        <BaseInput
-          v-show="!showEngTitleInputField"
-          v-model="changeableFields.EngTitle"
-          class="content-edit__bg m3-bg-1 m-radius-1"
+          v-show="showEngTitleInputField"
+          v-model="engTitle"
+          class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
           :place-holder="'Введите английское название'"
         />
         <BaseInput
-          v-show="!showOriginTitleInputValue"
-          v-model="changeableFields.OriginalTitle"
-          class="content-edit__bg m3-bg-1 m-radius-1"
+          v-show="showOriginTitleInputField"
+          v-model="originalTitle"
+          class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
           :place-holder="'Введите оригинальное название'"
         />
 
         <div class="content-edit__buttons-rowed">
           <BaseTextButton
-            v-show="showEngTitleInputField"
+            v-show="!showEngTitleInputField"
             class="material m-radius-circle content-edit__text-button"
-            @click="showEngTitleInput"
+            @click="() => showEngTitleInputField = !showEngTitleInputField"
           >
             Добавить английское название
           </BaseTextButton>
           <BaseTextButton
-            v-show="showOriginTitleInputValue"
+            v-show="!showOriginTitleInputField"
             class="material m-radius-circle content-edit__text-button"
-            @click="showOriginTitleInput"
+            @click="() => showOriginTitleInputField = !showOriginTitleInputField"
           >
             Добавить оригинальное название
           </BaseTextButton>
@@ -72,15 +79,15 @@
           Тип дорамы
         </label>
         <BaseSelector
-          v-model="changeableFields.Country"
-          class="content-edit__bg m-radius-1"
+          v-model="country"
+          class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
           :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.Country"
           :title="'Выберите страну'"
           :selectable-values="[Country.Japan, Country.China, Country.Korea]"
         />
         <BaseSelector
-          v-model="changeableFields.ContentType"
-          class="content-edit__bg m-radius-1"
+          v-model="contentType"
+          class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
           :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.ContentType"
           :title="'Выберите тип'"
           :selectable-values="[ContentType.Serial, ContentType.Film, ContentType.Show, ContentType.Documentary]"
@@ -95,47 +102,10 @@
         </p>
       </div>
       <BaseTextArea
-        v-model="changeableFields.Description"
-        class="content-edit__description-input content-edit__bg m-radius-1"
+        v-model="description"
+        class="content-edit__description-input content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
         :placeholder="'Введите описание'"
         :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.Description"
-      />
-    </div>
-
-    <h3>Вторичная информация</h3>
-
-    <div class="content-edit__unit-box">
-      <div class="content-edit__box-activities">
-        <p class="body-large">
-          Длительность серии
-        </p>
-        <p class="body-large">
-          Дата релиза
-        </p>
-      </div>
-      <div class="content-edit__box-activities">
-        <TimePicker
-          v-model="changeableFields.Duration"
-          class="content-edit__bg m-radius-1"
-        />
-        <YearPicker
-          v-model="changeableFields.ReleasedAt"
-          class="content-edit__bg m-radius-1"
-        />
-      </div>
-    </div>
-
-    <div class="content-edit__unit-box">
-      <div class="content-edit__details">
-        <p class="body-large">
-          Планируемое количество серий
-        </p>
-      </div>
-      <BaseInput
-        v-model="changeableFields.PlannedSeries"
-        type="number"
-        place-holder="Введите число"
-        class="content-edit__bg m3-bg-1 m-radius-1"
       />
     </div>
 
@@ -149,40 +119,91 @@
           * Вводите жанры через пробел
         </label>
       </div>
-      <BaseInput
-        :place-holder="'Введите жанры'"
-        class="content-edit__bg m3-bg-1 m-radius-1"
+      <div v-show="genres?.length > 0" class="column gap-8">
+        <div class="content-edit__genres-selected row gap-8">
+          <filter-chips
+            v-for="genreName in genres" :key="genreName"
+            class="m3-bg-3 m-border m-radius-circle"
+            :text="genreName"
+            :enable-menu-icon="true"
+            @click="deleteSelectedGenre(genreName)"
+          >
+            <template #menu-icon>
+              <x-icon />
+            </template>
+          </filter-chips>
+        </div>
+      </div>
+      <async-search-selector
+        class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+        :placeholder="'Введите имя жанра'"
+        :menu-alignment="MenuAlignment.Left"
+        :show-loop-icon="false"
+        :values="genreSelectableValues"
+        :input="genreInput"
+        @change:input="onChangeGenreInput"
       />
     </div>
 
     <div class="content-edit__unit-box">
-      <div class="content-edit__details">
+      <div class="content-edit__box-activities">
+        <p class="body-large">
+          Длительность серии
+        </p>
+        <p class="body-large">
+          Дата релиза
+        </p>
+      </div>
+      <div class="content-edit__box-activities">
+        <TimePicker
+          v-model="duration"
+          class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+          @update:model-value="(newValue) => duration = newValue"
+        />
+        <YearPicker
+          v-model="releasedAt"
+          class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+          @update:model-value="(date) => console.log(date)"
+        />
+      </div>
+    </div>
+
+    <div class="content-edit__unit-box">
+      <div class="content-edit__box-activities">
+        <p class="body-large">
+          Планируемое количество серий
+        </p>
         <p class="body-large">
           Возрастное ограничение
         </p>
-        <label class="body-medium">
-          Минимально разрешённый возраст
-        </label>
       </div>
-      <BaseInput
-        v-model="changeableFields.MinAge"
-        type="number"
-        place-holder="Введите число"
-        class="content-edit__bg m3-bg-1 m-radius-1"
-      />
+      <div class="content-edit__box-activities">
+        <BaseInput
+          v-model="plannedSeries"
+          type="number"
+          place-holder="Введите число"
+          class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+        />
+        <BaseInput
+          v-model="minAge"
+          type="number"
+          place-holder="Введите число"
+          class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+        />
+      </div>
     </div>
 
     <div class="content-edit__buttons-box">
       <base-button
-        class="m-radius-circle"
+        class="material m-radius-circle"
         :variant="'filled'"
-        @click="onClickInsertContent(changeableFields)"
+        @click="onClickInsertContent"
       >
         Отправить
       </base-button>
       <base-button
         :variant="'outline'"
-        class="m-radius-circle"
+        class="material m-border m-radius-circle"
       >
         Сбросить
       </base-button>
@@ -200,7 +221,7 @@ import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import {Country} from "@/api/Enums/Country";
 import {ContentType} from "@/api/Enums/ContentType";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
-import {inject, ref} from "vue";
+import {computed, inject, onMounted, PropType, ref} from "vue";
 import BaseImageInput from "@/components/Base/BaseImageInput.vue";
 import {ImageService} from "@/api/ImageService";
 import {ChangesHistoryService} from "@/api/ChangesHistoryService";
@@ -208,31 +229,80 @@ import {Linter} from "eslint";
 import FlatConfigFileSpec = Linter.FlatConfigFileSpec;
 import {V1ChangeableFields} from "@/api/Requests/V1CreateContentRequest";
 import '@material/web/button/filled-button.js';
+import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
+import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
+import AsyncSearchSelector from "@/components/Base/Selector/AsyncSearchSelector.vue";
+import XIcon from "@/components/Icons/xIcon.vue";
+import {GenreService} from "@/api/GenreService";
+import {GenreQueryResponseGenre} from "@/api/Responses/GenreQueryResponse";
+import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
+import {ContentStatus} from "@/api/Enums/ContentStatus";
+import {ContentService} from "@/api/ContentService";
+import moment from "moment";
 
+const props = defineProps({
+  contentId: {type: Object as PropType<number | any>, required: false, default: undefined}
+});
 
-let showEngTitleInputField = ref(true);
-let showOriginTitleInputValue = ref(true);
+const showEngTitleInputField = ref<Boolean>(false);
+const showOriginTitleInputField = ref<Boolean>(false);
 
+const contentService = inject<ContentService>('content-service');
 const imageService = inject<ImageService>('image-service');
 const changesHistoryService = inject<ChangesHistoryService>('changes-history-service');
+const genreService = inject<GenreService>('genre-service');
+const clientEventStore = new ClientEventStore();
 
 let currentImage: FlatConfigFileSpec | FlatConfigFileSpec[];
 
-async function updateImage(image: FlatConfigFileSpec | FlatConfigFileSpec[]) {
-  currentImage = image;
+const title= ref<string | null>(null);
+const engTitle = ref<string | null>(null);
+const originalTitle = ref<string | null>(null);
+const description = ref<string | null>(null);
+const country = ref<typeof Country | null>(null);
+const contentType = ref<typeof ContentType | null>(null);
+const contentStatus = ref<typeof ContentStatus | null>(null);
+const genres = ref<string[]>([]);
+const duration = ref<string | null>(null);
+const releasedAt = ref<string | null>(null);
+const plannedSeries = ref<number | null>(null);
+const minAge = ref<number | null>(null);
+const channel = ref<string | null>(null);
+
+onMounted(async() => {
+  if (props.contentId && props.contentId > 0) {
+    const content = await contentService.V1GetById(props.contentId, 0);
+    title.value = content.Content.Title;
+    contentType.value = content.Content.Type;
+    contentStatus.value = content.Content.Status;
+    genres.value = content.Genres.map(x => x.Name);
+    country.value = content.Content.Country;
+    description.value = content.Content.Description;
+    duration.value = minTwoDigits(Math.trunc(content.Content.Duration / 60)) + ":" + (content.Content.Duration % 60);
+    engTitle.value = content.Content.EngTitle;
+    minAge.value = content.Content.MinAgeLimit;
+    originalTitle.value = content.Content.OriginTitle;
+    plannedSeries.value = content.Content.PlannedSeries;
+    releasedAt.value = formatDate(content.Content.ReleasedAt);
+    channel.value = null;
+
+    showEngTitleInputField.value = (engTitle.value?.length ?? 0) > 0;
+    showOriginTitleInputField.value = (originalTitle?.value?.length ?? 0) > 0;
+  }
+});
+function formatDate(date) {
+  let d = new Date(date),
+    month = '' + (d.getMonth() + 1),
+    day = '' + d.getDate(),
+    year = d.getFullYear();
+    month = minTwoDigits(month);
+    day =  minTwoDigits(day);
+
+  return [year, month, day].join('-');
 }
 
-const changeableFields: V1ChangeableFields = {
-  ContentType: null,
-  Country: null,
-  Description: null,
-  Duration: null,
-  EngTitle: null,
-  MinAge: null,
-  OriginalTitle: null,
-  PlannedSeries: null,
-  ReleasedAt: null,
-  Title: null
+function minTwoDigits(n) {
+  return (n < 10 ? '0' : '') + n;
 }
 
 const isMarkAsInvalidRequiredProperties = ref({
@@ -240,11 +310,74 @@ const isMarkAsInvalidRequiredProperties = ref({
   Description: false,
   Country: false,
   ContentType: false,
+  ContentStatus: false
 });
 
-async function onClickInsertContent(request: V1ChangeableFields) {
+//#region Genres
+const genreInput = ref<string>('');
+const genresQuery = ref<GenreQueryResponseGenre[]>([]);
+const genreSelectableValues = computed(() => genresQuery.value.map(g => g.Name));
+
+async function onChangeGenreInput(input: string, isSelected: boolean) {
+  if (!isSelected) {
+    const genres = await genreService.Query({
+      Search: input,
+      GenreIds: undefined,
+      Names: undefined,
+      Limit: 5,
+      Offset: undefined
+    });
+
+    genreInput.value = input;
+    genresQuery.value = genres.Genres;
+  } else {
+    const isAlreadySelected = genres.value.find(genreName => genreName === input);
+    if (!isAlreadySelected) {
+      genres.value.push(input);
+    }
+
+    genreInput.value = '';
+    genresQuery.value = [];
+  }
+}
+
+function deleteSelectedGenre(genreName: string) {
+  genres.value = genres.value.filter(genre => genre !== genreName);
+}
+//endregion
+const durationInMinutes = (duration: string): number | null => {
+  if (!duration) {
+    return null;
+  }
+
+  const values = duration.split(':');
+  const hours = values[0] as number;
+  const minutes = values[1] as number;
+
+  return hours * 60 + minutes;
+};
+
+async function onClickInsertContent() {
+  durationInMinutes(duration.value)
+
+  const request: V1ChangeableFields = {
+    Channel: channel.value,
+    ContentStatus: contentStatus.value,
+    ContentType: contentType.value,
+    Country: country.value,
+    Description: description.value,
+    Duration:  durationInMinutes(duration.value),
+    EngTitle: engTitle.value,
+    Genres: genres.value,
+    MinAge: minAge.value,
+    OriginalTitle: originalTitle.value,
+    PlannedSeries: plannedSeries.value,
+    ReleasedAt: releasedAt.value,
+    Title: title.value
+  };
+
   if (!IsAllRequiredPropertiesValid(request)) {
-    console.log('some properties is not valid!')
+    clientEventStore.push('Ошибка! Заполните обязательные поля.', EventTypes.Error)
     return;
   }
 
@@ -259,6 +392,10 @@ async function onClickInsertContent(request: V1ChangeableFields) {
   }
 }
 
+async function updateImage(image: FlatConfigFileSpec | FlatConfigFileSpec[]) {
+  currentImage = image;
+}
+
 function IsAllRequiredPropertiesValid(request: V1ChangeableFields): boolean {
   const isValidString = (value: string) => value != null && value.trim() != "";
 
@@ -268,26 +405,32 @@ function IsAllRequiredPropertiesValid(request: V1ChangeableFields): boolean {
   markAsInvalid.Description = !isValidString(request.Description);
   markAsInvalid.Country = request.Country === null || request.Country === Country.Null;
   markAsInvalid.ContentType = request.ContentType === null;
+  markAsInvalid.ContentStatus = request.ContentStatus === null;
 
   if (
     markAsInvalid.Title ||
     markAsInvalid.Description ||
     markAsInvalid.Country ||
-    markAsInvalid.ContentType
+    markAsInvalid.ContentType ||
+    markAsInvalid.ContentStatus
   ) {
-    //TODO: надо добавить popup о том что криво заполнены поля
     isValid = false;
   }
 
   return isValid;
 }
-
-function showEngTitleInput() { showEngTitleInputField.value = !showEngTitleInputField.value; }
-function showOriginTitleInput() { showOriginTitleInputValue.value = !showOriginTitleInputValue.value}
 </script>
 
 <style lang="scss" scoped>
 .content-edit {
+  &__header {
+    text-align: start;
+  }
+
+  &__genres-selected {
+    flex-flow: wrap;
+  }
+
   &__buttons-rowed {
     display: flex;
     height: fit-content;
@@ -296,7 +439,12 @@ function showOriginTitleInput() { showOriginTitleInputValue.value = !showOriginT
 
   &__bg {
     background: var(--surface-container-default94);
-    transition: background-color 0.2s;
+    transition:
+      background-color 0.2s,
+      border-top-color 0.15s,
+      border-bottom-color 0.15s,
+      border-right-color 0.15s,
+      border-left-color 0.15s;
 
     &:hover {
       background: var(--surface-container-high92);
@@ -344,6 +492,11 @@ function showOriginTitleInput() { showOriginTitleInputValue.value = !showOriginT
   &__text-button {
     width: fit-content;
     color: var(--primary40);
+    padding: 10px 12px;
+
+    &:hover {
+      background: rgba(82, 90, 146, 0.08);
+    }
   }
 
   &__splitter {
@@ -361,19 +514,18 @@ function showOriginTitleInput() { showOriginTitleInputValue.value = !showOriginT
 
   &__right-box {
     display: grid;
-    background: var(--surface-container-lowest100);
+    background: var(--primary98);
     grid-template-rows: min-content;
     grid-auto-rows: min-content;
-    gap: 30px;
-    padding-left: 80px;
-    padding-right: 80px;
-    padding-bottom: 60px;
+    padding: 20px;
+    margin: 12px;
+    gap: 26px;
   }
 
   &__unit-box {
     display: grid;
     height: fit-content;
-    grid-gap: 16px;
+    grid-gap: 8px;
   }
 
   &__details {

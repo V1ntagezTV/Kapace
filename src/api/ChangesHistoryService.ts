@@ -38,7 +38,7 @@ export class ChangesHistoryService extends ApiService {
     }
 
     public async createEpisodeChange(request: V1CreateEpisodeChangeRequest) {
-        await this.CallPostHandlerAsync<V1CreateEpisodeChangeRequest>(request, 'create-episode')
+        return await this.CallPostHandlerAsync<V1CreateEpisodeChangeRequest>(request, 'create-episode')
     }
 
     public async getChangesComparisons(request: V1GetChangesComparisonsRequest) : Promise<V1GetChangesComparisonsResponse> {
@@ -48,7 +48,7 @@ export class ChangesHistoryService extends ApiService {
         );
     }
 
-    public async approve(request: V1ApproveRequest) {
-        await this.CallPostHandlerAsync(request, 'approve');
+    public async approve(request: V1ApproveRequest) : Promise<Response> {
+        return await this.CallPostHandlerAsync(request, 'approve');
     }
 }

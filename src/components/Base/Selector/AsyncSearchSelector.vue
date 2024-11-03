@@ -22,7 +22,9 @@
           <xIcon style="color: var(--on-surface-variant-light)" />
         </icon-button>
 
-        <icon-button>
+        <icon-button
+          v-if="showLoopIcon"
+        >
           <loop-icon style="color: var(--primary40)" />
         </icon-button>
       </div>
@@ -33,14 +35,26 @@
 <script setup lang="ts">
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import BaseInput from "@/components/Base/BaseInput.vue";
-import {defineEmits, PropType, ref} from "vue";
+import {defineEmits, PropType, ref, watch} from "vue";
 import LoopIcon from "@/components/Icons/LoopIcon.vue";
 import IconButton from "@/components/Base/Buttons/IconButton.vue";
 import XIcon from "@/components/Icons/xIcon.vue";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 
-const textInput = ref("");
+const props = defineProps({
+  input: {type: String, required: false, default: ""},
+  placeholder: {type: String, required: true},
+  values: {type: Object as PropType<Array<string>>, required: true, default: new Array<string>()},
+  isInvalid: {type: Boolean, required: false, default: false},
+  showLoopIcon: {type: Boolean, required: false, default: true}
+});
+
+const textInput = ref(props.input);
 const selectedValue = ref("");
+
+watch(() => props.input, (newValue) => {
+  textInput.value = newValue;
+});
 
 const emits = defineEmits<{
   (emitName: 'change:input', input: string, isSelect: boolean) : void,
@@ -54,12 +68,6 @@ function onSelectValue(value: string) {
   textInput.value = value;
   emits('change:input', textInput.value, true);
 }
-
-const props = defineProps({
-  placeholder: {type: String, required: true},
-  values: {type: Object as PropType<Array<string>>, required: true, default: new Array<string>()},
-  isInvalid: {type: Boolean, required: false, default: false}
-});
 
 function searchByContentInput(dropMenuAction: (boolean) => void) {
   if (textInput.value.length > 0) {
@@ -77,21 +85,6 @@ function cleanInputButton() {
   emits('change:input', textInput.value, false);
   onChangeInput();
 }
-
-function debounce(func: Function, wait: number) {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-
-  return (...args: any[]) => {
-    if (timeout !== null) {
-      clearTimeout(wait);
-    }
-
-    timeout = setTimeout(() => {
-      func.apply(this, args);
-    });
-  }
-}
-
 </script>
 
 <style lang="scss" scoped>

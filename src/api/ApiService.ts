@@ -3,19 +3,27 @@ export class ApiService {
 
     constructor(protected servicePath: string) { }
 
-    private CallHandler<TResponse, TRequest>(
+    private baseFetch<TRequest>(
         requestBody: TRequest,
-        handlerPath: string): Promise<TResponse> {
+        handlerPath: string
+    ) {
         const path = this.hostPath + this.servicePath + handlerPath;
         const requestHeaders: HeadersInit = new Headers();
         requestHeaders.set('Content-Type', 'application/json; charset=utf-8');
-        const requestJson = JSON.stringify(requestBody);
 
         return fetch(path, {
             method: 'POST',
             headers: requestHeaders,
-            body: requestJson,
-        })
+            body: JSON.stringify(requestBody),
+        });
+    }
+
+    private async CallHandler<TResponse, TRequest>(
+        requestBody: TRequest,
+        handlerPath: string): Promise<TResponse> {
+        const response = this.baseFetch(requestBody, handlerPath);
+
+        return response
             .then(response => response.json())
             .then(response => response as TResponse);
     }
@@ -28,9 +36,10 @@ export class ApiService {
         return response;
     }
 
-    protected async CallPostHandlerAsync<TRequest>(requestBody: TRequest, handlerPath: string) {
-        const response = await this.CallHandler<Object, TRequest>(requestBody, handlerPath);
+    protected async CallPostHandlerAsync<TRequest>(requestBody: TRequest, handlerPath: string) : Promise<Response> {
+        const response = await this.baseFetch<TRequest>(requestBody, handlerPath);
         console.log({path: this.servicePath + handlerPath, request: requestBody, response: response});
+        return response;
     }
 
     protected async CallHandlerByFormDataAsync<TResponse>(
@@ -48,3 +57,5 @@ export class ApiService {
         );
     }
 }
+
+interface EmptyResponse {}

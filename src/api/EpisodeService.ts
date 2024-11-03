@@ -8,10 +8,16 @@ export class EpisodeService extends ApiService {
     public async query(request: V1EpisodeQueryRequest): Promise<V1EpisodeQueryResponse[]>  {
         return await this.CallHandlerAsync<V1EpisodeQueryResponse[], V1EpisodeQueryRequest>(request, 'query');
     }
+
+    public async incrementViews(episodeId: number) {
+        return this.CallPostHandlerAsync<{EpisodeId: number}>(
+            {EpisodeId: episodeId},
+            "increment-views");
+    }
 }
 
 export class V1EpisodeQueryRequest {
-    public EpisodeIds: string[] | undefined;
+    public EpisodeIds: number[] | undefined;
     public ContentIds: number[] | undefined;
     public Limit: number | null | undefined;
     public Offset: number | null | undefined;

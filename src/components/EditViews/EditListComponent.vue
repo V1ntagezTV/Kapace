@@ -1,43 +1,48 @@
 <template>
-  <div v-if="dataIsReady" class="material edit-list__main ">
+  <div v-show="dataIsReady" class="material edit-list__main">
     <async-search-selector
-      v-model="filters.search"
       class="edit-list__search m-radius-1"
       :placeholder="'Поиск'"
       :values="searchSelectableValueModels.map(x => x.Title)"
-      @change:input="searchBy"
+      @change:input="searchByInput"
+      @keydown.enter="searchByInput"
     />
     <div class="edit-list__filters">
-      <base-selector
-        v-model="filters.sortBy"
-        class="edit-list__filters-unit m3-bg-2 m-radius-1"
-        :title="'Сортировать по'"
-        :menu-alignment="MenuAlignment.Left"
-        :selectable-values="['По названию', 'По дате']"
-      />
-      <base-selector
-        v-model="filters.historyType"
-        class="edit-list__filters-unit m3-bg-2 m-radius-1"
-        :title="'Все'"
-        :menu-alignment="MenuAlignment.Left"
-        :selectable-values="['Все', 'Дорама', 'Серия']"
-      />
-      <filter-chips 
+      <filter-chips
         class="m3-bg-2 m-radius-1"
         :class="{'edit-list__filters-unit--enabled': filters.isMy.value}"
         :text="'Мои'"
         @click.stop="clickOnMineFilter"
       />
-      <filter-chips
-        class="m3-bg-2 m-radius-1"
-        :class="{'edit-list__filters-unit--enabled': filters.isApproved.value}"
-        :text="'Не одобренные'"
-        @click.stop="clickOnApprovedFilter"
+      <base-selector
+        v-model="filters.orderBy.value"
+        class="edit-list__filters-unit m3-bg-2 m-radius-1"
+        :title="'Сортировать по'"
+        :menu-alignment="MenuAlignment.Left"
+        :selectable-values="['По идентификатору', 'По названию', 'По дате создания']"
+        @update:modelValue="() => {updatePage(0)}"
+      />
+      <base-selector
+        v-model="filters.historyType.value"
+        class="edit-list__filters-unit m3-bg-2 m-radius-1"
+        :title="'Тип'"
+        :menu-alignment="MenuAlignment.Left"
+        :selectable-values="['Все', 'Дорама', 'Серия']"
+        @update:modelValue="() => {updatePage(0)}"
+      />
+      <base-selector
+        v-model="filters.status.value"
+        class="edit-list__filters-unit m3-bg-2 m-radius-1"
+        :title="'Статус'"
+        :menu-alignment="MenuAlignment.Left"
+        :selectable-values="['Все', 'Создано', 'Согласовано']"
+        @update:modelValue="() => {updatePage(0)}"
       />
     </div>
 
     <base-background
       v-for="unit in changes" :key="unit"
+      :type="2"
       class="edit-list__history m-radius-28 m3-bg-2"
     >
       <div class="edit-list__header">
@@ -47,8 +52,6 @@
           </p>
           <p>{{ getDateStr(unit.CreatedAt) }}</p>
         </div>
-
-
 
         <div class="row gap-26">
           <filter-chips
@@ -77,7 +80,12 @@
         <div class="edit-list__image-box">
           <img
             class="edit-list__content-image m-radius-2"
-            :src="imageService.getImageLink(unit.ImageId, contentId)"
+            :src="imageService.getImageLink(
+              unit.ImageId,
+              // Идентификатор будущего контента формирует
+              // HistoryId - если контент новый
+              // TargetId - если редактируется существующий материал
+              (unit.TargetId === null || unit.TargetId === 0) ? unit.HistoryId : unit.TargetId)"
             alt="Изображение контента"
             @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
           >
@@ -122,6 +130,23 @@
         </base-button>
       </div>
     </base-background>
+    <div class="row gap-16" style="width: 100%">
+      <base-text-button
+        v-if="offset !== 0"
+        class="edit-list__paging-button title-medium m3-bg-2 m-radius-28 gap-8"
+        @click="updatePage(-10)"
+      >
+        <nav-left-arrow-icon />
+        Предыдущая страница
+      </base-text-button>
+      <base-text-button
+        class="edit-list__paging-button title-medium m3-bg-2 m-radius-28 gap-8"
+        @click="updatePage(10)"
+      >
+        Следующая страница
+        <nav-right-arrow-icon />
+      </base-text-button>
+    </div>
   </div>
 </template>
 
@@ -131,7 +156,7 @@ import {ChangesHistoryService} from "@/api/ChangesHistoryService";
 import {ChangeUnit} from "@/api/Responses/V1GetChangesComparisonsResponse";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
-import {HistoryType} from "@/api/Enums/HistoryType";
+import {HistoryChangesOrderType, HistoryType} from "@/api/Enums/HistoryType";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
@@ -140,66 +165,114 @@ import {ContentService, V1SearchByResponseUnit} from "@/api/ContentService";
 import {ImageService} from "@/api/ImageService";
 import MarkIcon from "@/components/Icons/MaterialIcons/MarkIcon.vue";
 import UserIconOutlined from "@/components/Icons/MaterialIcons/UserIconOutlined.vue";
+import BaseTextButton from "@/components/Base/BaseTextButton.vue";
+import NavLeftArrowIcon from "@/components/Icons/MaterialIcons/NavLeftArrowIcon.vue";
+import NavRightArrowIcon from "@/components/Icons/MaterialIcons/NavRightArrowIcon.vue";
+import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 
 const imageService = inject<ImageService>('image-service');
 const changesHistoryService = inject<ChangesHistoryService>('changes-history-service');
 const contentService = inject<ContentService>('content-service');
+const clientEventStore = new ClientEventStore();
 
 const searchSelectableValueModels = ref<V1SearchByResponseUnit[]>([]);
 const filters = {
+  selectedContentId: ref<number | null>(null),
   search: ref<string | null>(null),
-  sortBy: ref<string | null>(null),
-  historyType: ref<string | null>(null),
-  isApproved: ref<boolean | null>(null),
+  orderBy: ref<string | null>('По умолчанию'),
+  historyType: ref<string | null>(''),
+  status: ref<string | null>(''),
   isMy: ref<boolean | null>(null)
 };
 
 const dataIsReady = ref(false);
 const changes = ref<ChangeUnit[]>()
-const limit = 20;
-const offset = 0;
+const limit = 5;
+let offset = 0;
 
 onMounted(async () => {
   dataIsReady.value = false;
+  await updatePage(0);
+  dataIsReady.value = true;
+});
+
+async function updatePage(addOffset: number = 0) {
+  dataIsReady.value = false;
+
+  if (addOffset < 0 && (offset + addOffset) <= 0) {
+    offset = 0;
+  } else {
+    offset += addOffset;
+  }
+
   const response = await changesHistoryService.getChangesComparisons({
-    Approved: filters.isApproved.value,
+    Approved: getApprovedStatus(filters.status.value),
     CreatedByIds: filters.isMy.value ? [0] : [],
-    HistoryTypes: [],
+    HistoryTypes: getHistoryTypes(filters.historyType.value),
+    OrderBy: getOrderByType(filters.orderBy.value),
     Ids: [],
     Limit: limit,
     Offset: offset,
-    TargetIds: [],
+    TargetIds: filters.selectedContentId.value ? [filters.selectedContentId.value] : [],
   });
 
   changes.value = response.Changes;
-  dataIsReady.value = true;
-})
 
-function getHistoryTypes(value: string) {
+  dataIsReady.value = true;
+}
+
+function getApprovedStatus(filterStatus: string) : boolean | null {
+  if (filterStatus === 'По умолчанию') {
+    return null;
+  } else if (filterStatus === 'Создано') {
+    return false;
+  } else if (filterStatus === 'Согласовано') {
+    return true;
+  }
+}
+
+function getHistoryTypes(value: string) : typeof HistoryType[]{
   if (value === 'Серия') {
     return [HistoryType.Episode as typeof HistoryType];
-  }
-
-  if (value === 'Дорама') {
+  } else if (value === 'Дорама') {
     return [HistoryType.Content as typeof HistoryType];
   }
-
   return [];
 }
 
-function clickOnMineFilter() {
-  filters.isMy.value = !filters.isMy.value
+function getOrderByType(selectedOrder: string) : typeof HistoryChangesOrderType {
+  console.log("getOrderByType:" + selectedOrder);
+
+  if (selectedOrder === 'По дате создания') {
+    return HistoryChangesOrderType.ByCreated as typeof HistoryChangesOrderType;
+  } else if (selectedOrder === 'По названию') {
+    return HistoryChangesOrderType.ByName as typeof HistoryChangesOrderType;
+  } else if (selectedOrder === 'По идентификатору') {
+    return HistoryChangesOrderType.ById as typeof HistoryChangesOrderType;
+  }
+  return HistoryChangesOrderType.Unspecified as typeof HistoryChangesOrderType;
 }
 
-function clickOnApprovedFilter() {
-  filters.isApproved.value = !filters.isApproved.value;
+async function clickOnMineFilter() {
+  filters.isMy.value = !filters.isMy.value
+  await updatePage(0);
 }
 
 async function approveClick(historyId: number, userId: number) {
-  await changesHistoryService.approve({
+  const unit = changes.value.find(change => change.HistoryId === historyId);
+
+  const response = await changesHistoryService.approve({
     HistoryId: historyId,
     UserId: userId
-  })
+  });
+
+  if (response.ok) {
+    unit.ApprovedAt = Date.now();
+    unit.ApprovedBy = 0; // TODO: currentUser;
+    clientEventStore.push("Успех! Одобрено!", EventTypes.Success);
+  } else {
+    clientEventStore.push("Ошибка! Заявка не одобрена. Ошибка сервиса: " + response.body.toString());
+  }
 }
 
 function getVideoLinkByChangesComparisons(units: ChangeUnit): string {
@@ -210,23 +283,10 @@ async function searchByInput(input: string, isSelected: boolean) {
   const response = await contentService.searchBy(input);
   searchSelectableValueModels.value = response.Units;
 
+  // IsSelected равен true, когда был выбран элемент из выпадающего списка
   if (isSelected) {
-    const selectedContentId = searchSelectableValueModels.value.find(content => content.Title === input).ContentId;
-
-    console.log(selectedContentId);
-    const request = {
-      Approved: filters.isApproved.value,
-      CreatedByIds: filters.isMy.value ? [0] : [],
-      HistoryTypes: getHistoryTypes(filters.historyType.value),
-      Ids: [],
-      Limit: limit,
-      Offset: offset,
-      TargetIds: [selectedContentId]
-    };
-    console.log(request);
-    const response = await changesHistoryService.getChangesComparisons(request);
-
-    changes.value = response.Changes;
+    filters.selectedContentId.value = searchSelectableValueModels.value.find(content => content.Title === input).ContentId;
+    await updatePage(0);
   }
 }
 
@@ -240,8 +300,21 @@ function getDateStr(dateNum: number) : string {
 
 <style lang="scss" scoped>
 .edit-list {
+  &__paging-button {
+    display: flex;
+    padding: 24px;
+    color: var(--font-gray);
+    transition: border-radius .3s cubic-bezier(.2,0,0,1), background-color .3s cubic-bezier(.2,0,0,1);
+
+    &:hover {
+      background: var(--secondary-container-light);
+      border-radius: 48px;
+    }
+  }
+
   &__author {
-    background: var(--primary90);
+    color: var(--on-secondary-container-light);
+    background: var(--secondary-container-light);
     border-color: var(--primary60);
   }
 
@@ -318,6 +391,10 @@ function getDateStr(dateNum: number) : string {
         color: white;
         background: var(--primary40);
       }
+
+      &:hover {
+        background: var(--surface-container-high92);
+      }
     }
   }
 
@@ -326,7 +403,7 @@ function getDateStr(dateNum: number) : string {
     grid-auto-rows: max-content;
     justify-items: center;
     align-items: center;
-    padding: 16px;
+    padding: 12px 12px 48px;
     gap: 16px;
   }
 

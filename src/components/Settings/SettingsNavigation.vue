@@ -1,56 +1,65 @@
 <template>
-  <div class="settings-nav__container">
-    <h3>
-      <!-- TODO: Вместо надписи навигация должна быть ссылка на профиль с круглой аватаркой и никнеймом -->
-      Навигация
-    </h3>
-    <div class="settings-nav__vertical-splitter" />
-    <div>
-      <div class="settings-nav__category-box">
-        <label class="settings-nav__label">Создание</label>
-        <div class="settings-nav__category">
-          <div class="settings-nav__category-button" @click="updateSelectedPage(SettingsPageTypes.Edits)">
-            Мой список
-          </div>
-          <div class="settings-nav__category-button" @click="updateSelectedPage(SettingsPageTypes.CreateContent)">
-            Дорамы
-          </div>
-          <div class="settings-nav__category-button" @click="updateSelectedPage(SettingsPageTypes.CreateEpisode)">
-            Серия
-          </div>
-        </div>
+  <div class="material settings-nav__container">
+    <div class="settings-nav__category">
+      <div class="settings-nav__label row gap-12">
+        <menu-icon />
+
+        <p class="title-small">
+          Редактор
+        </p>
       </div>
-      <div class="settings-nav__vertical-splitter" />
-      <div class="settings-nav__category-box">
-        <label class="settings-nav__label">Редактирование</label>
-        <div class="settings-nav__category">
-          <div class="settings-nav__category-button" @click="updateSelectedPage(SettingsPageTypes.Edits)">
-            Мой список
-          </div>
-          <div class="settings-nav__category-button" @click="updateSelectedPage(SettingsPageTypes.EditContent)">
-            Дорамы
-          </div>
-          <div class="settings-nav__category-button" @click="updateSelectedPage(SettingsPageTypes.EditEpisode)">
-            Серия
-          </div>
-        </div>
-      </div>
+
+      <router-link
+        :class="{'settings-nav__button-selected': refCurrent === SettingsPageTypes.Edits}"
+        class="settings-nav__button m-radius-circle"
+        to="/edit/list"
+      >
+        <folder-icon />
+        Мой список
+      </router-link>
+      <router-link
+        :class="{'settings-nav__button-selected':
+          refCurrent === SettingsPageTypes.EditContent ||
+          refCurrent === SettingsPageTypes.CreateContent}"
+        class="settings-nav__button m-radius-circle"
+        :to="{name: 'create-content'}"
+      >
+        <add-note />
+        Дорама
+      </router-link>
+      <router-link
+        :class="{'settings-nav__button-selected':
+          refCurrent === SettingsPageTypes.EditEpisode ||
+          refCurrent === SettingsPageTypes.CreateEpisode}"
+        class="settings-nav__button m-radius-circle"
+        :to="{name: 'create-episode'}"
+      >
+        <add-library-icon />
+        Серия
+      </router-link>
     </div>
-    <div class="settings-nav__vertical-splitter" />
   </div>
 </template>
 
 <script setup lang="ts">
-import {defineEmits} from "vue";
+import DotIcon from "@/components/Icons/DotIcon.vue";
 import {SettingsPageTypes} from "@/models/SettingsPageTypes";
+import {ref, watch} from "vue";
+import MenuIcon from "@/components/Icons/MenuIcon.vue";
+import FolderIcon from "@/components/Icons/FolderIcon.vue";
+import AddNote from "@/components/Icons/AddNote.vue";
+import AddLibraryIcon from "@/components/Icons/AddLibraryIcon.vue";
 
-const emits = defineEmits<{
-  (emitName: 'update:selected-page', selectedPage: SettingsPageTypes) : void
-}>()
+const props = defineProps({
+  current: {type: SettingsPageTypes, required: true}
+});
 
-function updateSelectedPage(page: SettingsPageTypes) {
-  emits("update:selected-page", page);
-}
+const refCurrent = ref<SettingsPageTypes>(props.current);
+
+watch(() => props.current, (newValue) => {
+  refCurrent.value = newValue;
+});
+
 </script>
 
 <style scoped lang="scss">
@@ -59,6 +68,11 @@ function updateSelectedPage(page: SettingsPageTypes) {
     display: grid;
     grid-template-rows: min-content;
     height: fit-content;
+    background: var(--primary98);
+    margin-top: 12px;
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 16px;
   }
 
   &__vertical-splitter {
@@ -68,14 +82,12 @@ function updateSelectedPage(page: SettingsPageTypes) {
   }
 
   &__label {
-    display: grid;
-    grid-auto-rows: min-content;
-    height: fit-content;
+    display: flex;
+    height: 56px;
 
-    font-size: 12px;
-    color: var(--font-gray-v4);
     text-align: start;
-    padding: 10px 20px;
+    align-items: center;
+    padding-left: 16px;
   }
 
   &__category {
@@ -86,20 +98,32 @@ function updateSelectedPage(page: SettingsPageTypes) {
     text-align: start;
   }
 
-  &__category-button {
-    padding-left: 30px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+  &__button {
+    display: flex;
+    height: 56px;
 
-    color: var(--dark-primary);
-    font-weight: 600;
+    padding-left: 16px;
+    padding-right: 24px;
+    justify-content: start;
+    align-items: center;
+    gap: 12px;
+    transition: background-color 0.25s;
+
+    color: var(--on-surface-variant-light);
+
+    &-selected {
+      color: var(--on-secondary-container-light);
+      background: var(--secondary-container-light);
+    }
 
     &:hover {
       cursor: pointer;
-      color: var(--primary);
-      background: var(--font-gray-v2);
+      color: var(--on-secondary-container-light);
+      background: var(--secondary-container-light);
     }
   }
+
+
 
   &__category-box {
     display: grid;

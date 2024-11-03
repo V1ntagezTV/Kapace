@@ -11,7 +11,7 @@
       {{ label }}
     </label>
     <input
-      :value="modelValue"
+      v-model="refValue"
       v-bind="$attrs"
       class="input__input"
       :placeholder="placeHolder"
@@ -22,16 +22,22 @@
 </template>
 
 <script lang="ts" setup>
-import {defineEmits} from "vue";
+import {defineEmits, ref, watch} from "vue";
 
 defineEmits(['update:modelValue'])
 
-defineProps({
+const props = defineProps({
+  modelValue: {default: ""},
   placeHolder: {type: String, required: true, default: 'Введите текст'},
   label: {type: String, required: false, default: undefined},
   type: {type: String, required: false, default: "text"},
-  modelValue: {type:String, default: ""},
   markAsInvalidInput: {type: Boolean, default: false},
+});
+
+const refValue = ref<string>(props.modelValue);
+
+watch(() => props.modelValue, (newValue) => {
+  refValue.value = newValue;
 });
 </script>
 

@@ -2,6 +2,7 @@
   <div class="input__box">
     <label v-if="label" class="input__label">{{ label }}</label>
     <input
+      v-model="refModelValue"
       type="date"
       class="material input"
       @input="onInput($event.target.value)"
@@ -10,18 +11,24 @@
 </template>
 
 <script lang="ts" setup>
-const emits = defineEmits<{(emit: 'update:modelValue', value: Date)}>();
+import {ref, watch} from "vue";
+
+const emits = defineEmits<{(emit: 'update:modelValue', value: string)}>();
 
 const props = defineProps({
   label: {type: String, required: false, default: null},
-  modelValue: {type: Date, default: null},
+  modelValue: {type: String, default: null},
 });
 
-function onInput(value: string) {
-  const split = value.split('-'), year = Number(split[0]), month = Number(split[1]), day = Number(split[2]);
+const refModelValue = ref<string>(props.modelValue);
 
-  emits('update:modelValue', new Date(year, month, day));
+function onInput(value: string) {
+  emits('update:modelValue', value);
 }
+
+watch(() => props.modelValue, (newValue: string) => {
+  refModelValue.value = newValue;
+})
 </script>
 
 <style lang="scss" scoped>

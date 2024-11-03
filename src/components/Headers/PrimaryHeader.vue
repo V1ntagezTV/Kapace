@@ -8,11 +8,24 @@
       >
     </router-link>
 
-    <router-link to="/edits">
+    <router-link to="/edit">
       <button class="material primary-header__button">
         РЕДАКТОР
       </button>
     </router-link>
+
+    <nav class="row gap-16">
+      <router-link to="/">
+        <base-text-button class="secondary-header__text-button m-radius-circle">
+          Главная
+        </base-text-button>
+      </router-link>
+      <router-link to="/search">
+        <base-text-button class="secondary-header__text-button m-radius-circle">
+          Поиск
+        </base-text-button>
+      </router-link>
+    </nav>
   </div>
 </template>
 
@@ -44,9 +57,6 @@
       color: var(--font-gray-v1);
     }
 
-    & a {
-      color: white;
-    }
   }
 
   &__logo {
@@ -54,6 +64,32 @@
     background: #FFFFFF;
   }
 }
+.secondary-header {
+  &__main {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 100%;
+  }
 
+  &__text-button {
+    display: flex;
+    color: white;
+    padding: 10px 12px;
+    cursor: pointer;
+    &:hover {
+      color: var(--font-gray-v1);
+      background: #21222A;
+    }
 
+    &:focus {
+      border: 1px solid white;
+      color: var(--font-gray-v1);
+      background: #272834;
+    }
+  }
+}
 </style>
+<script lang="ts" setup>
+import BaseTextButton from "@/components/Base/BaseTextButton.vue";
+</script>

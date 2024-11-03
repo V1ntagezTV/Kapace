@@ -1,59 +1,75 @@
 <template>
-  <div class="episode__body-box">
-    <BaseBackground v-if="dataIsReady" class="episode__main">
+  <div class="material episode__body-box">
+    <BaseBackground
+      v-if="dataIsReady"
+      :type="2"
+      class="episode__main"
+    >
       <div class="episode__title-main">
-        <div class="episode__title-primary">
-          <router-link v-if="details" :to="{ name: 'theater', params: { id: contentId }}">
-            <h1 class="episode__title">
-              {{ title }}
-            </h1>
-          </router-link>
-        </div>
+        <router-link v-if="content" :to="{ name: 'theater', params: { id: contentId }}">
+          <p class="headline-medium episode__title" style="color: var(--primary40)">
+            {{ content.Content.Title }}
+          </p>
+        </router-link>
 
-        <div v-if="selectedEpisode" class="episode__title-primary">
-          <h2 class="episode__title">
-            {{ "Эпизод " + selectedEpisode.Number }}
-          </h2>
+        <div v-if="selectedEpisode">
+          <p class="title-medium episode__title">
+            {{ "Серия " + selectedEpisode.Number }}{{ selectedEpisode.Title ? (': ' + selectedEpisode.Title) : "" }}
+          </p>
         </div>
 
         <div class="episode__title-secondary">
-          <p v-if="details.ImportStars >= 1" class="episode__title-rating">
-            {{ details.ImportStars }}
-          </p>
-          <p>{{ details.Country }}</p>
-          <p>{{ moment(new Date(details.ReleasedAt)).format('YYYY') }}</p>
-          <p v-if="details.Genres?.length > 0">
-            {{ details.Genres[0]?.Name ?? "123" }}
-          </p>
-          <p v-if="details.MinAgeLimit > 0">
-            {{ details.MinAgeLimit + '+' }}
-          </p>
-        </div>
-      </div>
-      <div v-if="selectedTranslation" class="episode__video-main episode__player-box">
-        <div class="episode__player">
-          <iframe
-            class="episode__player"
-            :src="selectedTranslation.Link"
-            frameborder="0"
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-            allowfullscreen
+          <filter-chips
+            v-show="content.Content.Type"
+            class="m3-bg-2"
+            style="color: var(--primary40)"
+            :text="(mapContentTypeToRuStr(content.Content.Type)).toString()"
+          />
+          <filter-chips
+            v-show="content.Content.Status"
+            class="m3-bg-2"
+            style="color: var(--primary40)"
+            :text="(mapContentStatusToRuStr(content.Content.Status)).toString()"
+          />
+          <filter-chips
+            v-show="content.Content.ReleasedAt"
+            class="m3-bg-2"
+            style="color: var(--primary40)"
+            :text="moment(new Date(content.Content.ReleasedAt)).format('YYYY')"
+          />
+          <filter-chips
+            v-show="content.Content.Country !== undefined"
+            class="m3-bg-2"
+            style="color: var(--primary40)"
+            :text="content.Content.Country.toString()"
+          />
+          <filter-chips
+            v-show="content.Content.MinAgeLimit > 0"
+            class="m3-bg-2"
+            style="color: var(--primary40)"
+            :text="content.Content.MinAgeLimit.toString()+'+'"
+          />
+          <filter-chips
+            v-show="content.Genres?.length > 0"
+            class="m3-bg-2"
+            style="color: var(--primary40)"
+            :text="content.Genres[0]?.Name"
           />
         </div>
-        <div class="episode__video-translations">
-          <div v-for="episode in details.Episodes" :key="episode">
-            <router-link
-              :to="{ name: 'episode', params: {
-                content: contentId,
-                episode: episode.Id,
-                translation: selectedTranslation.Id
-              }}"
-            >
-              <base-button class="episode__video-translate" :button-type="3">
-                {{ episode.Number }} Серия: {{ episode.Title }}
-              </base-button>
-            </router-link>
-          </div>
+      </div>
+      <div v-if="selectedTranslation" class="episode__video-main">
+        <iframe
+          v-if="isSelectedVideoLinkValid"
+          class="episode__player"
+          :src="selectedTranslation.Link"
+          frameborder="0"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allowfullscreen
+        />
+        <div v-else class="episode__video-unavailable m-border m-radius-16 v__center h__center m3-bg-5">
+          <p class="title-large">
+            Видео сейчас не доступно
+          </p>
         </div>
       </div>
     </BaseBackground>
@@ -63,11 +79,20 @@
       :content-id="contentId"
       :episode-id="episodeId ?? null"
     />
+
+    <translations-list-component-v2
+      v-if="dataIsReady"
+      :content-id="contentId"
+      :episode-translations="mapToEpisodes(translations?.Episodes ?? [])"
+      :episodes-total-count="0"
+      :translators="mapToTranslators(translations?.Translators ?? [])"
+      :selected-translator-id="translationId"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
-import {computed, inject, onMounted, ref, watch} from "vue";
+import {inject, onErrorCaptured, onMounted, ref, watch} from "vue";
 import {ContentService} from "@/api/ContentService";
 import {V1GetFullContentEpisode} from "@/api/Responses/V1GetFullContentResponse";
 import {TranslationService} from "@/api/TranslationService"
@@ -80,13 +105,18 @@ import {
   V1GetByEpisodeResponseEpisode, V1GetByEpisodeResponseTranslation,
   V1GetByEpisodeResponseTranslator
 } from "@/api/Responses/V1GetByEpisodeResponse";
-import BaseButton from "@/components/Base/BaseButton.vue";
 import {EpisodeListViewModel} from "@/components/Body/ViewModels/EpisodeListViewModel";
-import {TranslationType} from "@/api/Enums/TranslationType";
 import {V1GetByQueryResponseContent} from "@/api/Requests/V1GetByQueryResponse";
 import {V1GetByQueryRequest, V1GetByQuerySearchFilters} from "@/api/Requests/V1GetByQueryRequest";
 import {ContentSelectedInfo} from "@/api/Enums/ContentSelectedInfo";
 import TranslationsListComponent from "@/components/UseReadyComponents/TranslationsListComponent.vue";
+import {EpisodeService} from "@/api/EpisodeService";
+import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
+import {mapContentTypeToRuStr} from "@/api/Enums/ContentType";
+import {mapContentStatusToRuStr} from "@/api/Enums/ContentStatus";
+import TranslationsListComponentV2 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV2.vue";
+import {mapToEpisodes, mapToTranslators} from "@/components/UseReadyComponents/EpisodesList/TranslationsListViewModel";
+
 
 const route = useRoute();
 let episodeId = route.params.episode as number;
@@ -98,13 +128,14 @@ let translationId = +route.params.translation > 0 ? (+route.params.translation) 
 
 const contentService: ContentService = inject('content-service');
 const translationService: TranslationService = inject('translation-service');
+const episodeService: EpisodeService = inject('episode-service');
 
 const dataIsReady = ref<boolean>(false);
-const details = ref<V1GetByQueryResponseContent>(null);
+const content = ref<V1GetByQueryResponseContent>(null);
 const translations = ref<V1GetByEpisodeResponse>(null);
 const selectedEpisode = ref<V1GetFullContentEpisode>(null);
 const selectedTranslation = ref<V1GetByEpisodeResponseTranslation>(null);
-const episodeListViewModel = ref<EpisodeListViewModel>(null);
+const isSelectedVideoLinkValid = ref<boolean>(false);
 
 onMounted(async() => { await SetContents() });
 
@@ -126,27 +157,50 @@ async function SetContents() {
     error.message = "Content not found exception";
     throw error;
   }
+  await episodeService.incrementViews(episodeId);
 
-  details.value = contentsResponse.Content.find(x => x.Id == contentId);
-  translations.value = await translationService.V1GetByEpisodeAsync(new V1GetByEpisodeRequest(contentId, episodeId));
-  selectedEpisode.value = details.value.Episodes.find(x => x.Id == episodeId);
-
-  console.log(translations.value);
+  content.value = contentsResponse.Content.find(x => x.Content.Id == contentId);
+  translations.value = await translationService.V1GetByEpisodeAsync(new V1GetByEpisodeRequest(contentId));
+  selectedEpisode.value = content.value.Episodes.find(x => x.Id == episodeId);
   selectedTranslation.value = getCurrentEpisodeTranslation(translationId, translations.value.Episodes);
-  episodeListViewModel.value = mapToEpisodeListViewModel(selectedEpisode.value, selectedTranslation.value, translations.value.Translators);
+  await validateVideoLink();
   dataIsReady.value = true;
+}
+
+async function validateVideoLink() {
+  if (selectedTranslation.value.Link) {
+    try {
+      console.log(selectedTranslation.value.Link);
+      await fetch(selectedTranslation.value.Link, { mode: 'no-cors'})
+        .then((resp) => {
+          let status = true;
+          if (!resp.ok || resp.status != 200) status = false;
+          if (resp.type == "opaque") status = true;
+
+          isSelectedVideoLinkValid.value = status;
+        });
+
+      console.log("Site status: " + isSelectedVideoLinkValid.value);
+    }
+    catch (exception) {
+      console.log(exception);
+      isSelectedVideoLinkValid.value = false;
+    }
+  }
 }
 
 function getCurrentEpisodeTranslation(
   pathTranslationId: number,
-  episodesWithTranslations: V1GetByEpisodeResponseEpisode[]
-)
-  : V1GetByEpisodeResponseTranslation {
+  episodesWithTranslations: V1GetByEpisodeResponseEpisode[]) : V1GetByEpisodeResponseTranslation {
+
   if (episodesWithTranslations.length === 0) {
-    throw new Error("Translations not found!")
+    throw new Error("Translations not found! (1)")
   }
 
   const episode = episodesWithTranslations.find(episode => episode.Id == episodeId);
+  if (episode.Translations.length === 0) {
+    throw new Error("Translations not found! (2)")
+  }
 
   if (pathTranslationId > 0) {
     const selectedTranslator = episode.Translations.find(translation => translation.Id === pathTranslationId);
@@ -158,45 +212,6 @@ function getCurrentEpisodeTranslation(
   // as default;
   return episode.Translations[0];
 }
-
-function mapToEpisodeListViewModel(
-  episode: V1GetFullContentEpisode,
-  selectedTranslator: V1GetByEpisodeResponseTranslation,
-  translators: V1GetByEpisodeResponseTranslator[])
-  : EpisodeListViewModel {
-  console.log(selectedTranslator)
-
-  return <EpisodeListViewModel>({
-    contentId: contentId,
-    currentTranslatorId: selectedTranslator.Id,
-    currentEpisodeId: episode.Id,
-    currentPage: 1,
-    episodes: details.value.Episodes.map(x => ({
-      episodeId: x.Id,
-      number: x.Number,
-      title: x.Title,
-      releasedDate: 0,
-      views: 0, //x.Views,
-      stars: 4,//x.Stars,
-      translationId: selectedTranslator.Id,
-      translationLink: selectedTranslator.Link,
-    })).sort(x => x.number),
-    translators: translators.map(x => ({
-      title: x.Name,
-      player: "vk.com",
-      type: TranslationType.Subtitles
-    })),
-    translatorName: "Jopa",
-    offset: 1,
-    limit: 2,
-  });
-}
-
-const title = computed(() => {
-	return !selectedEpisode.value?.Title
-		? details.value.Title
-		: details.value.Title + ": " + selectedEpisode.value.Title;
-});
 
 watch(() => route.params.episode, async () => {
   if (!route.params.episode) {
@@ -210,8 +225,16 @@ watch(() => route.params.episode, async () => {
 
 <style lang="scss" scoped>
 .episode {
+  &__video-unavailable {
+    display: flex;
+    padding: 20px;
+    margin: 16px;
+    width: 100%;
+  }
+
   &__body-box {
     display: grid;
+    grid-template-rows: max-content;
     gap: 20px;
     padding-bottom: 20px;
     padding-top: 20px;
@@ -228,7 +251,7 @@ watch(() => route.params.episode, async () => {
   &__title-main {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
     padding: 20px;
   }
@@ -238,29 +261,15 @@ watch(() => route.params.episode, async () => {
   }
 
   &__player {
-    width: 1080px;
+    width: 100%;
     height: 607.5px;
   }
 
-  &__title-primary {
-    display: flex;
-    flex-direction: row;
-    gap: 6px;
-    align-items: center;
-  }
-
   &__title {
-    font-style: normal;
-    font-weight: 700;
     text-align: left;
 
     padding: 0;
     margin: 0;
-    transition: color 0.25s;
-
-    &:hover {
-      color: var(--primary)
-    }
   }
 
   &__icon-style {

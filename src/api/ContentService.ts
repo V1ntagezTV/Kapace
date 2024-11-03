@@ -42,6 +42,12 @@ export class ContentService extends ApiService {
     async searchBy(searchInput: string) {
         return this.CallHandlerAsync<V1SearchByResponse, V1SearchByRequest>({Search: searchInput} as V1SearchByRequest, "search-by")
     }
+
+    async incrementViews(contentId: number) {
+        return this.CallPostHandlerAsync<{ContentId: number}>(
+            {ContentId: contentId},
+            "increment-views");
+    }
 }
 
 interface V1SearchByRequest {

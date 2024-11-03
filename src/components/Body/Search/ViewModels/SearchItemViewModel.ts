@@ -1,5 +1,6 @@
 export type SearchItemViewModel = {
-    Image: string
+    Id: number
+    ImageId: number
     Title: string
     Description: string
     Translates: string[]

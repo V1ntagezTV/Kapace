@@ -7,6 +7,7 @@ export type V1GetChangesComparisonsResponse = {
 export type ChangeUnit = {
     HistoryId: number
     TargetId: number | null
+    ImageId: number | null
     HistoryType: typeof HistoryType
     FieldsComparisons: { Name: string, OldValue: string, NewValue: string }[]
     Title: string | null

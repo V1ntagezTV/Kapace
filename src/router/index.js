@@ -52,8 +52,40 @@ const routes = [
   },
   {
     name: "edit",
-    path: "/edits",
+    path: "/edit",
     component: EditsView,
+    children: [
+      {
+        name: "edit-list",
+        path: "/edit/list",
+        component: EditsView,
+      },
+      {
+        name: "edit-content",
+        path: "/edit/content/:content(\\d+)",
+        component: EditsView,
+      },
+      {
+        name: "create-content",
+        path: "/edit/content",
+        component: EditsView,
+      },
+      {
+        name: "edit-episode",
+        path: "/edit/episode/:content(\\d+)/:episode(\\d+)",
+        component: EditsView,
+      },
+      {
+        name: "edit-episode",
+        path: "/edit/episode/:content(\\d+)",
+        component: EditsView,
+      },
+      {
+        name: "create-episode",
+        path: "/edit/episode",
+        component: EditsView,
+      }
+    ]
   }
 ]
 

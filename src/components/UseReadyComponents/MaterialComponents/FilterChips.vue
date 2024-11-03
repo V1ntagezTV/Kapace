@@ -53,10 +53,11 @@ defineProps({
   }
 
   &__icon {
+    display: flex;
     justify-content: center;
     align-items: center;
-    height: 18px;
-    width: 18px;
+    height: 24px;
+    width: 24px;
   }
 }
 </style>

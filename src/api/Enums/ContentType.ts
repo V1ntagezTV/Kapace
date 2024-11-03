@@ -4,3 +4,14 @@ export const ContentType = {
     Serial: 'Serial',
     Show: 'Show',
 } as const;
+
+const ContentTypeRu = {
+    Film: 'Фильм',
+    Documentary: 'Документалка',
+    Serial: 'Сериал',
+    Show: 'Шоу',
+}
+
+export function mapContentTypeToRuStr(contentType: keyof typeof ContentType): string {
+    return ContentTypeRu[contentType];
+}

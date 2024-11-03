@@ -3,7 +3,7 @@
     v-show="episodeTranslations.length > 0"
     class="material m-radius-2 m3-bg-1 main__box"
     :class="{
-      'material m3-bg-1 main__box-with-paging': episodeTranslations.length < currentOffset
+      'material m3-bg-1 main__box-with-paging': episodeTranslations.length < offset
     }"
   >
     <div class="main__header-box main__margins">
@@ -12,7 +12,7 @@
           Эпизоды
         </h3>
         <h4 class="main__title">
-          {{ currentOffset }} - {{ currentOffset + episodeTranslations.length }} / {{ totalCount }}
+          {{ offset }} - {{ offset + episodeTranslations.length }} / {{ episodeTranslations.length }}
         </h4>
       </div>
       <div class="main__filters">
@@ -20,7 +20,7 @@
           v-model="translatorFilter"
           class="main__filter-button m-radius-1 m3-bg-3"
           :title="'Переводчик'"
-          :selectable-values="translators.map(x => x.Name)"
+          :selectable-values="getSelectableTranslators(props.translators)"
         />
         <base-selector
           v-model="orderByFilter"
@@ -62,53 +62,35 @@
   </div>
 </template>
 <script lang="ts" setup>
-import {inject, onMounted, ref} from 'vue';
-import {TranslationService} from "@/api/TranslationService";
-import {V1GetByEpisodeRequest} from "@/api/Requests/V1GetByEpisodeRequest";
+import {PropType, ref} from 'vue';
 import Star from "@/components/Icons/MaterialIcons/Star.vue";
 import Eye from "@/components/Icons/MaterialIcons/Eye.vue";
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
-import {
-  mapToEpisodes,
-  mapToTranslators, Order, Translation,
-  Translator
-} from "@/components/UseReadyComponents/EpisodesList/TranslationsListViewModel";
-
-const translationsService = inject<TranslationService>("translation-service");
-if (translationsService === undefined) {
-  const error = new Error();
-    error.message = "TranslationService not found not imported";
-    throw error;
-}
+import {Order, Translation, Translator} from "@/components/UseReadyComponents/EpisodesList/TranslationsListViewModel";
 
 const props = defineProps({
   contentId: {type: Number, required: true},
-  episodeId: {type: Number, required: false, default: null},
-  translatorId: {type: Number, required: false, default: null},
+  episodeTranslations: {type: Object as PropType<Translation[]>, required: true},
+  episodesTotalCount: { type: Number, required: true, default: 0},
+  translators: {type: Object as PropType<Translator[]>, required: true},
+  selectedTranslatorId: {type: Number, required: false, default: null},
+  orderBy: {type: String as PropType<typeof Order>, required: false, default: Order.ByNumber},
   limit: {type: Number, required: false, default: 10},
   offset: { type: Number, required: false, default: 0},
 });
 
-const episodeTranslations = ref<Translation[]>([]);
-const translators = ref<Translator[]>([]);
-const totalCount = ref<Number>(20);
-const currentOffset = ref(0);
+const getSelectableTranslators = (translators: Translator[]) : string[] => {
+  let result = [allTranslators , unknownTranslatorName];
+  result = [...result, ...translators.map(x => x.Name).sort()];
+  return result;
+}
 
 const translatorFilter = ref<string>();
 const orderByFilter = ref<typeof Order>();
 
-onMounted(async () => {
-  const dataRequest = new V1GetByEpisodeRequest(props.contentId, props.episodeId, props.translatorId);
-  const viewDataResponse = await translationsService.V1GetByEpisodeAsync(dataRequest);
-
-  if (viewDataResponse.Episodes) {
-    translators.value = mapToTranslators(viewDataResponse.Translators);
-    episodeTranslations.value = mapToEpisodes(viewDataResponse.Episodes);
-  }
-
-  totalCount.value = viewDataResponse.Episodes.length;
-});
+const allTranslators: string = "Все";
+const unknownTranslatorName = "Без имени";
 </script>
 
 <style lang="scss" scoped>

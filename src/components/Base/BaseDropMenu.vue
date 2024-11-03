@@ -25,7 +25,7 @@ import {ref} from "vue";
 const isActive = ref(false);
 
 defineProps({
-  height: {type: String, required: true}
+  height: {type: String, required: false, default: 'auto'}
 });
 
 function onDropClick() {
