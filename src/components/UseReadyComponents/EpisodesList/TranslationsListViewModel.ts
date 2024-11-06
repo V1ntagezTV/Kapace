@@ -1,5 +1,7 @@
 import {V1GetByEpisodeResponseEpisode, V1GetByEpisodeResponseTranslator} from "@/api/Responses/V1GetByEpisodeResponse";
 
+export const ALL_FILTER = "Все";
+
 export type Translation = {
     EpisodeId: number,
     Number: number,
@@ -9,12 +11,32 @@ export type Translation = {
     HasTranslations: boolean
 }
 
-export const Order = {
-    ByAge: 'По возрастанию',
-    ByWatches: 'По просмотрам',
-    ByNumber: 'По убыванию',
-    ByStars: 'По оценке',
-} as const;
+export enum Order {
+    ByNumber = 'По возрастанию',
+    ByNumberDescending = 'По убыванию',
+    ByViews = 'По просмотрам',
+    ByStars = 'По оценке'
+}
+
+export enum EpisodeOrderType {
+    ByNumber = 'ByNumber',
+    ByNumberDescending = 'ByNumberDescending',
+    ByStars = 'ByStars',
+    ByViews = 'ByViews'
+}
+
+export function mapToEpisodeOrderType(value: Order) {
+    if (value === Order.ByNumber) {
+        return EpisodeOrderType.ByNumber;
+    } else if (value === Order.ByNumberDescending) {
+        return EpisodeOrderType.ByNumberDescending;
+    } else if (value === Order.ByViews) {
+        return EpisodeOrderType.ByViews;
+    } else if (value === Order.ByStars) {
+        return EpisodeOrderType.ByStars;
+    }
+    return undefined;
+}
 
 export type Translator = {
     TranslatorId: number,
@@ -30,10 +52,7 @@ export function mapToEpisodes(data: V1GetByEpisodeResponseEpisode[]) : Translati
             Views: episode.Views,
             Stars: episode.Stars,
             HasTranslations: episode.Translations ? (episode.Translations.length > 0) : false
-        }))
-        .sort(function (left, right) {
-            return left.Number > right.Number ? 1 : -1;
-        });
+        }));
 }
 
 export function mapToTranslators(

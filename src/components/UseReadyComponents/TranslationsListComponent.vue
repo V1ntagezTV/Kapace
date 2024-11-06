@@ -99,7 +99,7 @@ const translatorFilter = ref<string>();
 const orderByFilter = ref<typeof Order>();
 
 onMounted(async () => {
-  const dataRequest = new V1GetByEpisodeRequest(props.contentId, props.episodeId, props.translatorId);
+  const dataRequest = new V1GetByEpisodeRequest(props.contentId, props.episodeId, props.translatorId, null);
   const viewDataResponse = await translationsService.V1GetByEpisodeAsync(dataRequest);
 
   if (viewDataResponse.Episodes) {

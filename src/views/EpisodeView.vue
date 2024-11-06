@@ -74,25 +74,27 @@
       </div>
     </BaseBackground>
 
-    <TranslationsListComponent
-      v-if="dataIsReady"
-      :content-id="contentId"
-      :episode-id="episodeId ?? null"
-    />
-
     <translations-list-component-v2
       v-if="dataIsReady"
       :content-id="contentId"
-      :episode-translations="mapToEpisodes(translations?.Episodes ?? [])"
+      :episodes="episodes"
       :episodes-total-count="0"
       :translators="mapToTranslators(translations?.Translators ?? [])"
       :selected-translator-id="translationId"
+      @sort-by:update="(value) => {
+        episodesListParams.sortBy.value = value;
+        updateEpisodesList();
+      }"
+      @translator:update="(value) => {
+        episodesListParams.translator.value = value;
+        updateEpisodesList();
+      }"
     />
   </div>
 </template>
 
 <script lang="ts" setup>
-import {inject, onErrorCaptured, onMounted, ref, watch} from "vue";
+import {inject, onMounted, ref, watch} from "vue";
 import {ContentService} from "@/api/ContentService";
 import {V1GetFullContentEpisode} from "@/api/Responses/V1GetFullContentResponse";
 import {TranslationService} from "@/api/TranslationService"
@@ -102,20 +104,22 @@ import BaseBackground from "@/components/Base/BaseBackground.vue";
 import {V1GetByEpisodeRequest} from "@/api/Requests/V1GetByEpisodeRequest";
 import {
   V1GetByEpisodeResponse,
-  V1GetByEpisodeResponseEpisode, V1GetByEpisodeResponseTranslation,
-  V1GetByEpisodeResponseTranslator
+  V1GetByEpisodeResponseEpisode, V1GetByEpisodeResponseTranslation
 } from "@/api/Responses/V1GetByEpisodeResponse";
-import {EpisodeListViewModel} from "@/components/Body/ViewModels/EpisodeListViewModel";
 import {V1GetByQueryResponseContent} from "@/api/Requests/V1GetByQueryResponse";
 import {V1GetByQueryRequest, V1GetByQuerySearchFilters} from "@/api/Requests/V1GetByQueryRequest";
 import {ContentSelectedInfo} from "@/api/Enums/ContentSelectedInfo";
-import TranslationsListComponent from "@/components/UseReadyComponents/TranslationsListComponent.vue";
 import {EpisodeService} from "@/api/EpisodeService";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import {mapContentTypeToRuStr} from "@/api/Enums/ContentType";
 import {mapContentStatusToRuStr} from "@/api/Enums/ContentStatus";
 import TranslationsListComponentV2 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV2.vue";
-import {mapToEpisodes, mapToTranslators} from "@/components/UseReadyComponents/EpisodesList/TranslationsListViewModel";
+import {
+  ALL_FILTER,
+  mapToEpisodeOrderType,
+  mapToEpisodes,
+  mapToTranslators, Order, Translation
+} from "@/components/UseReadyComponents/EpisodesList/TranslationsListViewModel";
 
 
 const route = useRoute();
@@ -137,7 +141,40 @@ const selectedEpisode = ref<V1GetFullContentEpisode>(null);
 const selectedTranslation = ref<V1GetByEpisodeResponseTranslation>(null);
 const isSelectedVideoLinkValid = ref<boolean>(false);
 
-onMounted(async() => { await SetContents() });
+let episodes: Translation[] = [];
+const episodesListParams = {
+  translator: ref<string>(),
+  sortBy: ref<string>(Order.ByNumber)
+};
+
+onMounted(async() => {
+  await SetContents()
+  await updateEpisodesList();
+});
+
+async function updateEpisodesList() {
+  let translatorId = null
+  if (episodesListParams.translator.value) {
+    if (episodesListParams.translator.value === ALL_FILTER) {
+      translatorId = null;
+    } else {
+      const translator = translations.value.Translators.find(x => x.Name === episodesListParams.translator.value);
+      translatorId = translator.Id;
+    }
+  }
+
+  console.log(episodesListParams.sortBy.value as Order);
+
+  const request = new V1GetByEpisodeRequest(
+    contentId,
+    null,
+    translatorId,
+    mapToEpisodeOrderType(episodesListParams.sortBy.value as Order)
+  );
+
+  translations.value = await translationService.V1GetByEpisodeAsync(request);
+  episodes = mapToEpisodes(translations.value.Episodes);
+}
 
 async function SetContents() {
   const request = new V1GetByQueryRequest();

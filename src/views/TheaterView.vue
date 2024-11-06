@@ -64,9 +64,20 @@
 
     <div class="theater__body">
       <TheaterDetails v-if="isDataReady" :details="details" />
-      <translations-list-component
+      <translations-list-component-v2
         v-if="isDataReady"
-        :content-id="id"
+        :translators="mapToTranslators(episodeTranslations.Translators)"
+        :episodes-total-count="0"
+        :episodes="episodes"
+        :content-id="contentId"
+        @translator:update="(value) => {
+          episodesListParams.translator.value = value;
+          updateEpisodesList();
+        }"
+        @sort-by:update="(value) => {
+          episodesListParams.sortBy.value = value;
+          updateEpisodesList();
+        }"
       />
     </div>
   </div>
@@ -79,30 +90,72 @@ import {inject, onMounted, ref} from "vue";
 import TheaterAvatar from "@/components/Theater/TheaterAvatar.vue";
 import {V1GetFullContentEpisode, V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
 import {ContentService} from "@/api/ContentService";
-import TranslationsListComponent from "@/components/UseReadyComponents/TranslationsListComponent.vue";
 import moment from "moment/moment";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
+import TranslationsListComponentV2 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV2.vue";
+import {
+  ALL_FILTER,
+  mapToEpisodeOrderType, mapToEpisodes, mapToTranslators,
+  Order, Translation
+} from "@/components/UseReadyComponents/EpisodesList/TranslationsListViewModel";
+
+import {
+  V1GetByEpisodeResponse
+} from "@/api/Responses/V1GetByEpisodeResponse";
+import {V1GetByEpisodeRequest} from "@/api/Requests/V1GetByEpisodeRequest";
+import {TranslationService} from "@/api/TranslationService";
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const route = useRoute();
-const id = ref(+route.params.id);
+const contentId = ref(+route.params.id);
 const contentService: ContentService = inject("content-service");
+const translationService: TranslationService = inject('translation-service');
 
 let startWatchEpisodeId = ref<number>();
 const isDataReady = ref(false);
 const details = ref<V1GetFullContentResponse>(null);
 const tags = ref<Map<string, string | number>>();
 
+let episodeTranslations = ref<V1GetByEpisodeResponse>(null);
+let episodes: Translation[] = [];
+const episodesListParams = {
+  translator: ref<string>(),
+  sortBy: ref<string>(Order.ByNumber)
+};
+
 onMounted(async() => {
   isDataReady.value = false;
-  details.value = await contentService.V1GetById(id.value, 0);
+  details.value = await contentService.V1GetById(contentId.value, 0);
   await contentService.incrementViews(details.value.Content.Id);
   tags.value = getTagsFromDetails(details.value);
   startWatchEpisodeId.value = getFirstEpisodeIdOrDefault(details.value.Episodes);
+  await updateEpisodesList();
   console.log("Выбранный: " + startWatchEpisodeId.value);
   isDataReady.value = true;
-})
+});
+
+async function updateEpisodesList() {
+  let translatorId = null
+  if (episodesListParams.translator.value) {
+    if (episodesListParams.translator.value === ALL_FILTER) {
+      translatorId = null;
+    } else {
+      const translator = episodeTranslations.value.Translators.find(x => x.Name === episodesListParams.translator.value);
+      translatorId = translator.Id;
+    }
+  }
+
+  const request = new V1GetByEpisodeRequest(
+    contentId.value,
+    null,
+    translatorId,
+    mapToEpisodeOrderType(episodesListParams.sortBy.value as Order)
+  );
+
+  episodeTranslations.value = await translationService.V1GetByEpisodeAsync(request);
+  episodes = mapToEpisodes(episodeTranslations.value.Episodes);
+}
 
 function getFirstEpisodeIdOrDefault(episodes: V1GetFullContentEpisode[]) {
   // Значение по умолчанию приводит к скрытию кнопки "Начать просмотр"
