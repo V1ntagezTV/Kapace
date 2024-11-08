@@ -207,6 +207,7 @@
       >
         Сбросить
       </base-button>
+      <base-button @click="() => console.log(durationInMinutes(duration))"></base-button>
     </div>
   </div>
 </template>
@@ -351,15 +352,13 @@ const durationInMinutes = (duration: string): number | null => {
   }
 
   const values = duration.split(':');
-  const hours = values[0] as number;
-  const minutes = values[1] as number;
+  const hours: number = parseInt(values[0]);
+  const minutes: number = parseInt(values[1]);
 
-  return hours * 60 + minutes;
+  return (hours * 60) + minutes;
 };
 
 async function onClickInsertContent() {
-  durationInMinutes(duration.value)
-
   const request: V1ChangeableFields = {
     Channel: channel.value,
     ContentStatus: contentStatus.value,
