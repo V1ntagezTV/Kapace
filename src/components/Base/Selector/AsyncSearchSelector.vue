@@ -13,6 +13,7 @@
           v-model="textInput"
           :place-holder="placeholder"
           @keyup="searchByContentInput(dropMenu)"
+          @keydown.enter.stop="emits('onkeydown:enter', textInput)"
         />
 
         <icon-button
@@ -58,6 +59,7 @@ watch(() => props.input, (newValue) => {
 
 const emits = defineEmits<{
   (emitName: 'change:input', input: string, isSelect: boolean) : void,
+  (emitName: 'onkeydown:enter', input: string) : void
 }>();
 
 function onChangeInput() {

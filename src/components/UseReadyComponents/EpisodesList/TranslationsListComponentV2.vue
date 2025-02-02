@@ -39,7 +39,7 @@
       >
         <router-link :to="{ name: 'episode', params: { content: contentId, episode: episodeTranslation.EpisodeId }}">
           <div class="box__inline main__episode-box">
-            <div class="box__inline main__episode-attribute">
+            <div class="body-large box__inline main__episode-attribute">
               {{ episodeTranslation.Number }} cерия{{ episodeTranslation.Title ? ": "+episodeTranslation.Title : "" }}
             </div>
             <div class="box__inline main__episode-attribute">
@@ -48,7 +48,7 @@
                 class="m-border"
                 :text="'Нет перевода'"
               />
-              <div v-if="episodeTranslation.Stars > 0" class="box__inline main__episode-tag">
+              <div v-if="episodeTranslation.Stars > 0" class="body-large box__inline main__episode-tag">
                 <Star />
                 {{ episodeTranslation.Stars }}
               </div>
@@ -113,7 +113,7 @@ const selectableTranslators = computed((): string[] => {
 .main {
   &__episodes-box {
     border-top: 1px solid #EEEFF4;
-    padding: 16px 0;
+    padding: 12px 0;
   }
 
   &__episode-attribute {
@@ -128,10 +128,7 @@ const selectableTranslators = computed((): string[] => {
     text-overflow: ellipsis;
     gap: 16px;
 
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 0.02em;
-    color: #525A92;
+    color: var(--primary40);
   }
 
   &__episode-tag {
@@ -170,15 +167,13 @@ const selectableTranslators = computed((): string[] => {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
-
-    height: 48px;
     width: 100%;
     gap: 24px;
-
-    padding: 0 26px;
+    padding: 8px 26px;
 
     &:hover {
-      background: rgba(82, 90, 146, 0.08);
+      color: var(--on-secondary-container-light);
+      background: var(--secondary-container-light);
       cursor: pointer;
     }
   }

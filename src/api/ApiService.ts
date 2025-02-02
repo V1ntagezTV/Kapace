@@ -1,5 +1,5 @@
 export class ApiService {
-    private hostPath: string = "http://localhost:5000/";
+    protected hostPath: string = "http://localhost:5000/";
 
     constructor(protected servicePath: string) { }
 
@@ -14,7 +14,8 @@ export class ApiService {
         return fetch(path, {
             method: 'POST',
             headers: requestHeaders,
-            body: JSON.stringify(requestBody),
+            credentials: 'include',
+            body: requestBody === undefined ? JSON.stringify({}) : JSON.stringify(requestBody),
         });
     }
 
@@ -57,5 +58,3 @@ export class ApiService {
         );
     }
 }
-
-interface EmptyResponse {}

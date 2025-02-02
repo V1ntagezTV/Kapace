@@ -24,19 +24,24 @@
 
 .m-border {
   border: 1px solid var(--outline-variant-light);
+  transition:
+          border-radius .3s cubic-bezier(.2,0,0,1),
+          background-color .3s cubic-bezier(.2,0,0,1),
+          border-bottom-color .3s cubic-bezier(.2,0,0,1),
+          border-top-color .3s cubic-bezier(.2,0,0,1),
+          border-left-color .3s cubic-bezier(.2,0,0,1),
+          border-right-color .3s cubic-bezier(.2,0,0,1);
 }
 
 .m-border-hover {
   &:hover {
-    border-color: var(--primary40);
-    border-width: 1px;
+    border: 1px var(--primary40) solid;
   }
 }
 
 .m-border-active {
-  &:active {
-    border-color: var(--primary40);
-    border-width: 1px;
+  &:focus {
+    border: 1px var(--primary40) solid;
   }
 }
 

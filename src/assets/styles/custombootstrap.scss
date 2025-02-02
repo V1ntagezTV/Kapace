@@ -29,6 +29,9 @@
   &__space-between {
     justify-content: space-between;
   }
+  &__center {
+    justify-content: center;
+  }
 }
 
 // Вертикальные стили
@@ -52,3 +55,4 @@
   &-16 {gap: 16px;}
   &-26 {gap: 26px;}
 }
+

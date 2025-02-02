@@ -1,21 +1,21 @@
 <template>
-  <button v-if="buttonType === 1 && variant === 'skip'" class="base-button__button base-button__light">
+  <button v-if="buttonType === 1 && variant === 'skip'" class="label-large base-button__button base-button__light">
     <slot />
   </button>
 
-  <button v-else-if="buttonType === 2 && variant === 'skip'" class="base-button__button base-button__dark">
-    <slot />
-  </button>
-  
-  <button v-else-if="buttonType === 3 && variant === 'skip'" class="base-button__button base-button__text">
+  <button v-else-if="buttonType === 2 && variant === 'skip'" class="label-large base-button__button base-button__dark">
     <slot />
   </button>
 
-  <button v-else-if="variant === 'filled'" class="base-button__button base-button__filled">
+  <button v-else-if="buttonType === 3 && variant === 'skip'" class="label-large base-button__button base-button__text">
     <slot />
   </button>
 
-  <button v-else-if="variant === 'outline'" class="base-button__button base-button__outline">
+  <button v-else-if="variant === 'filled'" class="label-large base-button__button base-button__filled">
+    <slot />
+  </button>
+
+  <button v-else-if="variant === 'outline'" class="label-large base-button__button base-button__outline">
     <slot />
   </button>
 </template>
@@ -47,11 +47,6 @@ const props = defineProps({
     background: transparent;
     align-items: center;
 
-    font-style: normal;
-    font-weight: 600;
-    letter-spacing: 0.07em;
-    font-size: 14px;
-    line-height: 17px;
     color: var(--dark-primary);
     -webkit-user-select: none;
     cursor: pointer;

@@ -8,31 +8,33 @@
         >
       </router-link>
 
-      <span>Авторизация</span>
+      <span class="title-large">Авторизация</span>
 
       <div class="login-view__input-container">
-        <input
-          class="login-view__input" type="text"
-          placeholder="Никнейм или email" required
-        >
-        <input
-          class="login-view__input" type="password"
-          placeholder="Пароль" required
-        >
+        <base-input
+          v-model="loginInput"
+          class="m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
+          :mark-as-invalid-input="isLoginInputInvalid"
+          :place-holder="'Введите email'"
+          type="email"
+        />
+        <base-input
+          v-model="passwordInput"
+          class="m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
+          :mark-as-invalid-input="isLoginInputInvalid"
+          :place-holder="'Введите пароль'"
+          type="password"
+        />
       </div>
 
-      <div class="login-view__memorize">
-        <input :checked="isRememberMe" type="checkbox">
-        <label class="login-view__memorize-label" @click="RememberMeClickHandler">Запомнить меня</label>
-      </div>
-
-      <div class="login-view__line-breaker" />
-
-      <BaseButton :button-type="2" @click="store.LogIn">
-        <router-link class="login-view__login-button" to="/">
-          Войти + {{ store.$state.loggedIn }}
-        </router-link>
-      </BaseButton>
+      <base-button
+        class="m-radius-circle"
+        :button-type="2"
+        :variant="'filled'"
+        @click.stop="logInClick"
+      >
+        Войти
+      </base-button>
 
       <div class="login-view__links">
         <router-link to="/restore">
@@ -49,15 +51,51 @@
 <script lang="ts" setup>
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
-import {ref} from "vue";
+import {inject, ref} from "vue";
 import {userStore} from "@/store/UserStore"
+import {UserApi} from "@/api/UserApi";
+import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
+import BaseInput from "@/components/Base/BaseInput.vue";
+import {StringExtensions} from "@/helpers/StringExtensions";
+import {useRouter} from "vue-router";
 
+const router = useRouter()
 const store = userStore();
+const userApi = inject<UserApi>('user-api');
+const eventStore = ClientEventStore();
 
-const isRememberMe = ref(false)
+const isLoginInputInvalid = ref<boolean>(false);
+const isPasswordInputInvalid = ref<boolean>(false);
+const loginInput = ref<string>(undefined);
+const passwordInput = ref<string>(undefined);
 
-function RememberMeClickHandler() {
-  isRememberMe.value = !isRememberMe.value;
+async function logInClick() {
+  if (IsInputsValid()) {
+    try {
+      await userApi.logIn(loginInput.value, passwordInput.value);
+    } catch (exception) {
+      eventStore.push('Ошибка! Не корректно введены логин или пароль!', EventTypes.Error);
+      return;
+    }
+
+    const currentUser = await userApi.getCurrent();
+    store.LogIn(currentUser.User.Nickname);
+    await router.push('/');
+  } else {
+    eventStore.push('Введите логин и пароль для входа.', EventTypes.Error);
+  }
+}
+
+function IsInputsValid() : boolean {
+  if (StringExtensions.isNullOrEmpty(loginInput.value)) {
+    isLoginInputInvalid.value = true;
+  }
+
+  if (StringExtensions.isNullOrEmpty(passwordInput.value)) {
+    isPasswordInputInvalid.value = true;
+  }
+
+  return !isLoginInputInvalid.value && !isPasswordInputInvalid.value;
 }
 </script>
 
@@ -140,6 +178,7 @@ function RememberMeClickHandler() {
     height: 100%;
     width: 100%;
     display: flex;
+    margin-top: 26px;
     justify-content: center;
     align-items: center;
   }

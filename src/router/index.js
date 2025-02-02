@@ -12,7 +12,7 @@ import EditsView from "@/views/EditsView.vue";
 const routes = [
   {
     path: '/',
-    name: 'Главная',
+    name: 'main',
     component: HomeView
   },
   {

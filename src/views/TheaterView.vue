@@ -44,7 +44,7 @@
       </base-background>
 
       <base-button
-        class="material theater__add m-radius-circle m3-bg-1 m-border"
+        class="theater__edit m-radius-circle"
         :variant="'outline'"
       >
         <router-link class="body-medium" :to="{name: 'edit-episode', params: {content: +route.params.id} }">
@@ -53,7 +53,7 @@
       </base-button>
 
       <base-button
-        class="material theater__add m-radius-circle m3-bg-1 m-border"
+        class="theater__edit m-radius-circle"
         :variant="'outline'"
       >
         <router-link class="body-medium" :to="{name: 'edit-content', params: {content: +route.params.id}}">
@@ -214,10 +214,10 @@ function getTagsFromDetails(details: V1GetFullContentResponse) : Map<string, str
     }
   }
 
-  &__add {
+  &__edit {
     display: flex;
     justify-content: center;
-    color: var(--primary30);
+
     & a {
       color: var(--primary40);
     }

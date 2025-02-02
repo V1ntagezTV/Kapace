@@ -52,6 +52,7 @@ import BaseBackground from "@/components/Base/BaseBackground.vue";
 import AutoHide from "@/components/AutoHide.vue";
 import {GenreService} from "@/api/GenreService";
 import BaseButton from "@/components/Base/BaseButton.vue";
+import {UserApi} from "@/api/UserApi";
 
 provide('content-service', new ContentService());
 provide('translation-service', new TranslationService());
@@ -60,6 +61,7 @@ provide('changes-history-service', new ChangesHistoryService());
 provide('episode-service', new EpisodeService());
 provide('translator-service', new TranslatorService());
 provide('genre-service', new GenreService());
+provide('user-api', new UserApi());
 
 const clientEventStore = new ClientEventStore();
 const events = computed(() => clientEventStore.$state.events);
@@ -68,7 +70,7 @@ const events = computed(() => clientEventStore.$state.events);
 <style lang="scss">
 @import "@/assets/styles/mstyles.scss";
 @import "@/assets/styles/custombootstrap.scss";
-@import url('https://fonts.googleapis.com/css?family=Roboto');
+@import url('https://fonts.googleapis.com/css2?family=Roboto');
 @import url(@/assets/styles/token.css);
 
 :root {
@@ -118,18 +120,15 @@ const events = computed(() => clientEventStore.$state.events);
 }
 
 #app {
-  font-family: Inter, sans-serif;
+  font-family: "Roboto", sans-serif;
+  font-style: normal;
   font-weight: 500;
   font-size: 14px;
   letter-spacing: 0.04em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-}
-
-.material {
-  font-family: 'Roboto', sans-serif;
+  color: #49454F;
 }
 
 .wrapper {

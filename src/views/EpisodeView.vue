@@ -1,5 +1,5 @@
 <template>
-  <div class="material episode__body-box">
+  <div class="material episode__body-box gap-16">
     <BaseBackground
       v-if="dataIsReady"
       :type="2"
@@ -12,9 +12,9 @@
           </p>
         </router-link>
 
-        <div v-if="selectedEpisode">
+        <div v-if="currentEpisode">
           <p class="title-medium episode__title">
-            {{ "Серия " + selectedEpisode.Number }}{{ selectedEpisode.Title ? (': ' + selectedEpisode.Title) : "" }}
+            {{ "Серия " + currentEpisode.Number }}{{ currentEpisode.Title ? (': ' + currentEpisode.Title) : "" }}
           </p>
         </div>
 
@@ -74,6 +74,46 @@
       </div>
     </BaseBackground>
 
+    <div v-show="previousEpisode || nextEpisode" class="row gap-16">
+      <router-link
+        v-if="previousEpisode"
+        class="episode__move-button m-radius-16 column gap-8"
+        :to="{
+          name: 'episode',
+          params: {
+            content: contentId,
+            episode: previousEpisode.Id
+          }}"
+      >
+        <div class="title-medium row gap-8">
+          <nav-left-arrow-icon />
+          Предыдущий эпизод
+        </div>
+        <div class="headline-small">
+          Серия {{ previousEpisode.Number }}{{ (previousEpisode.Title ? ": " + previousEpisode.Title : "") }}
+        </div>
+      </router-link>
+
+      <router-link
+        v-if="nextEpisode"
+        class="episode__move-button m-radius-16 column gap-8"
+        :to="{
+          name: 'episode',
+          params: {
+            content: contentId,
+            episode: nextEpisode.Id
+          }}"
+      >
+        <div class="title-medium row gap-8">
+          Следующий эпизод
+          <nav-right-arrow-icon />
+        </div>
+        <div class="headline-small">
+          Серия {{ nextEpisode.Number }}{{ (nextEpisode.Title ? ": " + nextEpisode.Title : "") }}
+        </div>
+      </router-link>
+    </div>
+
     <translations-list-component-v2
       v-if="dataIsReady"
       :content-id="contentId"
@@ -104,7 +144,8 @@ import BaseBackground from "@/components/Base/BaseBackground.vue";
 import {V1GetByEpisodeRequest} from "@/api/Requests/V1GetByEpisodeRequest";
 import {
   V1GetByEpisodeResponse,
-  V1GetByEpisodeResponseEpisode, V1GetByEpisodeResponseTranslation
+  V1GetByEpisodeResponseEpisode,
+  V1GetByEpisodeResponseTranslation
 } from "@/api/Responses/V1GetByEpisodeResponse";
 import {V1GetByQueryResponseContent} from "@/api/Requests/V1GetByQueryResponse";
 import {V1GetByQueryRequest, V1GetByQuerySearchFilters} from "@/api/Requests/V1GetByQueryRequest";
@@ -116,10 +157,15 @@ import {mapContentStatusToRuStr} from "@/api/Enums/ContentStatus";
 import TranslationsListComponentV2 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV2.vue";
 import {
   ALL_FILTER,
+  EpisodeOrderType,
   mapToEpisodeOrderType,
   mapToEpisodes,
-  mapToTranslators, Order, Translation
+  mapToTranslators,
+  Order,
+  Translation
 } from "@/components/UseReadyComponents/EpisodesList/TranslationsListViewModel";
+import NavLeftArrowIcon from "@/components/Icons/MaterialIcons/NavLeftArrowIcon.vue";
+import NavRightArrowIcon from "@/components/Icons/MaterialIcons/NavRightArrowIcon.vue";
 
 
 const route = useRoute();
@@ -137,7 +183,9 @@ const episodeService: EpisodeService = inject('episode-service');
 const dataIsReady = ref<boolean>(false);
 const content = ref<V1GetByQueryResponseContent>(null);
 const translations = ref<V1GetByEpisodeResponse>(null);
-const selectedEpisode = ref<V1GetFullContentEpisode>(null);
+const previousEpisode = ref<V1GetFullContentEpisode | null>(null);
+const currentEpisode = ref<V1GetFullContentEpisode>(null);
+const nextEpisode = ref<V1GetFullContentEpisode | null>(null);
 const selectedTranslation = ref<V1GetByEpisodeResponseTranslation>(null);
 const isSelectedVideoLinkValid = ref<boolean>(false);
 
@@ -177,6 +225,8 @@ async function updateEpisodesList() {
 }
 
 async function SetContents() {
+  nextEpisode.value = null;
+  previousEpisode.value = null;
   const request = new V1GetByQueryRequest();
   const filters = new V1GetByQuerySearchFilters();
   request.SelectedInfo = ContentSelectedInfo.Episodes;
@@ -194,13 +244,29 @@ async function SetContents() {
     error.message = "Content not found exception";
     throw error;
   }
-  await episodeService.incrementViews(episodeId);
 
   content.value = contentsResponse.Content.find(x => x.Content.Id == contentId);
-  translations.value = await translationService.V1GetByEpisodeAsync(new V1GetByEpisodeRequest(contentId));
-  selectedEpisode.value = content.value.Episodes.find(x => x.Id == episodeId);
+  const translationsRequest = new V1GetByEpisodeRequest(contentId, null, null, EpisodeOrderType.ByNumber);
+  translations.value = await translationService.V1GetByEpisodeAsync(translationsRequest);
+  currentEpisode.value = content.value.Episodes.find(value => value.Id == episodeId);
   selectedTranslation.value = getCurrentEpisodeTranslation(translationId, translations.value.Episodes);
+
+  const orderedEpisodes = translations.value.Episodes.sort(value => value.Number);
+  for (let index = 0; index < orderedEpisodes.length; index++) {
+    const episode = orderedEpisodes[index];
+    if (episode.Number === currentEpisode.value.Number) {
+      if (index != 0) {
+        previousEpisode.value = orderedEpisodes[index - 1];
+      }
+
+      if (index != orderedEpisodes.length - 1) {
+        nextEpisode.value = orderedEpisodes[index + 1];
+      }
+    }
+  }
+
   await validateVideoLink();
+  await episodeService.incrementViews(episodeId);
   dataIsReady.value = true;
 }
 
@@ -262,6 +328,20 @@ watch(() => route.params.episode, async () => {
 
 <style lang="scss" scoped>
 .episode {
+  &__move-button {
+    background: white;
+    padding: 24px;
+    width: 100%;
+    text-align: start;
+    justify-content: center;
+    transition: background-color .3s cubic-bezier(.2,0,0,1);
+
+    &:hover {
+      color: var(--on-secondary-container-light);
+      background: var(--secondary-container-light);
+    }
+  }
+
   &__video-unavailable {
     display: flex;
     padding: 20px;
@@ -272,7 +352,6 @@ watch(() => route.params.episode, async () => {
   &__body-box {
     display: grid;
     grid-template-rows: max-content;
-    gap: 20px;
     padding-bottom: 20px;
     padding-top: 20px;
   }

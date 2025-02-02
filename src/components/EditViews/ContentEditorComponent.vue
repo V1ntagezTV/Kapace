@@ -240,6 +240,7 @@ import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 import {ContentStatus} from "@/api/Enums/ContentStatus";
 import {ContentService} from "@/api/ContentService";
 import moment from "moment";
+import {StringExtensions} from "@/helpers/StringExtensions";
 
 const props = defineProps({
   contentId: {type: Object as PropType<number | any>, required: false, default: undefined}
@@ -321,6 +322,10 @@ const genreSelectableValues = computed(() => genresQuery.value.map(g => g.Name))
 
 async function onChangeGenreInput(input: string, isSelected: boolean) {
   if (!isSelected) {
+    if (StringExtensions.isNullOrEmpty(input)) {
+      return;
+    }
+
     const genres = await genreService.Query({
       Search: input,
       GenreIds: undefined,
@@ -380,14 +385,19 @@ async function onClickInsertContent() {
     return;
   }
 
-  const response = await changesHistoryService.createContentChange({
-    ChangeableFields: request,
-    ContentId: 0,
-    CreatedBy: 0
-  });
+  try {
+    const response = await changesHistoryService.createContentChange({
+      ChangeableFields: request,
+      ContentId: props.contentId ?? 0,
+      CreatedBy: 0
+    });
+    if (currentImage != null) {
+      await imageService.insertImage(props.contentId ?? null, response.HistoryId, currentImage);
+    }
 
-  if (currentImage != null) {
-    await imageService.insertImage(null, response.HistoryId, currentImage);
+    clientEventStore.push('Успех! Заявка на добавление изменений создано.')
+  } catch (exception) {
+    clientEventStore.push('Ошибка! Неизвестная ошибка сервера.')
   }
 }
 

@@ -1,5 +1,5 @@
 export class StringExtensions {
-    static isNullOrEmpty(imageUrl: string) : boolean {
-        return !imageUrl || imageUrl.length === 0;
+    static isNullOrEmpty(value: string) : boolean {
+        return !value || value.trim().length === 0;
     }
 }

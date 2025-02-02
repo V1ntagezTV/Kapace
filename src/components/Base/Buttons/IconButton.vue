@@ -11,6 +11,7 @@
   width: 40px;
   min-height: 40px;
   min-width: 40px;
+  user-select: none;
 
   align-items: center;
   justify-content: center;

@@ -3,9 +3,9 @@
     <async-search-selector
       class="edit-list__search m-radius-1"
       :placeholder="'Поиск'"
-      :values="searchSelectableValueModels.map(x => x.Title)"
+      :values="searchSelectableValueModels?.map(x => x.Title) ?? []"
       @change:input="searchByInput"
-      @keydown.enter="searchByInput"
+      @onkeydown:enter="(input: String) => {pressEnterSearch(input)}"
     />
     <div class="edit-list__filters">
       <filter-chips
@@ -141,7 +141,7 @@
       </base-text-button>
       <base-text-button
         class="edit-list__paging-button title-medium m3-bg-2 m-radius-28 gap-8"
-        @click="updatePage(10)"
+        @click="updatePage(5)"
       >
         Следующая страница
         <nav-right-arrow-icon />
@@ -177,7 +177,7 @@ const clientEventStore = new ClientEventStore();
 
 const searchSelectableValueModels = ref<V1SearchByResponseUnit[]>([]);
 const filters = {
-  selectedContentId: ref<number | null>(null),
+  contentIds: ref<number[]>([]),
   search: ref<string | null>(null),
   orderBy: ref<string | null>('По умолчанию'),
   historyType: ref<string | null>(''),
@@ -213,7 +213,7 @@ async function updatePage(addOffset: number = 0) {
     Ids: [],
     Limit: limit,
     Offset: offset,
-    TargetIds: filters.selectedContentId.value ? [filters.selectedContentId.value] : [],
+    TargetIds: filters.contentIds?.value ?? []
   });
 
   changes.value = response.Changes;
@@ -279,14 +279,23 @@ function getVideoLinkByChangesComparisons(units: ChangeUnit): string {
   return units.FieldsComparisons.find(unit => unit.Name === 'Видео').NewValue;
 }
 
+async function pressEnterSearch(input: string) {
+  // Скрываем выпадающий список.
+  searchSelectableValueModels.value = [];
+
+  const foundedContents = await contentService.searchBy(input);
+  filters.contentIds.value = foundedContents.Units.map(c => c.ContentId);
+  await updatePage()
+}
+
 async function searchByInput(input: string, isSelected: boolean) {
   const response = await contentService.searchBy(input);
   searchSelectableValueModels.value = response.Units;
 
   // IsSelected равен true, когда был выбран элемент из выпадающего списка
   if (isSelected) {
-    filters.selectedContentId.value = searchSelectableValueModels.value.find(content => content.Title === input).ContentId;
-    await updatePage(0);
+    filters.contentIds.value = [searchSelectableValueModels.value.find(content => content.Title === input).ContentId];
+    await updatePage();
   }
 }
 
