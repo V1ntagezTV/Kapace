@@ -11,17 +11,38 @@
         </p>
         <label class="body-medium">Выберите изображение для главной страницы содержимого</label>
       </div>
-      <BaseImageInput class="m3-bg-2" @on:update="updateImage" />
+      <div class="content-edit__images-box fit-content row gap-16">
+        <BaseImageInput
+          class="m3-bg-2 column h__center"
+          @on:update="updateImage"
+        />
+        <img
+          v-if="currentImageUrl"
+          class="m-radius-8 m-border"
+          style="height: 300px; width: auto; object-fit: cover;"
+          :src="currentImageUrl"
+          alt="Выбранное изображение"
+        >
+
+        <img
+          v-if="imageUrl"
+          class="m-radius-8 m-border"
+          style="height: 300px; width: auto; object-fit: cover;"
+          :src="imageUrl"
+          alt="Обложка контента"
+          @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
+        >
+      </div>
     </div>
 
     <div class="content-edit__unit-box">
       <div class="content-edit__box-activities-column">
         <div class="content-edit__box-activities row gap-16">
           <p class="body-large">
-            Название
+            Название*
           </p>
           <p class="body-large">
-            Статус
+            Статус*
           </p>
           <BaseInput
             v-model="title"
@@ -73,10 +94,10 @@
     <div class="content-edit__unit-box">
       <div class="content-edit__box-activities">
         <p class="body-large">
-          Страна
+          Страна*
         </p>
         <label class="body-large">
-          Тип дорамы
+          Тип дорамы*
         </label>
         <BaseSelector
           v-model="country"
@@ -98,12 +119,12 @@
     <div class="content-edit__unit-box">
       <div class="content-edit__details">
         <p class="body-large">
-          Описание
+          Описание*
         </p>
       </div>
-      <BaseTextArea
+      <base-text-area
         v-model="description"
-        class="content-edit__description-input content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+        class="content-edit__description-input body-medium content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
         :placeholder="'Введите описание'"
         :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.Description"
       />
@@ -141,6 +162,8 @@
         :show-loop-icon="false"
         :values="genreSelectableValues"
         :input="genreInput"
+        :call-updater-delay="500"
+        :is-dropped="isGenresMenuDropped"
         @change:input="onChangeGenreInput"
       />
     </div>
@@ -148,7 +171,7 @@
     <div class="content-edit__unit-box">
       <div class="content-edit__box-activities">
         <p class="body-large">
-          Длительность серии
+          Длительность эпизода
         </p>
         <p class="body-large">
           Дата релиза
@@ -183,12 +206,14 @@
           type="number"
           place-holder="Введите число"
           class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+          :input-validator="(input) => input >= 0"
         />
         <BaseInput
           v-model="minAge"
           type="number"
           place-holder="Введите число"
           class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+          :input-validator="(input) => input >= 0 && input <= 20"
         />
       </div>
     </div>
@@ -207,7 +232,6 @@
       >
         Сбросить
       </base-button>
-      <base-button @click="() => console.log(durationInMinutes(duration))"></base-button>
     </div>
   </div>
 </template>
@@ -239,8 +263,8 @@ import {GenreQueryResponseGenre} from "@/api/Responses/GenreQueryResponse";
 import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 import {ContentStatus} from "@/api/Enums/ContentStatus";
 import {ContentService} from "@/api/ContentService";
-import moment from "moment";
 import {StringExtensions} from "@/helpers/StringExtensions";
+import {userStore} from "@/store/UserStore";
 
 const props = defineProps({
   contentId: {type: Object as PropType<number | any>, required: false, default: undefined}
@@ -253,11 +277,15 @@ const contentService = inject<ContentService>('content-service');
 const imageService = inject<ImageService>('image-service');
 const changesHistoryService = inject<ChangesHistoryService>('changes-history-service');
 const genreService = inject<GenreService>('genre-service');
-const clientEventStore = new ClientEventStore();
+const currentUserStore = userStore();
+const clientEventStore = ClientEventStore();
 
 let currentImage: FlatConfigFileSpec | FlatConfigFileSpec[];
+let currentImageUrl = ref<string>();
 
-const title= ref<string | null>(null);
+const imageId = ref<number | null>(null);
+const imageUrl = ref<string | null>(null);
+const title = ref<string | null>(null);
 const engTitle = ref<string | null>(null);
 const originalTitle = ref<string | null>(null);
 const description = ref<string | null>(null);
@@ -274,6 +302,8 @@ const channel = ref<string | null>(null);
 onMounted(async() => {
   if (props.contentId && props.contentId > 0) {
     const content = await contentService.V1GetById(props.contentId, 0);
+    imageUrl.value = imageService.getImageLink(content.Content.ImageId, content.Content.Id);
+    imageId.value = content.Content.ImageId;
     title.value = content.Content.Title;
     contentType.value = content.Content.Type;
     contentStatus.value = content.Content.Status;
@@ -319,10 +349,12 @@ const isMarkAsInvalidRequiredProperties = ref({
 const genreInput = ref<string>('');
 const genresQuery = ref<GenreQueryResponseGenre[]>([]);
 const genreSelectableValues = computed(() => genresQuery.value.map(g => g.Name));
+const isGenresMenuDropped = ref(false);
 
 async function onChangeGenreInput(input: string, isSelected: boolean) {
   if (!isSelected) {
     if (StringExtensions.isNullOrEmpty(input)) {
+      isGenresMenuDropped.value = false;
       return;
     }
 
@@ -336,6 +368,9 @@ async function onChangeGenreInput(input: string, isSelected: boolean) {
 
     genreInput.value = input;
     genresQuery.value = genres.Genres;
+    if (genresQuery.value.length > 0) {
+      isGenresMenuDropped.value = true;
+    }
   } else {
     const isAlreadySelected = genres.value.find(genreName => genreName === input);
     if (!isAlreadySelected) {
@@ -365,6 +400,7 @@ const durationInMinutes = (duration: string): number | null => {
 
 async function onClickInsertContent() {
   const request: V1ChangeableFields = {
+    ImageId: imageId.value,
     Channel: channel.value,
     ContentStatus: contentStatus.value,
     ContentType: contentType.value,
@@ -388,21 +424,22 @@ async function onClickInsertContent() {
   try {
     const response = await changesHistoryService.createContentChange({
       ChangeableFields: request,
-      ContentId: props.contentId ?? 0,
-      CreatedBy: 0
+      ContentId: props.contentId > 0 ? props.contentId : 0,
+      CreatedBy: currentUserStore.loggedIn ? currentUserStore.userId : 0
     });
     if (currentImage != null) {
       await imageService.insertImage(props.contentId ?? null, response.HistoryId, currentImage);
     }
 
-    clientEventStore.push('Успех! Заявка на добавление изменений создано.')
+    clientEventStore.push('Успех! Заявка на добавление изменений создано.', EventTypes.Success)
   } catch (exception) {
-    clientEventStore.push('Ошибка! Неизвестная ошибка сервера.')
+    clientEventStore.push('Ошибка! Неизвестная ошибка сервера.', EventTypes.Error);
   }
 }
 
-async function updateImage(image: FlatConfigFileSpec | FlatConfigFileSpec[]) {
+async function updateImage(image: FlatConfigFileSpec | FlatConfigFileSpec[], imageUrl: string) {
   currentImage = image;
+  currentImageUrl.value = imageUrl;
 }
 
 function IsAllRequiredPropertiesValid(request: V1ChangeableFields): boolean {
@@ -432,6 +469,14 @@ function IsAllRequiredPropertiesValid(request: V1ChangeableFields): boolean {
 
 <style lang="scss" scoped>
 .content-edit {
+  &__images-box {
+    display: flex;
+    width: 100%;
+    height: 300px;
+    overflow: scroll;
+    scrollbar-width: none;
+  }
+
   &__header {
     text-align: start;
   }
@@ -527,7 +572,7 @@ function IsAllRequiredPropertiesValid(request: V1ChangeableFields): boolean {
     grid-template-rows: min-content;
     grid-auto-rows: min-content;
     padding: 20px;
-    margin: 12px;
+    margin: 20px 12px;
     gap: 26px;
   }
 

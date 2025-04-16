@@ -1,57 +1,53 @@
 <template>
-  <BaseBackground class="profile-menu__main">
-    <div class="profile-menu__nickname-main">
-      <div class="profile-menu__nickname-container">
-        <span class="profile-menu__nickname">{{ props.nickname }}</span>
-        <b class="profile-menu__nickname profile-menu__nickname-tag">#{{ props.tag }}</b>
-      </div>
-      <span>edit (in dev)</span>
+  <BaseBackground :type="3" class="profile-menu__main h__start gap-8">
+    <div class="profile__nickname">
+      <span class="profile-menu__nickname headline-medium">{{ nickname }}</span>
+      <b class="headline-medium profile-menu__nickname profile-menu__nickname-tag">#{{ tag }}</b>
     </div>
-
-    <div class="profile-menu__description">
-      <span class="profile-menu__status">
-        {{ props.customStatus }}
-      </span>
-
-      <div>
-        <span class="profile-menu__status">от: </span>
-        <span>{{ props.registrationDate }}</span>
+    <div class="column fit-content gap-8">
+      <div class="row gap-8">
+        <span style="color: #969BAB;">Почта</span><span>{{ email }}</span>
+      </div>
+      <div class="row gap-8">
+        <span style="color: #969BAB;">Создано</span><span>{{ createdAt }}</span>
       </div>
     </div>
 
-    <div class="profile-menu__menu">
-      <BaseButton :button-type="3">
-        Активность
-      </BaseButton>
-      <BaseButton :button-type="3">
-        Избранное
-      </BaseButton>
-      <BaseButton :button-type="3">
-        В процессе
-      </BaseButton>
-      <BaseButton :button-type="3">
-        Просмотрено
-      </BaseButton>
-      <BaseButton :button-type="3">
-        Брошено
-      </BaseButton>
+    <div class="splitter" />
+
+    <div class="row row-dynamic gap-8">
+      <filter-chips
+        v-for="role in roles"
+        :key="role"
+        class="m3-bg-2"
+        style="color: var(--primary40)"
+        :text="role"
+      />
     </div>
   </BaseBackground>
 </template>
 
 <script lang="ts" setup>
 import BaseBackground from "@/components/Base/BaseBackground.vue";
-import BaseButton from "@/components/Base/BaseButton.vue";
+import {PropType} from "vue";
+import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 
 const props = defineProps({
   nickname: {type: String, required: true},
   tag: {type: Number, required: true},
-  customStatus: {type: String, required: true},
-  registrationDate: {type: String, required: true}
-})
+  roles: {type: Object as PropType<string[]>, required: true},
+  createdAt: {type: String, required: true},
+  email: {type: String, required: true}
+});
 </script>
 
 <style lang="scss" scoped>
+.profile {
+  &__nickname {
+    display: flex;
+    width: fit-content;
+  }
+}
 
 .profile-menu {
   &__menu {
@@ -66,31 +62,10 @@ const props = defineProps({
     height: fit-content;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 20px;
-  }
-
-  &__nickname-main {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    gap: 4px;
-  }
-
-  &__nickname-container {
-    display: flex;
-    align-content: flex-start;
-    gap: 4px;
+    padding: 16px;
   }
 
   &__nickname {
-    font-style: normal;
-    font-weight: 800;
-    font-size: 31px;
-    line-height: 38px;
-    text-align: justify;
-    letter-spacing: 0.065em;
-    color: #474A57;
 
     &-tag {
       text-shadow:
@@ -104,22 +79,6 @@ const props = defineProps({
           -1px  0   0 #969BAB;
       color: white;
     }
-  }
-
-  &__description {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  &__status {
-    font-style: normal;
-    font-weight: 400;
-    line-height: 15px;
-
-    text-align: start;
-    letter-spacing: 0.04em;
-
-    color: #969BAB;
   }
 }
 

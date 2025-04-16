@@ -6,9 +6,9 @@
           {{ details.Content.Title }}
         </h1>
         <HeartSVG
-          :is-selected="isInFavorite"
+          :is-selected="isFavorite"
           class="content-details__icon-style"
-          @click="heartOnClick()"
+          @click="emits('on:clickHeart')"
         />
       </div>
 
@@ -62,7 +62,6 @@
       <filter-chips
         v-for="genre in details.Genres"
         :key="genre"
-
         class="m3-bg-2"
         style="color: var(--primary40)"
         :text="genre.Name"
@@ -75,17 +74,30 @@
 import moment from 'moment'
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import HeartSVG from "@/components/Icons/HeartSVG.vue";
-import {PropType, ref} from 'vue';
+import {defineEmits, inject, onMounted, PropType, ref, watch} from 'vue';
 import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import {mapContentStatusToRuStr} from "@/api/Enums/ContentStatus";
 import {mapContentTypeToRuStr} from "@/api/Enums/ContentType";
+import {FavoriteApi} from "@/api/FavoriteApi";
+import {userStore} from "@/store/UserStore";
+import {FavoriteStatus} from "@/models/FavoriteStatuses";
+
+const user = userStore();
+const favoritesApi = inject<FavoriteApi>('favorite-api');
 
 const props = defineProps({
-  details: {type: Object as PropType<V1GetFullContentResponse>, required: true}
-})
+  details: {type: Object as PropType<V1GetFullContentResponse>, required: true},
+  isFavorite: {type: Boolean, required: true, default: false}
+});
 
-let isInFavorite = ref<boolean>(true);
+const emits = defineEmits<{
+  (emitName: 'on:clickHeart') : void
+}>()
+
+let isInFavorite = ref<boolean>(props.isFavorite);
+watch(() => props.isFavorite, (newValue) => isInFavorite.value = newValue);
+
 const otherTitles = (details: V1GetFullContentResponse) : string => {
   let otherTitleStr = "";
   if (details.Content.EngTitle) {
@@ -100,13 +112,9 @@ const otherTitles = (details: V1GetFullContentResponse) : string => {
   }
 
   return otherTitleStr;
-};
-function heartOnClick() {
-    /*
-  props.details.contentInfoToUser.isInFavourite = !props.details.contentInfoToUser.isInFavourite;
-  isInFavorite.value = !isInFavorite.value;
-     */
 }
+
+
 </script>
 
 <style lang="scss" scoped>

@@ -1,40 +1,41 @@
 <template>
-  <div class="material wrapper">
-    <div class="primary-header__background" />
-    <PrimaryHeader class="primary-header__grid" />
+  <div style="height: 100vh;">
+    <div class="material wrapper">
+      <div class="primary-header__background" />
+      <PrimaryHeader class="primary-header__grid" />
 
-    <router-view class="body__grid" />
-    <div class="event__box gap-8">
-      <auto-hide
-        v-for="event in events"
-        :key="event"
-      >
-        <base-background
-          v-if="event.eventType === EventTypes.Info"
-          :type="2"
-          class="event__unit-info event__unit body-medium m3-bg-1 m-radius-1"
+      <router-view class="body__grid" />
+      <div class="event__box gap-8">
+        <auto-hide
+          v-for="event in events"
+          :key="event"
         >
-          {{ event.text }}
-        </base-background>
+          <base-background
+            v-if="event.eventType === EventTypes.Info"
+            :type="2"
+            class="event__unit-info event__unit body-medium m3-bg-1 m-radius-1"
+          >
+            {{ event.text }}
+          </base-background>
 
-        <base-background
-          v-else-if="event.eventType === EventTypes.Success"
-          :type="2"
-          class="event__unit-success event__unit body-medium m3-bg-1 m-radius-1"
-        >
-          {{ event.text }}
-        </base-background>
+          <base-background
+            v-else-if="event.eventType === EventTypes.Success"
+            :type="2"
+            class="event__unit-success event__unit body-medium m3-bg-1 m-radius-1"
+          >
+            {{ event.text }}
+          </base-background>
 
-        <base-background
-          v-else-if="event.eventType === EventTypes.Error"
-          :type="2"
-          class="event__unit-error event__unit body-medium m3-bg-1 m-radius-1"
-        >
-          {{ event.text }}
-        </base-background>
-      </auto-hide>
+          <base-background
+            v-else-if="event.eventType === EventTypes.Error"
+            :type="2"
+            class="event__unit-error event__unit body-medium m3-bg-1 m-radius-1"
+          >
+            {{ event.text }}
+          </base-background>
+        </auto-hide>
+      </div>
     </div>
-    <base-button @click="() => {clientEventStore.push('СООБЩЕНИЕ', EventTypes.Success)}">push message</base-button>
   </div>
 </template>
 
@@ -51,8 +52,9 @@ import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import AutoHide from "@/components/AutoHide.vue";
 import {GenreService} from "@/api/GenreService";
-import BaseButton from "@/components/Base/BaseButton.vue";
 import {UserApi} from "@/api/UserApi";
+import {FavoriteApi} from "@/api/FavoriteApi";
+
 
 provide('content-service', new ContentService());
 provide('translation-service', new TranslationService());
@@ -62,6 +64,7 @@ provide('episode-service', new EpisodeService());
 provide('translator-service', new TranslatorService());
 provide('genre-service', new GenreService());
 provide('user-api', new UserApi());
+provide('favorite-api', new FavoriteApi());
 
 const clientEventStore = new ClientEventStore();
 const events = computed(() => clientEventStore.$state.events);
@@ -70,7 +73,7 @@ const events = computed(() => clientEventStore.$state.events);
 <style lang="scss">
 @import "@/assets/styles/mstyles.scss";
 @import "@/assets/styles/custombootstrap.scss";
-@import url('https://fonts.googleapis.com/css2?family=Roboto');
+@import url("https://fonts.googleapis.com/css2?family=Roboto");
 @import url(@/assets/styles/token.css);
 
 :root {
@@ -103,7 +106,7 @@ const events = computed(() => clientEventStore.$state.events);
     color: var(--dark-primary);
     text-decoration: none;
   }
-  
+
   * {
     padding: 0;
     margin: 0;
@@ -134,10 +137,9 @@ const events = computed(() => clientEventStore.$state.events);
 .wrapper {
   margin: 0;
   height: 100%;
-  min-width: 1120px;
   width: 100%;
   display: grid;
-  grid-template-columns: 1fr 20px 1200px 20px 1fr;
+  grid-template-columns: 1fr 20px minmax(min-content, 1200px) 20px 1fr;
   grid-template-rows: 56px auto;
 }
 

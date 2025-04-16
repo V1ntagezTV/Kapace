@@ -9,6 +9,7 @@ export type V1CreateContentRequest = {
 }
 
 export type V1ChangeableFields = {
+    ImageId: number | null
     Title: string | null,
     EngTitle: string | null,
     OriginalTitle: string | null,

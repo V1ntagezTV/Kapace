@@ -1,4 +1,4 @@
-import {ApiService} from "@/api/ApiService";
+import {ApiResponse, ApiService} from "@/api/ApiService";
 import {V1CreateContentResponse} from "@/api/Responses/V1CreateContentResponse";
 import {V1CreateContentRequest} from "@/api/Requests/V1CreateContentRequest";
 import {V1GetChangesComparisonsRequest} from "@/api/Requests/V1GetChangesComparisonsRequest";
@@ -41,8 +41,9 @@ export class ChangesHistoryService extends ApiService {
         return await this.CallPostHandlerAsync<V1CreateEpisodeChangeRequest>(request, 'create-episode')
     }
 
-    public async getChangesComparisons(request: V1GetChangesComparisonsRequest) : Promise<V1GetChangesComparisonsResponse> {
-        return await this.CallHandlerAsync<V1GetChangesComparisonsResponse, V1GetChangesComparisonsRequest>(
+    public async getChangesComparisons(request: V1GetChangesComparisonsRequest)
+        : Promise<ApiResponse<V1GetChangesComparisonsResponse>> {
+        return await this.fetchV2<V1GetChangesComparisonsResponse, V1GetChangesComparisonsRequest>(
             request,
             "get-changes-comparisons"
         );

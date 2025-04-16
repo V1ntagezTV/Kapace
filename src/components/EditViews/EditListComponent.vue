@@ -1,14 +1,17 @@
 <template>
   <div v-show="dataIsReady" class="material edit-list__main">
     <async-search-selector
-      class="edit-list__search m-radius-1"
+      class="edit-list__search m-radius-1 m-border m-border-active"
       :placeholder="'Поиск'"
       :values="searchSelectableValueModels?.map(x => x.Title) ?? []"
+      :is-dropped="isSearchMenuDropped"
+      :call-updater-delay="500"
       @change:input="searchByInput"
-      @onkeydown:enter="(input: String) => {pressEnterSearch(input)}"
+      @onkeydown:enter="pressEnterSearch"
     />
-    <div class="edit-list__filters">
+    <div class="edit-list__filters gap-8">
       <filter-chips
+        v-show="currentUserStore.loggedIn"
         class="m3-bg-2 m-radius-1"
         :class="{'edit-list__filters-unit--enabled': filters.isMy.value}"
         :text="'Мои'"
@@ -19,7 +22,7 @@
         class="edit-list__filters-unit m3-bg-2 m-radius-1"
         :title="'Сортировать по'"
         :menu-alignment="MenuAlignment.Left"
-        :selectable-values="['По идентификатору', 'По названию', 'По дате создания']"
+        :selectable-values="['По идентификатору', 'По названию', 'Сначала новые', 'Сначала старые']"
         @update:modelValue="() => {updatePage(0)}"
       />
       <base-selector
@@ -35,7 +38,7 @@
         class="edit-list__filters-unit m3-bg-2 m-radius-1"
         :title="'Статус'"
         :menu-alignment="MenuAlignment.Left"
-        :selectable-values="['Все', 'Создано', 'Согласовано']"
+        :selectable-values="['Все', 'Не одобрено', 'Одобрено']"
         @update:modelValue="() => {updatePage(0)}"
       />
     </div>
@@ -45,12 +48,12 @@
       :type="2"
       class="edit-list__history m-radius-28 m3-bg-2"
     >
-      <div class="edit-list__header">
+      <div class="edit-list__header dynamic">
         <div>
           <p class="title-large">
             {{ unit.Title }}#{{ unit.HistoryId }}
           </p>
-          <p>{{ getDateStr(unit.CreatedAt) }}</p>
+          <p>{{ StringExtensions.getDateStr(unit.CreatedAt) }}</p>
         </div>
 
         <div class="row gap-26">
@@ -109,12 +112,15 @@
           <div class="edit-list__field-name body-large">
             {{ fieldComparison.Name }}
           </div>
-          <span v-if="fieldComparison.OldValue" class="body-medium edit-list__field-comparison--old">
-            {{ fieldComparison.OldValue }}
-          </span>
-          <span class="body-medium edit-list__field-comparison--new">
-            {{ fieldComparison.NewValue }}
-          </span>
+          <div class="row gap-8">
+            <span v-if="fieldComparison.OldValue" class="body-medium edit-list__field-comparison--old">
+              {{ fieldComparison.OldValue }}
+            </span>
+            <span class="body-medium edit-list__field-comparison--new">
+              {{ fieldComparison.NewValue }}
+            </span>
+          </div>
+
         </div>
       </div>
       <div
@@ -151,7 +157,7 @@
 </template>
 
 <script lang="ts" setup>
-import {inject, onMounted, ref} from "vue";
+import {computed, inject, onBeforeUnmount, onMounted, ref} from "vue";
 import {ChangesHistoryService} from "@/api/ChangesHistoryService";
 import {ChangeUnit} from "@/api/Responses/V1GetChangesComparisonsResponse";
 import BaseButton from "@/components/Base/BaseButton.vue";
@@ -169,11 +175,15 @@ import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import NavLeftArrowIcon from "@/components/Icons/MaterialIcons/NavLeftArrowIcon.vue";
 import NavRightArrowIcon from "@/components/Icons/MaterialIcons/NavRightArrowIcon.vue";
 import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
+import {StringExtensions} from "@/helpers/StringExtensions";
+import {userStore} from "@/store/UserStore";
+import * as events from "events";
 
 const imageService = inject<ImageService>('image-service');
 const changesHistoryService = inject<ChangesHistoryService>('changes-history-service');
 const contentService = inject<ContentService>('content-service');
-const clientEventStore = new ClientEventStore();
+const clientEventStore = ClientEventStore();
+const currentUserStore = userStore();
 
 const searchSelectableValueModels = ref<V1SearchByResponseUnit[]>([]);
 const filters = {
@@ -186,7 +196,8 @@ const filters = {
 };
 
 const dataIsReady = ref(false);
-const changes = ref<ChangeUnit[]>()
+const changes = ref<ChangeUnit[]>();
+const isSearchMenuDropped = ref(false);
 const limit = 5;
 let offset = 0;
 
@@ -207,16 +218,16 @@ async function updatePage(addOffset: number = 0) {
 
   const response = await changesHistoryService.getChangesComparisons({
     Approved: getApprovedStatus(filters.status.value),
-    CreatedByIds: filters.isMy.value ? [0] : [],
+    CreatedByIds: filters.isMy.value && currentUserStore.loggedIn ? [currentUserStore.userId] : [],
     HistoryTypes: getHistoryTypes(filters.historyType.value),
     OrderBy: getOrderByType(filters.orderBy.value),
     Ids: [],
     Limit: limit,
     Offset: offset,
-    TargetIds: filters.contentIds?.value ?? []
+    TargetIds: filters.contentIds?.value ?? [],
   });
 
-  changes.value = response.Changes;
+  changes.value = response.data.Changes;
 
   dataIsReady.value = true;
 }
@@ -224,9 +235,9 @@ async function updatePage(addOffset: number = 0) {
 function getApprovedStatus(filterStatus: string) : boolean | null {
   if (filterStatus === 'По умолчанию') {
     return null;
-  } else if (filterStatus === 'Создано') {
+  } else if (filterStatus === 'Не одобрено') {
     return false;
-  } else if (filterStatus === 'Согласовано') {
+  } else if (filterStatus === 'Одобрено') {
     return true;
   }
 }
@@ -243,19 +254,26 @@ function getHistoryTypes(value: string) : typeof HistoryType[]{
 function getOrderByType(selectedOrder: string) : typeof HistoryChangesOrderType {
   console.log("getOrderByType:" + selectedOrder);
 
-  if (selectedOrder === 'По дате создания') {
+  if (selectedOrder === 'Сначала старые') {
     return HistoryChangesOrderType.ByCreated as typeof HistoryChangesOrderType;
   } else if (selectedOrder === 'По названию') {
     return HistoryChangesOrderType.ByName as typeof HistoryChangesOrderType;
   } else if (selectedOrder === 'По идентификатору') {
     return HistoryChangesOrderType.ById as typeof HistoryChangesOrderType;
+  } else if (selectedOrder === 'Сначала новые') {
+    return HistoryChangesOrderType.ByCreatedDescending as typeof HistoryChangesOrderType;
   }
   return HistoryChangesOrderType.Unspecified as typeof HistoryChangesOrderType;
 }
 
 async function clickOnMineFilter() {
-  filters.isMy.value = !filters.isMy.value
-  await updatePage(0);
+  if (currentUserStore.loggedIn) {
+    filters.isMy.value = !filters.isMy.value
+    await updatePage(0);
+    return;
+  }
+
+  clientEventStore.push("Сначала необходимо авторизоваться!", EventTypes.Error);
 }
 
 async function approveClick(historyId: number, userId: number) {
@@ -271,7 +289,7 @@ async function approveClick(historyId: number, userId: number) {
     unit.ApprovedBy = 0; // TODO: currentUser;
     clientEventStore.push("Успех! Одобрено!", EventTypes.Success);
   } else {
-    clientEventStore.push("Ошибка! Заявка не одобрена. Ошибка сервиса: " + response.body.toString());
+    clientEventStore.push("Ошибка! Заявка не одобрена. Ошибка сервиса: " + response.body.toString(), EventTypes.Success);
   }
 }
 
@@ -297,13 +315,8 @@ async function searchByInput(input: string, isSelected: boolean) {
     filters.contentIds.value = [searchSelectableValueModels.value.find(content => content.Title === input).ContentId];
     await updatePage();
   }
-}
 
-function getDateStr(dateNum: number) : string {
-  const date = new Date(dateNum);
-  const formatter = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' });
-
-  return formatter.format(date) + " " + date.toLocaleDateString();
+  isSearchMenuDropped.value = searchSelectableValueModels.value.length > 0;
 }
 </script>
 
@@ -377,7 +390,7 @@ function getDateStr(dateNum: number) : string {
   }
 
   &__search {
-    background: var(--surface-container-default94);
+    background: var(--surface-container-low96);
     transition: background-color 0.2s;
 
     &:hover {
@@ -388,7 +401,6 @@ function getDateStr(dateNum: number) : string {
   &__filters {
     display: flex;
     flex-wrap: wrap;
-    column-gap: 8px;
     width: 100%;
 
     &-unit {
@@ -412,7 +424,7 @@ function getDateStr(dateNum: number) : string {
     grid-auto-rows: max-content;
     justify-items: center;
     align-items: center;
-    padding: 12px 12px 48px;
+    padding: 20px 12px 48px;
     gap: 16px;
   }
 

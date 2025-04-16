@@ -1,10 +1,31 @@
 .row {
   display: flex;
   flex-direction: row;
-  
+
+  // USE .dynamic
   &-dynamic {
     flex-flow: wrap;
   }
+}
+
+.dynamic {
+  flex-flow: wrap;
+}
+
+.fit-content {
+  display: flex;
+  height: fit-content;
+  width: fit-content;
+}
+
+.fill {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.splitter {
+  border: 1px solid #EEEFF4
 }
 
 .column {
@@ -23,6 +44,12 @@
 
 // Горизонтальные стили
 .h {
+  &__fit {
+    width: fit-content;
+  }
+  &__fill {
+    width: 100%;
+  }
   &__start {
     justify-content: start;
   }
@@ -32,10 +59,28 @@
   &__center {
     justify-content: center;
   }
+  &__padding-16 { padding-left: 16px; padding-right: 16px; }
+}
+
+.text {
+  &__cut {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  &__one-line {
+    white-space: nowrap;
+  }
+  &__center {
+    align-items: center;
+  }
 }
 
 // Вертикальные стили
 .v {
+  &__fill {
+    width: 100%;
+  }
   &__start {
     align-items: start;
   }
@@ -47,6 +92,7 @@
   &__bottom {
     align-items: end;
   }
+  &__padding-8 {padding-top: 8px; padding-bottom: 8px;}
 }
 
 .gap {
@@ -54,5 +100,20 @@
   &-12 {gap: 12px;}
   &-16 {gap: 16px;}
   &-26 {gap: 26px;}
+}
+
+
+.col {
+  &-gap4 {column-gap: 4px};
+  &-gap8 {column-gap: 8px};
+  &-gap12 {column-gap: 12px};
+  &-gap16 {column-gap: 16px};
+}
+
+.row {
+  &-gap4 {row-gap: 4px};
+  &-gap8 {row-gap: 8px};
+  &-gap12 {row-gap: 12px};
+  &-gap16 {row-gap: 16px};
 }
 

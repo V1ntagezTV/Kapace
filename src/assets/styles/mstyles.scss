@@ -6,10 +6,12 @@
   &-5 { box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.3), 0 8px 12px 6px rgba(0, 0, 0, 0.15); }
 }
 .m-radius {
-  &-circle { border-radius: 100px; }
+  &-circle { border-radius: 999999px; }
   &-0 { border-radius: 4px; }
   &-1 { border-radius: 8px; }
   &-2 { border-radius: 16px; }
+
+  &-8 { border-radius: 8px; }
   &-16 { border-radius: 16px; }
   &-28 { border-radius: 28px; }
 }
@@ -20,6 +22,20 @@
   &-3 { background: var(--surface-container-default94); }
   &-4 { background: var(--surface-container-highest90); }
   &-5 { background: var(--surface-container-high92); }
+}
+
+.padding {
+  &-8 {padding: 8px;}
+  &-16 {padding: 16px;}
+}
+
+.margin {
+  &-8 {
+    margin: 8px;
+  }
+  &-16 {
+    margin: 16px;
+  }
 }
 
 .m-border {
@@ -41,6 +57,10 @@
 
 .m-border-active {
   &:focus {
+    border: 1px var(--primary40) solid;
+  }
+
+  &:focus-within {
     border: 1px var(--primary40) solid;
   }
 }

@@ -7,5 +7,6 @@ export const HistoryChangesOrderType = {
     Unspecified: "Unspecified",
     ById: "ById",
     ByName: "ByName",
-    ByCreated: "ByCreated"
+    ByCreated: "ByCreated",
+    ByCreatedDescending: "ByCreatedDescending"
 } as const;

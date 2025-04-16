@@ -8,6 +8,7 @@ import TheaterView from "@/views/TheaterView.vue";
 import RestorePasswordView from "@/views/RestorePasswordView.vue";
 import EpisodeView from "@/views/EpisodeView.vue";
 import EditsView from "@/views/EditsView.vue";
+import SettingsView from "@/views/SettingsView.vue";
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
     path: '/profile',
     name: 'Профиль',
     component: ProfileView
+  },
+  {
+    path: '/settings',
+    name: 'Настройки',
+    component: SettingsView
   },
   {
     path: '/login',

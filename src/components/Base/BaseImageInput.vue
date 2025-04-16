@@ -1,13 +1,5 @@
 <template>
-  <div v-if="imageUrl != null" class="image-input__image-container">
-    <img
-      :src="imageUrl"
-      class="image-input__image"
-      alt="Выбранное изображение"
-    >
-  </div>
-
-  <label v-else class="image-input__box image-input">
+  <label class="column image-input__box image-input v__center h__center">
     <UploadArrow />
     <input
       ref="image"
@@ -26,16 +18,15 @@ import UploadArrow from "@/components/Icons/UploadArrow.vue";
 import {ref} from "vue";
 import {defineEmits} from "vue/dist/vue";
 
-
 const emits = defineEmits<{
-  (emitName: 'on:update', image: ArrayBufferLike) : void
+  (emitName: 'on:update', image: ArrayBufferLike, imageUrl: string) : void
 }>()
 
 const imageUrl = ref<string | null>(null)
 
 function onChange(event) {
   imageUrl.value = URL.createObjectURL(event.target.files[0]);
-  emits("on:update", event.target.files[0]);
+  emits("on:update", event.target.files[0], imageUrl.value);
 }
 
 </script>
@@ -54,13 +45,19 @@ function onChange(event) {
   }
 
   &__image {
-    width: 250px;
-    max-width: max-content;
+    width: auto;
+    max-width: 100%;
+    height: auto;
     border-radius: 6px;
   }
 
   &__image-container {
-    width: available;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    overflow: auto;
+    scrollbar-width: none;
+    justify-content: flex-start;
   }
 }
 </style>

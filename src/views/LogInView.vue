@@ -1,6 +1,6 @@
 <template>
   <div class="login-view__main">
-    <BaseBackground class="login-view__container">
+    <BaseBackground :type="2" class="login-view__container gap-16">
       <router-link to="/">
         <img
           class="login-view__logo" src="@/assets/images/Logo.svg"
@@ -8,9 +8,7 @@
         >
       </router-link>
 
-      <span class="title-large">Авторизация</span>
-
-      <div class="login-view__input-container">
+      <div class="login-view__input-container gap-8 h__start">
         <base-input
           v-model="loginInput"
           class="m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
@@ -23,26 +21,48 @@
           class="m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
           :mark-as-invalid-input="isLoginInputInvalid"
           :place-holder="'Введите пароль'"
-          type="password"
-        />
+          :type="isShowPassword ? 'text' : 'password'"
+        >
+          <template #end-icon>
+            <icon-button @click.stop="() => isShowPassword = !isShowPassword">
+              <eye-cross v-if="!StringExtensions.isNullOrEmpty(passwordInput) && !isShowPassword" :class="{'login-view__icon-active': isShowPassword, 'login-view__icon-static': !isShowPassword}" />
+              <eye v-else-if="!StringExtensions.isNullOrEmpty(passwordInput) && isShowPassword" :class="{'login-view__icon-active': isShowPassword, 'login-view__icon-static': !isShowPassword}" />
+            </icon-button>
+          </template>
+        </base-input>
       </div>
 
-      <base-button
-        class="m-radius-circle"
-        :button-type="2"
-        :variant="'filled'"
-        @click.stop="logInClick"
-      >
-        Войти
-      </base-button>
+      <div class="row h__space-between">
+        <base-text-button
+          class="login-view__rememberMe row gap-8 h__space-between"
+          @click="() => isRememberMe = !isRememberMe"
+        >
+          <input v-model="isRememberMe" type="checkbox">
+          <div>
+            Запомнить меня
+          </div>
+        </base-text-button>
+        <base-text-button class="login-view__rememberMe">
+          <router-link to="/restore">
+            Забыли пароль?
+          </router-link>
+        </base-text-button>
+      </div>
 
-      <div class="login-view__links">
-        <router-link to="/restore">
-          Вспомнить пароль
-        </router-link>
-        <router-link to="/reg">
-          Регистрация
-        </router-link>
+      <div class="column gap-16">
+        <base-button
+          class="m-radius-circle"
+          :button-type="2"
+          :variant="'filled'"
+          @click.stop="logInClick"
+        >
+          Войти
+        </base-button>
+        <base-button :button-type="3" class="login-view__links m-border m-border-hover m-radius-circle column v__center gap-8">
+          <router-link to="/reg">
+            Зарегистрироваться
+          </router-link>
+        </base-button>
       </div>
     </BaseBackground>
   </div>
@@ -51,39 +71,66 @@
 <script lang="ts" setup>
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
-import {inject, ref} from "vue";
+      import {inject, ref} from "vue";
 import {userStore} from "@/store/UserStore"
 import {UserApi} from "@/api/UserApi";
 import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 import BaseInput from "@/components/Base/BaseInput.vue";
 import {StringExtensions} from "@/helpers/StringExtensions";
 import {useRouter} from "vue-router";
+import Eye from "@/components/Icons/MaterialIcons/Eye.vue";
+import IconButton from "@/components/Base/Buttons/IconButton.vue";
+import EyeCross from "@/components/Icons/EyeCross.vue";
+import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 
 const router = useRouter()
 const store = userStore();
 const userApi = inject<UserApi>('user-api');
 const eventStore = ClientEventStore();
-
+const isShowPassword = ref<boolean>(false);
+const isRememberMe = ref<boolean>(false);
 const isLoginInputInvalid = ref<boolean>(false);
 const isPasswordInputInvalid = ref<boolean>(false);
 const loginInput = ref<string>(undefined);
 const passwordInput = ref<string>(undefined);
 
 async function logInClick() {
-  if (IsInputsValid()) {
-    try {
-      await userApi.logIn(loginInput.value, passwordInput.value);
-    } catch (exception) {
-      eventStore.push('Ошибка! Не корректно введены логин или пароль!', EventTypes.Error);
-      return;
-    }
-
-    const currentUser = await userApi.getCurrent();
-    store.LogIn(currentUser.User.Nickname);
-    await router.push('/');
-  } else {
-    eventStore.push('Введите логин и пароль для входа.', EventTypes.Error);
+  const wrongInputErrorStr = 'Ошибка! Не корректно введены логин или пароль!';
+  const defaultErrorStr = 'Ошибка сервера! Что-то пошло не так!';
+  if (!IsInputsValid()) {
+    eventStore.push(wrongInputErrorStr, EventTypes.Error as typeof EventTypes);
   }
+
+  const response = await userApi.logIn(loginInput.value, passwordInput.value, isRememberMe.value);
+  if (userApi.isErrorDetails(response)) {
+    eventStore.push(wrongInputErrorStr, EventTypes.Error as typeof EventTypes);
+    return;
+  }
+
+  if (response.status === 400) {
+    eventStore.push(defaultErrorStr, EventTypes.Error as typeof EventTypes);
+    return;
+  }
+
+  const userResponse = (await userApi.getCurrent())
+    .onException(() => eventStore.push(defaultErrorStr, EventTypes.Error as typeof EventTypes))
+    .onBusinessError(() => eventStore.push('Сначала необходимо авторизоваться!', EventTypes.Error as typeof EventTypes));
+
+  if (!userResponse.data) {
+    eventStore.push(defaultErrorStr, EventTypes.Error as typeof EventTypes);
+    return;
+  }
+
+  const currentUser = userResponse.data;
+
+  store.LogIn(
+    currentUser.User.Id,
+    currentUser.User.Nickname,
+    currentUser.User.Email,
+    currentUser.User.ImageUrl,
+    currentUser.Roles.map(x => x.Alias)
+  );
+  await router.push('/');
 }
 
 function IsInputsValid() : boolean {
@@ -102,6 +149,16 @@ function IsInputsValid() : boolean {
 <style lang="scss" scoped>
 
 .login-view {
+  &__rememberMe {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+  &__icon-active {
+    color: var(--primary40);
+  }
+  &__icon-static {
+    color: var(--outline-light);
+  }
   &__login-button {
     height: 100%;
     width: 100%;
@@ -139,18 +196,12 @@ function IsInputsValid() : boolean {
   }
 
   &__links {
-    display: flex;
-    flex-direction: row;
-    font-size: 12px;
-    gap: 16px;
-
     & a {
-      color: var(--font-gray);
-      text-decoration: underline;
+      color: var(--primary40);
 
       &:hover {
         cursor: pointer;
-        color: #6686B3;
+        text-decoration: underline;
       }
     }
   }
@@ -187,8 +238,6 @@ function IsInputsValid() : boolean {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    gap: 15px;
     height: fit-content;
     width: 420px;
     padding: 60px;
@@ -198,7 +247,8 @@ function IsInputsValid() : boolean {
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: 10px;
+
+    text-align: start;
   }
 }
 

@@ -14,7 +14,7 @@
           'selector__disabled': props.isDisabled }"
         :text="titleRef"
         :enable-menu-icon="true"
-        @click.stop="clickOnHeader(!isDroppedRef)"
+        @click="clickOnHeader(!isDroppedRef)"
       >
         <template #menu-icon>
           <material-drop-arrow :class="{'selector__disabled': props.isDisabled }" />
@@ -45,7 +45,6 @@ import {PropType, ref, watch} from "vue";
 import MaterialDropArrow from "@/components/Icons/MaterialDropArrow.vue";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
-import {prop} from "vue-class-component";
 
 const emits = defineEmits<{(emit: 'update:modelValue', value: string): void}>();
 
@@ -64,7 +63,10 @@ const props = defineProps({
   isDropped: {type: Boolean, default: false, required: false}
 });
 
-const titleRef = ref(((props.modelValue?.length ?? 0) > 0) ? props.modelValue : props.title ?? "");
+const titleRef = ref(((props.modelValue?.length ?? 0) > 0)
+  ? props.modelValue
+  : props.title ?? "");
+
 const isDroppedRef = ref(false);
 
 // Синхронизация локального состояния с пропсом
@@ -185,7 +187,8 @@ function getMenuAlignmentClasses() {
 
   &__menu {
     display: grid;
-    width: 200px;
+    min-width: 200px;
+    max-width: 100%;
     grid-auto-columns: 1fr;
     grid-auto-flow: row;
     position: absolute;

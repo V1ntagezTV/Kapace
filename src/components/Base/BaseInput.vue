@@ -16,22 +16,30 @@
       class="input__input"
       :placeholder="placeHolder"
       :type="type"
-      @input="$emit('update:modelValue', $event.target.value)"
+      :disabled="disabled"
+      @input="onInput($event.target.value)"
     >
+    <slot name="end-icon" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import {defineEmits, ref, watch} from "vue";
 
-defineEmits(['update:modelValue'])
+const emits = defineEmits(['update:modelValue'])
 
 const props = defineProps({
   modelValue: {default: ""},
-  placeHolder: {type: String, required: true, default: 'Введите текст'},
+  placeHolder: {type: String, required: false, default: 'Введите пароль'},
   label: {type: String, required: false, default: undefined},
   type: {type: String, required: false, default: "text"},
   markAsInvalidInput: {type: Boolean, default: false},
+  disabled: {type: Boolean, default: false},
+  inputValidator: {
+    type: Function as () => (value: string) => boolean,
+    default: () => (_: string) => true,
+    required: false
+  }
 });
 
 const refValue = ref<string>(props.modelValue);
@@ -39,9 +47,32 @@ const refValue = ref<string>(props.modelValue);
 watch(() => props.modelValue, (newValue) => {
   refValue.value = newValue;
 });
+
+// eslint-disable-next-line vue/no-setup-props-destructure
+let lastValidValue: string = props.modelValue;
+function onInput(newValue: string) {
+  if (!props.inputValidator(newValue)) {
+    refValue.value = lastValidValue;
+    return;
+  }
+
+  refValue.value = newValue;
+  lastValidValue = newValue;
+  emits('update:modelValue', newValue);
+}
 </script>
 
 <style lang="scss" scoped>
+.no-spinners::-webkit-inner-spin-button,
+.no-spinners::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinners {
+  -moz-appearance: textfield;
+}
+
 .input {
   &__label {
     background: white;
@@ -67,13 +98,14 @@ watch(() => props.modelValue, (newValue) => {
 
   &__input-static-box {
     display: flex;
+    flex-direction: row;
     height: 48px;
     width: 100%;
 
     justify-content: center;
     align-items: center;
-    gap: 10px;
     position: relative;
+    padding-right: 4px;
   }
 
   &__input {

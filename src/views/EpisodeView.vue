@@ -18,7 +18,7 @@
           </p>
         </div>
 
-        <div class="episode__title-secondary">
+        <div class="episode__title-secondary dynamic">
           <filter-chips
             v-show="content.Content.Type"
             class="m3-bg-2"

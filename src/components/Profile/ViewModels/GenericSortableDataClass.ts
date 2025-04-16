@@ -3,7 +3,7 @@ import {Property} from "@/components/Profile/ViewModels/Property";
 export class GenericSortableDataClass<T> {
     constructor(
         public readonly data: T[],
-        public readonly sortingProperties: () => { [key: string]: (dataUnit: T) => string | bigint | Property[] },
+        public readonly sortingProperties: () => { [key: string]: (dataUnit: T) => string | number | Property[] },
         public readonly defaultSortBy: string,) {
     }
 

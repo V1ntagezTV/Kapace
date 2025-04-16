@@ -1,9 +1,5 @@
 <template>
   <div class="body-main-flex gap-16">
-    <div style="height: 450px; background: var(--primary40);color: white;" class="row m-radius-28 v__center">
-      Что сюда расположить?3
-    </div>
-
     <template v-if="content != null && content.PageContent !== undefined">
       <ScrollContentComponent
         v-for="(pageTypeKey, index) in getContentKeys(content)"

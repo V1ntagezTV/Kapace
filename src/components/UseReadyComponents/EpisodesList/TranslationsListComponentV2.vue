@@ -6,7 +6,7 @@
       'material m3-bg-1 main__box-with-paging': episodes.length < offset
     }"
   >
-    <div class="main__header-box main__margins">
+    <div class="main__header-box col-gap8 row-gap4 dynamic main__margins">
       <div class="main__title-box">
         <h3 class="main__title">
           Эпизоды
@@ -15,7 +15,7 @@
           {{ offset }} - {{ offset + episodes.length }} / {{ episodes.length }}
         </h4>
       </div>
-      <div class="main__filters">
+      <div class="row col-gap16 row-gap8 dynamic">
         <base-selector
           v-model="translatorFilter"
           class="main__filter-button m-radius-1 m3-bg-3"
@@ -146,8 +146,10 @@ const selectableTranslators = computed((): string[] => {
   &__box {
     display: grid;
     height: fit-content;
-    grid-template-rows: 64px 1fr;
+    grid-template-rows: max-content 1fr;
     align-items: center;
+    padding-top: 8px;
+    padding-bottom: 8px;
 
     &-with-paging {
       grid-template-rows: 64px 1fr 64px;
@@ -155,7 +157,7 @@ const selectableTranslators = computed((): string[] => {
   }
 
   &__filter-button {
-    height: auto;
+    height: 32px;
     width: fit-content;
 
     &:hover {
@@ -173,16 +175,19 @@ const selectableTranslators = computed((): string[] => {
 
     &:hover {
       color: var(--on-secondary-container-light);
-      background: var(--secondary-container-light);
+      background: color-mix(in srgb, var(--primary40) 8%, transparent);;
       cursor: pointer;
     }
   }
 
   &__header-box {
-    display: grid;
-    grid-template-columns: auto auto;
+    display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
+
+    padding-top: 8px;
+    padding-bottom: 16px;
   }
 
   &__title-box {
@@ -208,15 +213,6 @@ const selectableTranslators = computed((): string[] => {
 
   &__margins {
     margin: 0 26px;
-  }
-
-  &__filters {
-    display: grid;
-    grid-template-rows: 1fr;
-    grid-template-columns: auto;
-    grid-auto-flow: column;
-    height: 32px;
-    gap: 16px;
   }
 }
 </style>

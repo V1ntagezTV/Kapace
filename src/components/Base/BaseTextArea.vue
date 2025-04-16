@@ -6,7 +6,7 @@
     <label v-if="label" class="textarea__label">{{ label }}</label>
     <textarea
       :value="modelValue"
-      class="textarea__text-area material textarea__text-area"
+      class="textarea__text-area body-medium material textarea__text-area"
       :placeholder="placeholder"
       @input="$emit('update:modelValue', $event.target.value)"
     />
@@ -36,6 +36,8 @@ const props = defineProps({
   &__text-area {
     display: flex;
     width: 100%;
+    min-height: inherit;
+
     resize: vertical;
     padding: 8px 16px 8px 16px;
 

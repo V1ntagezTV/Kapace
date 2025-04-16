@@ -4,6 +4,7 @@
     :mark-as-invalid-input="isInvalid"
     :selectable-values="values"
     :menu-alignment="MenuAlignment.Left"
+    :is-dropped="isDroppedRef"
     @input="onChangeInput"
     @update:model-value="onSelectValue"
   >
@@ -47,14 +48,23 @@ const props = defineProps({
   placeholder: {type: String, required: true},
   values: {type: Object as PropType<Array<string>>, required: true, default: new Array<string>()},
   isInvalid: {type: Boolean, required: false, default: false},
-  showLoopIcon: {type: Boolean, required: false, default: true}
+  showLoopIcon: {type: Boolean, required: false, default: true},
+  isDropped: {type: Boolean, required: false, default: false},
+  callUpdaterDelay: {type: Number, required: false, default: 0}
 });
 
 const textInput = ref(props.input);
+const isDroppedRef = ref(props.isDropped);
 const selectedValue = ref("");
+let dropMenuTimeout: NodeJS.Timeout = null;
 
 watch(() => props.input, (newValue) => {
   textInput.value = newValue;
+});
+
+watch(() => props.isDropped, (newValue) => {
+  isDroppedRef.value = newValue;
+  console.log('DROP MENU:' + newValue);
 });
 
 const emits = defineEmits<{
@@ -63,7 +73,16 @@ const emits = defineEmits<{
 }>();
 
 function onChangeInput() {
-  emits('change:input', textInput.value, false);
+  clearTimeout(dropMenuTimeout);
+
+  if (textInput.value.length === 0) {
+    emits('change:input', textInput.value, false);
+    return;
+  }
+
+  dropMenuTimeout = setTimeout(() => {
+    emits('change:input', textInput.value, false);
+  }, props.callUpdaterDelay);
 }
 
 function onSelectValue(value: string) {
@@ -73,11 +92,11 @@ function onSelectValue(value: string) {
 
 function searchByContentInput(dropMenuAction: (boolean) => void) {
   if (textInput.value.length > 0) {
-    dropMenuAction(true);
+    dropMenuAction(isDroppedRef.value);
     return;
   }
 
-  dropMenuAction(false);
+  dropMenuAction(isDroppedRef.value);
 }
 
 function cleanInputButton() {

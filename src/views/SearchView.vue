@@ -6,6 +6,8 @@
         class="search-page__search m3-bg-1 m-radius-1"
         :values="searchSelectableValues"
         :placeholder="'Поиск по сайту'"
+        :call-updater-delay="500"
+        :is-dropped="isSearchMenuDropped"
         @change:input="(newInput, isSelected) => searchByInput(newInput, isSelected)"
         @keyup.enter="PressSearchEnter"
       />
@@ -92,7 +94,7 @@ const typeFilters = new Map<ContentType, boolean>([
 ]);
 const statusFilters = new Map<ContentStatus, boolean>([
   [filterByDefault, false],
-	[ContentStatus.Released, false],
+	[ContentStatus.Announced, false],
 	[ContentStatus.Ongoing, false],
 	[ContentStatus.Finished, false],
 ]);
@@ -115,8 +117,10 @@ const filtersV2 = ref<FilterUnitModel[]>([
 
 const router = useRouter()
 const searchInput = ref<string>("");
-const searchSelectableValues = computed(() => searchSelectableValuesModels.value.map(x => x.Title));
+const searchSelectableValues = computed(() => searchSelectableValuesModels.value.map(x => x.Content.Title));
 const searchSelectableValuesModels = ref<V1GetByQueryResponseContent[]>([]);
+let isSearchMenuDropped = ref<boolean>(false);
+
 const initPageContent = ref<V1GetByQueryResponse>(null);
 const isDataReady = ref(false);
 const watchableShowFilters = ref(false);
@@ -128,16 +132,18 @@ onMounted(async () => {
 })
 
 async function searchByInput(newInput: string, isSelected: boolean) {
+  isSearchMenuDropped.value = false;
   searchInput.value = newInput;
 
-  const selectedContent = searchSelectableValuesModels.value.find(c => c.Title === newInput);
+  const selectedContent = searchSelectableValuesModels.value.find(c => c.Content.Title === newInput);
   if (isSelected) {
-    await router.push({name: 'theater', params: {id: selectedContent.Id}})
+    await router.push({name: 'theater', params: {id: selectedContent.Content.Id}})
     return;
   }
 
   const response = await search(false);
   searchSelectableValuesModels.value = response.Content;
+  isSearchMenuDropped.value = searchSelectableValuesModels.value.length > 0 && newInput.length > 0;
 }
 
 async function search(addFilters: boolean = true) : Promise<V1GetByQueryResponse> {
@@ -165,7 +171,6 @@ function GetArrayByFilterType<T>(filterType: FilterTypes) {
       }
 
 			if (value && filter.type === filterType) {
-				console.log(key);
 				response.push(key as typeof T);
 			}
 		});

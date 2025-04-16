@@ -26,7 +26,6 @@ defineProps({
     display: grid;
     grid-template-columns: repeat(3, auto);
     grid-template-rows: 32px;
-    height: 32px;
     width: min-content;
     justify-content: center;
     align-items: center;

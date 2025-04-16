@@ -4,7 +4,7 @@
       <div class="settings-nav__label row gap-12">
         <menu-icon />
 
-        <p class="title-small">
+        <p v-show="!isMobile" class="title-small">
           Редактор
         </p>
       </div>
@@ -15,7 +15,9 @@
         to="/edit/list"
       >
         <folder-icon />
-        Мой список
+        <div v-show="!isMobile" class="text__one-line">
+          Мой список
+        </div>
       </router-link>
       <router-link
         :class="{'settings-nav__button-selected':
@@ -25,7 +27,9 @@
         :to="{name: 'create-content'}"
       >
         <add-note />
-        Дорама
+        <div v-show="!isMobile">
+          Дорама
+        </div>
       </router-link>
       <router-link
         :class="{'settings-nav__button-selected':
@@ -35,16 +39,17 @@
         :to="{name: 'create-episode'}"
       >
         <add-library-icon />
-        Серия
+        <div v-show="!isMobile">
+          Серия
+        </div>
       </router-link>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import DotIcon from "@/components/Icons/DotIcon.vue";
 import {SettingsPageTypes} from "@/models/SettingsPageTypes";
-import {ref, watch} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import MenuIcon from "@/components/Icons/MenuIcon.vue";
 import FolderIcon from "@/components/Icons/FolderIcon.vue";
 import AddNote from "@/components/Icons/AddNote.vue";
@@ -54,11 +59,23 @@ const props = defineProps({
   current: {type: SettingsPageTypes, required: true}
 });
 
+const screenWidth = ref(window.innerWidth)
 const refCurrent = ref<SettingsPageTypes>(props.current);
+const isMobile = computed(() => screenWidth.value <= 720)
 
 watch(() => props.current, (newValue) => {
   refCurrent.value = newValue;
 });
+
+const handleResize = () => {screenWidth.value = window.innerWidth}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+})
 
 </script>
 
@@ -69,7 +86,7 @@ watch(() => props.current, (newValue) => {
     grid-template-rows: min-content;
     height: fit-content;
     background: var(--primary98);
-    margin-top: 12px;
+    margin-top: 20px;
     margin-bottom: 12px;
     padding: 12px;
     border-radius: 16px;

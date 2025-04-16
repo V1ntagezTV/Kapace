@@ -39,30 +39,23 @@ const props = defineProps({
 <style lang="scss">
 .base-button {
   &__button {
-    width: 100%;
-    height: fit-content;
-    padding: 12px 0;
+    height: 46px;
+    padding: 12px 24px;
     display: flex;
     justify-content: center;
     background: transparent;
     align-items: center;
 
-    color: var(--dark-primary);
     -webkit-user-select: none;
     cursor: pointer;
-
-    transition: color 0.25s, background-color 0.25s;
+    transition: color 0.25s, background-color 0.25s, border 0.25s;;
   }
 
   &__light {
-    background: white;
-    color: var(--dark-primary);
-    border: 1px solid var(--primary40);
-    border-radius: 6px;
-    transition: border 0.25s;
+    color: white;
 
     &:hover {
-      border: 1.5px solid var(--primary40);;
+      border: 1.5px solid rgba(0, 0, 0, 0.3);
     }
   }
 
@@ -97,6 +90,10 @@ const props = defineProps({
     color: white;
     background: var(--primary40);
 
+    a {
+      color: white;
+    }
+
     &:hover {
       background: var(--primary50);
     }
@@ -109,6 +106,10 @@ const props = defineProps({
   &__outline {
     color: var(--primary40);
     background-color: white;
+
+    a {
+      color: var(--primary40);
+    }
 
     &:hover {
       background-color: color-mix(in srgb, var(--primary40) 8%, transparent);

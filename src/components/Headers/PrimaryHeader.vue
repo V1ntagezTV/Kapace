@@ -1,6 +1,25 @@
 <template>
   <div style="height: 56px" class="row h__space-between v__center">
-    <nav class="row gap-16 v__center">
+    <nav v-show="isMobile" class="row gap-16 v__center">
+      <base-selector
+        :model-value="selectedMenu"
+        :selectable-values="menuValues"
+        :title="'Меню'"
+        :menu-alignment="MenuAlignment.Left"
+        :is-dropped="isHeadersMenuDropped"
+        @update:modelValue="selectMenuHandler"
+      >
+        <template #header>
+          <base-button
+            style="background-color: #303036;"
+            class="m-radius-circle m-border gap-16"
+            @click="() => { isHeadersMenuDropped = !isHeadersMenuDropped }"
+          >
+            <menu-icon />
+            Меню
+          </base-button>
+        </template>
+      </base-selector>
       <router-link class="row v__center" to="/">
         <img
           class="header__logo"
@@ -8,7 +27,20 @@
           alt="Главная"
         >
       </router-link>
-      <router-link class="header__edit body-small header__text-button m-radius-circle m-border v__center" to="/edit">
+    </nav>
+
+    <nav
+      v-show="!isMobile"
+      class="row gap-16 v__center"
+    >
+      <router-link class="row v__center" to="/">
+        <img
+          class="header__logo"
+          src="@/assets/images/Logo.svg"
+          alt="Главная"
+        >
+      </router-link>
+      <router-link to="/edit" class="header__text-button body-small m-radius-circle m-border v__center">
         Редактор
       </router-link>
       <router-link to="/" class="header__text-button m-radius-circle">
@@ -41,17 +73,21 @@
               :button-type="3"
               @click="onClick"
             >
-              Профиль
+              {{ store.nickname }}
               <material-drop-arrow />
             </base-button>
           </template>
 
           <template #menu="{ onClick }">
             <base-background class="header__menu m-radius-1 column v__start h__center" @click="onClick">
-              <a class="header__menu-button row gap-8 v__center h__start">
+              <router-link to="/profile" class="header__menu-button row gap-8 v__center h__start">
                 <user-icon />
-                Профиль (in dev)
-              </a>
+                Профиль
+              </router-link>
+              <router-link to="settings" class="header__menu-button row gap-8 v__center h__start">
+                <details-icon />
+                Настройки
+              </router-link>
               <router-link
                 class="header__menu-button row gap-8 v__center h__start"
                 to="/"
@@ -78,8 +114,45 @@ import {userStore} from "@/store/UserStore";
 import MaterialDropArrow from "@/components/Icons/MaterialDropArrow.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
+import DetailsIcon from "@/components/Icons/DetailsIcon.vue";
+import {ref, onMounted, onBeforeUnmount, computed} from 'vue'
+import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
+import MenuIcon from "@/components/Icons/MenuIcon.vue";
+import {useRouter} from "vue-router";
 
 const store = userStore();
+const router = useRouter();
+const isHeadersMenuDropped = ref(false);
+const selectedMenu = ref("")
+const menuValues = ['Главная', 'Редактор', 'Поиск'];
+const screenWidth = ref(window.innerWidth)
+const isMobile = computed(() => screenWidth.value <= 720)
+
+const handleResize = () => {screenWidth.value = window.innerWidth}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
+function selectMenuHandler(value: string) {
+  if (menuValues[0] === value) {
+    router.push('/')
+  } else if (menuValues[1] === value) {
+    router.push('/edit')
+  } else if (menuValues[2] === value) {
+    router.push('/search')
+  }
+
+  isHeadersMenuDropped.value = false;
+}
+
+
+
+
 </script>
 
 <style lang="scss" scoped>

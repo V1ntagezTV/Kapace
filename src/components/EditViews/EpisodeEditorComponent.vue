@@ -18,6 +18,8 @@
           :placeholder="'Выберите дораму'"
           :values="searchContentListV2.map(x => x.Title)"
           :is-invalid="contentIsInvalid"
+          :is-dropped="isContentsMenuDropped"
+          :call-updater-delay="500"
           @change:input="onChangeContentInput"
         />
         <BaseInput
@@ -44,6 +46,8 @@
           :placeholder="'Выберите переводчика'"
           :values="translatorsList.map(translator => translator.Name)"
           :is-invalid="translatorIsInvalid"
+          :is-dropped="isTranslatorsMenuDropped"
+          :call-updater-delay="500"
           @change:input="onChangeTranslatorInput"
         />
         <BaseSelector
@@ -167,7 +171,7 @@ const changesHistoryApi = inject<ChangesHistoryService>('changes-history-service
 const contentApi = inject<ContentService>("content-service");
 const episodesApi = inject<EpisodeService>('episode-service');
 const translatorApi = inject<TranslatorService>('translator-service');
-const clientEventStore = new ClientEventStore();
+const clientEventStore = ClientEventStore();
 
 onMounted(async () => {
   if (props.contentId) {
@@ -197,6 +201,7 @@ let searchContentListV2 = ref<UnitOfSelection[]>([]);
 const contentIsInvalid = ref<boolean>(false);
 const contentInput = ref<string>("");
 const contentSelectedTitle = ref<string>("");
+const isContentsMenuDropped = ref<boolean>(false);
 
 /* Серия */
 const episodeSelectableValues = ref<string[]>([]);
@@ -208,6 +213,7 @@ let translatorsList: V1TranslatorQueryResponseUnit[] = [];
 const translatorSelectableValues = ref<string[]>([]);
 const translatorIsInvalid = ref<boolean>(false);
 const translatorSelectedTitle = ref<string>("");
+const isTranslatorsMenuDropped = ref<boolean>(false);
 
 /* Тип перевода */
 const translationType = ref<string>("");
@@ -318,15 +324,15 @@ async function onClickUpsertEpisode() {
   } else {
     clientEventStore.push("Ошибка! Заполните обязательные поля.", EventTypes.Error)
   }
-
-  console.log('invalid')
 }
 
 /* Вызывается при изменении input дорамы */
 async function onChangeContentInput(newInput: string, isSelected: boolean) {
+  isTranslatorsMenuDropped.value = false;
   contentSelectedTitle.value = isSelected ? newInput : undefined;
   if (newInput.length === 0) {
     searchContentListV2.value = [];
+    isContentsMenuDropped.value = false;
     return;
   }
 
@@ -344,14 +350,19 @@ async function onChangeContentInput(newInput: string, isSelected: boolean) {
 
   const foundContents = (await contentApi.searchBy(newInput)).Units;
   searchContentListV2.value = foundContents.map(content => ({Title: content.Title, ContentId: content.ContentId}));
+  if (searchContentListV2.value.length > 0) {
+    isContentsMenuDropped.value = true;
+  }
 }
 
 /* Вызывается при изменении input переводчика */
+
 async function onChangeTranslatorInput(newInput: string, isSelected: boolean) {
   translatorSelectedTitle.value = isSelected ? newInput : undefined;
 
   if (newInput.length === 0) {
     translatorsList = [];
+    isTranslatorsMenuDropped.value = false;
     return;
   }
 
@@ -363,6 +374,10 @@ async function onChangeTranslatorInput(newInput: string, isSelected: boolean) {
   });
   translatorSelectableValues.value = translatorsResponse.Translators.map(x => x.Name);
   translatorsList = translatorsResponse.Translators;
+
+  if (translatorSelectableValues.value.length > 0) {
+    isTranslatorsMenuDropped.value = true;
+  }
 }
 </script>
 
@@ -450,7 +465,7 @@ async function onChangeTranslatorInput(newInput: string, isSelected: boolean) {
     grid-template-rows: min-content;
     grid-auto-rows: min-content;
     padding: 20px;
-    margin: 12px;
+    margin: 20px 12px;
     gap: 26px;
   }
 
@@ -473,7 +488,7 @@ async function onChangeTranslatorInput(newInput: string, isSelected: boolean) {
   }
 
   &__video-input {
-    height: 115px;
+    min-height: 115px;
   }
 
   &__video {

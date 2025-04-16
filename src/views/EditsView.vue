@@ -1,6 +1,6 @@
 <template>
   <div class="edit__box">
-    <SettingsNavigation :current="selectedPage" />
+    <SettingsNavigation class="col" :current="selectedPage" />
     <EditListComponent v-if="selectedPage === SettingsPageTypes.Edits" />
     <ContentEditorComponent
       v-if="selectedPage === SettingsPageTypes.CreateContent"
@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, watch} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import SettingsNavigation from "@/components/Settings/SettingsNavigation.vue";
 import ContentEditorComponent from "@/components/EditViews/ContentEditorComponent.vue";
 import {SettingsPageTypes} from "@/models/SettingsPageTypes";
@@ -27,6 +27,8 @@ const route = useRoute();
 
 const contentId = ref<number | null>(null);
 const episodeId = ref<number | null>(null);
+
+
 contentId.value = +route.params.content;
 episodeId.value = +route.params.episode;
 const selectedPage = ref<typeof SettingsPageTypes>(choosePage());
@@ -98,7 +100,7 @@ function choosePage() : SettingsPageTypes {
 
   &__box {
     display: grid;
-    grid-template-columns: 275px 1fr;
+    grid-template-columns: min-content 1fr;
     grid-template-rows: max-content;
     height: fit-content;
     background: var(--surface-container-lowest100);
