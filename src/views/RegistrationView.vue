@@ -1,11 +1,12 @@
 <template>
   <div class="registration-view__main">
-    <BaseBackground class="registration-view__container">
-      <router-link to="/">
-        <img class="registration-view__logo" src="@/assets/images/Logo.svg">
-      </router-link>
-
-      <span class="title-large">Восстановление пароля</span>
+    <BaseBackground
+      :type="2"
+      class="registration-view__container"
+    >
+      <p class="title-large">
+        Регистрация
+      </p>
 
       <div class="registration-view__input-container">
         <base-input
@@ -41,7 +42,7 @@
         class="m-radius-circle h__fill"
         :button-type="2"
         :variant="'filled'"
-        @click.stop="registrationButtonAction"
+        @click="registrationButtonAction"
       >
         Зарегистрировать
       </base-button>
@@ -55,6 +56,12 @@
         </router-link>
       </div>
     </BaseBackground>
+    <email-verification-modal
+      :is-visible="emailVerificationIsVisible"
+      :current-email="emailInput"
+      :user-token="authTempToken"
+      @on:close="emailVerificationIsVisible = false;"
+    />
   </div>
 </template>
 
@@ -66,9 +73,12 @@ import BaseInput from "@/components/Base/BaseInput.vue";
 import {UserApi} from "@/api/UserApi";
 import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 import {StringExtensions} from "@/helpers/StringExtensions";
+import EmailVerificationModal from "@/components/Modal/EmailVerificationModal.vue";
+import {useRouter} from "vue-router";
 
 const userApi = inject<UserApi>('user-api');
 const eventStore = ClientEventStore();
+const router = useRouter();
 
 const isNicknameInputInvalid = ref<boolean>(false);
 const nicknameInput = ref<string>(undefined);
@@ -79,6 +89,9 @@ const emailInput = ref<string>(undefined);
 const isPasswordInputInvalid = ref<boolean>(false);
 const firstPasswordInput = ref<string>(null);
 const secondPasswordInput = ref<string>(null);
+
+const emailVerificationIsVisible = ref<boolean>(false);
+let authTempToken = ref<string|null>(null);
 
 async function registrationButtonAction() {
   if (!StringExtensions.isNullOrEmpty(firstPasswordInput.value)) {
@@ -124,13 +137,24 @@ async function registrationButtonAction() {
     return;
   }
 
-  await userApi.registration(
+  const regResponse = (await userApi.registration(
     nicknameInput.value,
     emailInput.value,
-    firstPasswordInput.value
-  );
-}
+    firstPasswordInput.value))
+      .onBusinessError(error => eventStore.push(error.Message, EventTypes.Error as typeof EventTypes))
+      .onException(() => eventStore.push('Что-то пошло не так! Ошибка сервера!', EventTypes.Error as typeof EventTypes));
 
+  if (regResponse.error) {
+    return;
+  }
+
+  authTempToken.value = regResponse.data.Token;
+  (await userApi.sendMailVerifyCode(authTempToken.value))
+    .onBusinessError(error => eventStore.push(error.Message, EventTypes.Error as typeof EventTypes))
+    .onException(() => eventStore.push('Не удалось отправить код! Попробуйте еще раз!', EventTypes.Error as typeof EventTypes));
+
+  emailVerificationIsVisible.value = true;
+}
 </script>
 
 <style lang="scss" scoped>
@@ -158,7 +182,7 @@ async function registrationButtonAction() {
   }
 
   &__logo {
-    height: 40px;
+    height: 30px;
   }
 
   &__links {
@@ -211,10 +235,10 @@ async function registrationButtonAction() {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 15px;
+    gap: 25px;
     height: fit-content;
     width: 420px;
-    padding: 60px;
+    padding: 40px;
   }
 
   &__input-container {

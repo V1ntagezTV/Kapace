@@ -19,6 +19,7 @@ export type ChangeableEpisodeFields = {
     TranslationType: typeof TranslationType,
     EpisodeId: number | null,
     TranslatorId: number | null,
+    TranslatorName: string | null,
     Quality: number | null,
 }
 

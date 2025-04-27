@@ -8,10 +8,10 @@
   >
     <div class="main__header-box col-gap8 row-gap4 dynamic main__margins">
       <div class="main__title-box">
-        <h3 class="main__title">
+        <h3 class="title-large">
           Эпизоды
         </h3>
-        <h4 class="main__title">
+        <h4 class="title-large">
           {{ offset }} - {{ offset + episodes.length }} / {{ episodes.length }}
         </h4>
       </div>
@@ -200,15 +200,6 @@ const selectableTranslators = computed((): string[] => {
   }
 
   &__title {
-    color: var(--Gray-Gray-2, #474A57);
-    text-align: justify;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 24px; /* 150% */
-    letter-spacing: 0.15px;
-    padding: 0;
-    margin: 0;
   }
 
   &__margins {

@@ -1,12 +1,9 @@
 <template>
   <div class="login-view__main">
     <BaseBackground :type="2" class="login-view__container gap-16">
-      <router-link to="/">
-        <img
-          class="login-view__logo" src="@/assets/images/Logo.svg"
-          alt="Kapace logotype"
-        >
-      </router-link>
+      <p class="title-large">
+        Авторизация
+      </p>
 
       <div class="login-view__input-container gap-8 h__start">
         <base-input
@@ -83,7 +80,7 @@ import IconButton from "@/components/Base/Buttons/IconButton.vue";
 import EyeCross from "@/components/Icons/EyeCross.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 
-const router = useRouter()
+const router = useRouter();
 const store = userStore();
 const userApi = inject<UserApi>('user-api');
 const eventStore = ClientEventStore();
@@ -97,6 +94,7 @@ const passwordInput = ref<string>(undefined);
 async function logInClick() {
   const wrongInputErrorStr = 'Ошибка! Не корректно введены логин или пароль!';
   const defaultErrorStr = 'Ошибка сервера! Что-то пошло не так!';
+
   if (!IsInputsValid()) {
     eventStore.push(wrongInputErrorStr, EventTypes.Error as typeof EventTypes);
   }
@@ -192,7 +190,7 @@ function IsInputsValid() : boolean {
   }
 
   &__logo {
-    height: 40px;
+    height: 30px;
   }
 
   &__links {
@@ -240,7 +238,7 @@ function IsInputsValid() : boolean {
     justify-content: center;
     height: fit-content;
     width: 420px;
-    padding: 60px;
+    padding: 40px;
   }
 
   &__input-container {

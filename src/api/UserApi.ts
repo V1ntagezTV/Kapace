@@ -45,12 +45,14 @@ export class UserApi extends ApiService {
     public async registration(
         nickname: string,
         email: string,
-        password: string) : Promise<any> {
-        await this.CallPostHandlerAsync({
-            email: email,
-            nickname: nickname,
-            password: password
-        }, 'register');
+        password: string) : Promise<ApiResponse<{Token: string}>> {
+        return await this.fetchV2<{Token: string}, {}>({
+                email: email,
+                nickname: nickname,
+                password: password
+            },
+            'registration/create',
+        );
     }
 
     async sendPasswordResetCode(email: string) {
@@ -120,6 +122,24 @@ export class UserApi extends ApiService {
                 Code: inputCode
             },
             'update-mail/new-email-verify-code',
+            requestHeaders
+        );
+    }
+
+    async sendMailVerifyCode(authTempToken: string) {
+        const requestHeaders: HeadersInit = new Headers();
+        requestHeaders.set('Content-Type', 'application/json; charset=utf-8');
+        requestHeaders.set('Authorization', 'Bearer ' + authTempToken);
+        return await this.fetchV2<{}, {}>({}, 'registration/send-verify-code', requestHeaders);
+    }
+
+    async verifyRegistrationCode(verifyCode: string, authTempToken: string) {
+        const requestHeaders: HeadersInit = new Headers();
+        requestHeaders.set('Content-Type', 'application/json; charset=utf-8');
+        requestHeaders.set('Authorization', 'Bearer ' + authTempToken);
+        return await this.fetchV2<{}, {VerificationCode: string}>(
+            {VerificationCode: verifyCode},
+            'registration/verify-mail',
             requestHeaders
         );
     }

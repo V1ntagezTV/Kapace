@@ -1,5 +1,5 @@
 import {V1GetMainPageContentResponse} from "@/api/Responses/V1GetMainPageContentResponse";
-import {ApiService} from "@/api/ApiService";
+import {ApiResponse, ApiService} from "@/api/ApiService";
 import {MainPageType} from "@/api/Enums/MainPageType";
 import {V1GetMainPageContentRequest} from "@/api/Requests/V1GetMainPageContentRequest";
 import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
@@ -13,13 +13,14 @@ import {V1GetByQueryResponse} from "@/api/Requests/V1GetByQueryResponse";
 export class ContentService extends ApiService {
     constructor() { super("v1/content/"); }
 
-    async V1GetMainPageContentAsync(): Promise<V1GetMainPageContentResponse> {
-        const request = new V1GetMainPageContentRequest(
-            [MainPageType.LastCreated, MainPageType.PopularForTwoWeeks, MainPageType.LastUpdated],
-            20,
-            0);
+    async V1GetMainPageContentAsync(): Promise<ApiResponse<V1GetMainPageContentResponse>> {
+        const request = {
+            mainPageTypes: [MainPageType.LastCreated, MainPageType.PopularForTwoWeeks, MainPageType.LastUpdated],
+            limit: 20,
+            offset: 0,
+        };
 
-        return this.CallHandlerAsync<V1GetMainPageContentResponse, V1GetMainPageContentRequest>(
+        return this.fetchV2<V1GetMainPageContentResponse, {}>(
             request,
             "get-main-page-content"
         );

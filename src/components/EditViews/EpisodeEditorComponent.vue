@@ -35,20 +35,18 @@
     <div class="edit-episode__unit-box">
       <div class="edit-episode__box-activities">
         <p class="body-large">
-          Переводчик*
+          Язык перевода*
         </p>
+
         <p class="body-large">
           Тип перевода*
         </p>
-        <async-search-selector
-          v-model="translatorSelectedTitle"
+        <BaseSelector
+          v-model="language"
           class="edit-episode__bg m-radius-1 m-border m-border-hover m-border-active"
-          :placeholder="'Выберите переводчика'"
-          :values="translatorsList.map(translator => translator.Name)"
-          :is-invalid="translatorIsInvalid"
-          :is-dropped="isTranslatorsMenuDropped"
-          :call-updater-delay="500"
-          @change:input="onChangeTranslatorInput"
+          :title="'Выберите язык'"
+          :mark-as-invalid-input="languageIsInvalid"
+          :selectable-values="languageSelectableValues"
         />
         <BaseSelector
           v-model="translationType"
@@ -64,17 +62,19 @@
     <div class="edit-episode__unit-box">
       <div class="edit-episode__box-activities">
         <p class="body-large">
-          Язык перевода*
+          Переводчик
         </p>
         <p class="body-large">
           Качество видео
         </p>
-        <BaseSelector
-          v-model="language"
+        <async-search-selector
+          v-model="translatorSelectedTitle"
           class="edit-episode__bg m-radius-1 m-border m-border-hover m-border-active"
-          :title="'Выберите язык'"
-          :mark-as-invalid-input="languageIsInvalid"
-          :selectable-values="languageSelectableValues"
+          :placeholder="'Выберите переводчика'"
+          :values="translatorsList.map(translator => translator.Name)"
+          :is-dropped="isTranslatorsMenuDropped"
+          :call-updater-delay="500"
+          @change:input="onChangeTranslatorInput"
         />
         <BaseSelector
           v-model="quality"
@@ -211,7 +211,7 @@ const episodeSelectedTitle = ref<string>('');
 /* Переводчик */
 let translatorsList: V1TranslatorQueryResponseUnit[] = [];
 const translatorSelectableValues = ref<string[]>([]);
-const translatorIsInvalid = ref<boolean>(false);
+const translatorInput = ref<string>("");
 const translatorSelectedTitle = ref<string>("");
 const isTranslatorsMenuDropped = ref<boolean>(false);
 
@@ -279,13 +279,11 @@ async function onClickUpsertEpisode() {
   contentIsInvalid.value = !isValidString(contentSelectedTitle.value);
   /* Эпизод валидный только если выбран контент и эпизод */
   episodeIsInvalid.value = !isValidString(episodeSelectedTitle.value) || contentIsInvalid.value;
-  translatorIsInvalid.value = !isValidString(translatorSelectedTitle.value);
   languageIsInvalid.value = !isValidString(language.value);
   translationTypeIsInvalid.value = !isValidString(translationType.value);
   videoScriptIsInvalid.value = !isValidString(videoLink.value);
   if (!contentIsInvalid.value &&
     !episodeIsInvalid.value &&
-    !translatorIsInvalid.value &&
     !translationTypeIsInvalid.value &&
     !languageIsInvalid.value &&
     !videoScriptIsInvalid.value) {
@@ -296,9 +294,14 @@ async function onClickUpsertEpisode() {
     const languageType = language.value as typeof Language;
     const translationTypeValue = translationType.value as typeof TranslationType;
     const qualityNumber = quality.value ? (quality.value as VideoQuality) as number : null;
-    const translatorId = translatorsList
-      .find(translator => translator.Name === translatorSelectedTitle.value)
-      .TranslatorId;
+
+    let translatorId: number | null = null;
+    if (translatorSelectedTitle.value) {
+      translatorId = translatorsList
+          .find(translator => translator.Name === translatorSelectedTitle.value)
+          ?.TranslatorId
+        ?? null;
+    }
 
     // TODO: Если передали iframe а не ссылку на видео из src то нужно вытащить из него ссылку
     const response = await changesHistoryApi.createEpisodeChange({
@@ -309,6 +312,7 @@ async function onClickUpsertEpisode() {
         TranslationType: translationTypeValue,
         EpisodeId: null,
         TranslatorId: translatorId,
+        TranslatorName: translatorInput.value,
         Quality: qualityNumber,
       },
       ContentId: content.ContentId,
@@ -358,6 +362,7 @@ async function onChangeContentInput(newInput: string, isSelected: boolean) {
 /* Вызывается при изменении input переводчика */
 
 async function onChangeTranslatorInput(newInput: string, isSelected: boolean) {
+  translatorInput.value = newInput;
   translatorSelectedTitle.value = isSelected ? newInput : undefined;
 
   if (newInput.length === 0) {

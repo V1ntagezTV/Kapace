@@ -1,7 +1,3 @@
-import {Exception} from "sass";
-
-export class Empty { }
-
 export class ApiService {
     protected hostPath: string = "http://localhost:5000/";
 
@@ -16,13 +12,12 @@ export class ApiService {
         const requestHeaders: HeadersInit = headers !== null ? headers : new Headers();
         requestHeaders.set('Content-Type', 'application/json; charset=utf-8');
 
-        console.log(requestBody);
         return fetch(path, {
             method: 'POST',
             headers: requestHeaders,
             credentials:
-                handlerPath !== "http://localhost:5000/v1/user/update-mail/new-email-send-code" &&
-                handlerPath !== "http://localhost:5000/v1/user/update-mail/new-email-verify-code"
+                handlerPath !== "http://89.111.174.191/v1/user/update-mail/new-email-send-code" &&
+                handlerPath !== "http://89.111.174.191/v1/user/update-mail/new-email-verify-code"
                     ? 'include' : 'omit',
             body: requestBody === undefined ? JSON.stringify({}) : JSON.stringify(requestBody),
         });
@@ -47,7 +42,11 @@ export class ApiService {
 
         try {
             response = await this.baseFetch(requestBody, handlerPath, headers);
-            console.log(response);
+            console.log({
+                Path: handlerPath,
+                Request: requestBody,
+                Response: response
+            });
         } catch (e) {
             exception = e;
         }
