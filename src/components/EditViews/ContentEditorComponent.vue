@@ -253,7 +253,6 @@ import {ChangesHistoryService} from "@/api/ChangesHistoryService";
 import {Linter} from "eslint";
 import FlatConfigFileSpec = Linter.FlatConfigFileSpec;
 import {V1ChangeableFields} from "@/api/Requests/V1CreateContentRequest";
-import '@material/web/button/filled-button.js';
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import AsyncSearchSelector from "@/components/Base/Selector/AsyncSearchSelector.vue";
