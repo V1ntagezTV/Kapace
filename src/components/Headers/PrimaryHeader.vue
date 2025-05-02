@@ -20,13 +20,6 @@
           </base-button>
         </template>
       </base-selector>
-      <router-link class="row v__center" to="/">
-        <img
-          class="header__logo"
-          src="@/assets/images/Logo.svg"
-          alt="Главная"
-        >
-      </router-link>
     </nav>
 
     <nav

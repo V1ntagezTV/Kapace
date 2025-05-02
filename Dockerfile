@@ -22,5 +22,8 @@ COPY --from=build-stage /app/dist /usr/share/nginx/html
 # Конфигурация nginx для SPA (для Vue Router history mode)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# установку Certbot
+RUN RUN apk add --no-cache certbot
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

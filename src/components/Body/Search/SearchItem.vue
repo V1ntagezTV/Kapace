@@ -1,4 +1,4 @@
-Ё<template>
+<template>
   <BaseBackground class="search-item__box" :type="3">
     <router-link :to="{ name: 'theater', params: { id: content.Id}}">
       <div class="search-item__image-box-1">
