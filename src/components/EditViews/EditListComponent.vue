@@ -120,7 +120,6 @@
               {{ fieldComparison.NewValue }}
             </span>
           </div>
-
         </div>
       </div>
       <div
@@ -130,7 +129,7 @@
         <base-button
           :variant="'filled'"
           class="material m-radius-circle body-large edit-list__icon"
-          @click="approveClick(unit.HistoryId, 0)"
+          @click="approveClick(unit.HistoryId, currentUserStore.userId ?? 0)"
         >
           Одобрить
         </base-button>
@@ -157,7 +156,7 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, inject, onBeforeUnmount, onMounted, ref} from "vue";
+import {inject, onMounted, ref} from "vue";
 import {ChangesHistoryService} from "@/api/ChangesHistoryService";
 import {ChangeUnit} from "@/api/Responses/V1GetChangesComparisonsResponse";
 import BaseButton from "@/components/Base/BaseButton.vue";
@@ -177,12 +176,13 @@ import NavRightArrowIcon from "@/components/Icons/MaterialIcons/NavRightArrowIco
 import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 import {StringExtensions} from "@/helpers/StringExtensions";
 import {userStore} from "@/store/UserStore";
-import * as events from "events";
+import {useRouter} from "vue-router";
 
 const imageService = inject<ImageService>('image-service');
 const changesHistoryService = inject<ChangesHistoryService>('changes-history-service');
 const contentService = inject<ContentService>('content-service');
 const clientEventStore = ClientEventStore();
+const router = useRouter();
 const currentUserStore = userStore();
 
 const searchSelectableValueModels = ref<V1SearchByResponseUnit[]>([]);
@@ -252,8 +252,6 @@ function getHistoryTypes(value: string) : typeof HistoryType[]{
 }
 
 function getOrderByType(selectedOrder: string) : typeof HistoryChangesOrderType {
-  console.log("getOrderByType:" + selectedOrder);
-
   if (selectedOrder === 'Сначала старые') {
     return HistoryChangesOrderType.ByCreated as typeof HistoryChangesOrderType;
   } else if (selectedOrder === 'По названию') {
@@ -276,7 +274,14 @@ async function clickOnMineFilter() {
   clientEventStore.push("Сначала необходимо авторизоваться!", EventTypes.Error);
 }
 
-async function approveClick(historyId: number, userId: number) {
+async function approveClick(historyId: number) {
+  if (!currentUserStore.loggedIn) {
+    clientEventStore.push('Для начала необходимо авторизоваться!', EventTypes.Error);
+    await router.push('/login');
+    return;
+  }
+
+  const userId = currentUserStore.userId;
   const unit = changes.value.find(change => change.HistoryId === historyId);
 
   const response = await changesHistoryService.approve({
@@ -286,7 +291,7 @@ async function approveClick(historyId: number, userId: number) {
 
   if (response.ok) {
     unit.ApprovedAt = Date.now();
-    unit.ApprovedBy = 0; // TODO: currentUser;
+    unit.ApprovedBy = userId;
     clientEventStore.push("Успех! Одобрено!", EventTypes.Success);
   } else {
     clientEventStore.push("Ошибка! Заявка не одобрена. Ошибка сервиса: " + response.body.toString(), EventTypes.Success);

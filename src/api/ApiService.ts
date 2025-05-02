@@ -1,7 +1,9 @@
 export class ApiService {
-    protected hostPath: string = "http://localhost:5000/";
+    protected hostPath: string = process.env.VUE_APP_SERVER_API_ADDRESS;
 
-    constructor(protected servicePath: string) { }
+    constructor(protected servicePath: string) {
+        console.log(this.hostPath);
+    }
 
     private baseFetch<TRequest>(
         requestBody: TRequest,
@@ -15,10 +17,7 @@ export class ApiService {
         return fetch(path, {
             method: 'POST',
             headers: requestHeaders,
-            credentials:
-                handlerPath !== "http://89.111.174.191/v1/user/update-mail/new-email-send-code" &&
-                handlerPath !== "http://89.111.174.191/v1/user/update-mail/new-email-verify-code"
-                    ? 'include' : 'omit',
+            credentials: 'include',
             body: requestBody === undefined ? JSON.stringify({}) : JSON.stringify(requestBody),
         });
     }
