@@ -204,16 +204,19 @@ const events = computed(() => clientEventStore.$state.events);
     &-info {
       background: #303036;
       color: white;
+      white-space: pre-line;
     }
 
     &-success {
       color: white;
       background: #4f9d00;
+      white-space: pre-line;
     }
 
     &-error {
       background: #BA1A1A;
       color: white;
+      white-space: pre-line;
     }
   }
 }

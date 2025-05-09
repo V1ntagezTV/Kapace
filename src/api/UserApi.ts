@@ -55,8 +55,8 @@ export class UserApi extends ApiService {
         );
     }
 
-    async sendPasswordResetCode(email: string) {
-        return await this.CallPostHandlerAsync({
+    async sendPasswordResetCode(email: string) : Promise<ApiResponse<{}>> {
+        return await this.fetchV2({
             email: email,
         }, 'reset-password/send-code');
     }
@@ -69,19 +69,16 @@ export class UserApi extends ApiService {
         );
     }
 
-    async resetPassword(email: string, newPassword: string, passwordResetTemporaryToken: string) {
-        const path = this.hostPath + this.servicePath + 'reset-password/finish';
+    async resetPassword(email: string, newPassword: string, passwordResetTemporaryToken: string) : Promise<ApiResponse<any>> {
         const requestHeaders: HeadersInit = new Headers();
         requestHeaders.set('Content-Type', 'application/json; charset=utf-8');
         requestHeaders.set('Authorization', 'Bearer ' + passwordResetTemporaryToken);
-        const requestBody = JSON.stringify({Email: email, NewPassword: newPassword});
-        const response = await fetch(path, {
-            method: 'POST',
-            headers: requestHeaders,
-            body: requestBody
-        });
 
-        console.log({path: path, request: requestBody, response: response});
+        return await this.fetchV2(
+            { Email: email, NewPassword: newPassword },
+            'reset-password/finish',
+            requestHeaders
+        );
     }
 
     async UpdateNickname(newNickname: string, isForce: boolean) : Promise<ApiResponse<{}>> {

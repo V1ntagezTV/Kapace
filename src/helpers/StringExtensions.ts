@@ -14,7 +14,6 @@ export class StringExtensions {
     static validateEmail(email: string): boolean {
         if (!email || email.length === 0) return false;
 
-        // Регулярное выражение для проверки email-адреса
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }

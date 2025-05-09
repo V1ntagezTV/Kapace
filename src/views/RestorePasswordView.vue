@@ -144,13 +144,15 @@ async function sendPasswordResetCode() {
     isEmailInputInvalid.value = false;
   }
 
-  try {
-    await userApi.sendPasswordResetCode(emailInput.value);
-    passwordResetScope.value = PasswordResetScope.EmailCode as typeof PasswordResetScope;
-    eventStore.push("Код восстановления отправлен на почту.", EventTypes.Success as typeof EventTypes)
-  } catch (exception) {
-    eventStore.push('Ошибка! Не корректный формат почты.', EventTypes.Error as typeof EventTypes);
+  const response = (await userApi.sendPasswordResetCode(emailInput.value))
+    .onException(() => eventStore.push('Ошибка! Не корректный формат почты.', EventTypes.Error as typeof EventTypes))
+    .onBusinessError((error) => eventStore.push(error.Message, EventTypes.Error as typeof EventTypes));
+
+  if (response.error) {
+    return;
   }
+
+  passwordResetScope.value = PasswordResetScope.EmailCode as typeof PasswordResetScope;
 }
 
 async function verifyPasswordResetCodeClick() {
@@ -162,19 +164,17 @@ async function verifyPasswordResetCodeClick() {
     isCodeInputInvalid.value = false;
   }
 
-  try {
-    const response = await userApi.verifyPasswordResetCode(emailInput.value, codeInput.value);
-    if (userApi.isErrorDetails(response)) {
-      eventStore.push(response.ErrorCode + '\n' + response.Message, EventTypes.Error as typeof EventTypes);
-      return;
-    }
-    passwordResetTemporaryToken = response.data.Token;
-    passwordResetScope.value = PasswordResetScope.PasswordInputs as typeof PasswordResetScope;
-    return;
-  } catch (exception) {
-    eventStore.push('Ошибка! Не корректный формат почты.', EventTypes.Error as typeof EventTypes);
+  const response = (await userApi.verifyPasswordResetCode(emailInput.value, codeInput.value))
+    .onException(() => eventStore.push('Ошибка! Не удалось подтвердить код, попробуйте еще раз.', EventTypes.Error as typeof EventTypes))
+    .onBusinessError((error) => eventStore.push(error.Message, EventTypes.Error as typeof EventTypes));
+
+  if (response.error) {
     return;
   }
+
+  passwordResetTemporaryToken = response.data.Token;
+  passwordResetScope.value = PasswordResetScope.PasswordInputs as typeof PasswordResetScope;
+  return;
 }
 
 async function resetPasswordClick() {
@@ -198,20 +198,24 @@ async function resetPasswordClick() {
     eventStore.push('Ошибка! Пароли не совпадают.', EventTypes.Error as typeof EventTypes);
     isPasswordInputV2Invalid.value = true;
     isPasswordInputInvalid.value = true;
-    return
+    return;
   } else {
     isPasswordInputV2Invalid.value = false;
   }
 
-  try {
-    await userApi.resetPassword(emailInput.value, passwordInput.value, passwordResetTemporaryToken);
-    eventStore.push('Отлично! Пароль успешно сброшен.', EventTypes.Success as typeof EventTypes);
-    await router.push('/login');
-    return;
-  } catch (exception) {
-    eventStore.push(exception, EventTypes.Error as typeof EventTypes);
+  const response = (await userApi.resetPassword(emailInput.value, passwordInput.value, passwordResetTemporaryToken))
+    .onException(() => eventStore.push('Ошибка! Не удалось сбросить пароль, попробуйте еще раз.', EventTypes.Error as typeof EventTypes))
+    .onBusinessError((error) => eventStore.push(error.Message, EventTypes.Error as typeof EventTypes));
+
+  if (response.error) {
     return;
   }
+
+  eventStore.push(
+    'Пароль успешно изменён!\n' +
+    'Теперь вы можете войти в систему, используя новый пароль.\n' +
+    'Рекомендуем сохранить его в надежном месте.', EventTypes.Success as typeof EventTypes);
+  await router.push('/login');
 }
 
 </script>
