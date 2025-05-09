@@ -23,6 +23,6 @@ export class ImageService extends ApiService {
     }
 
     public getImageLink(imageId: number, contentId: number): string {
-        return `http://localhost:5000/image/content/get-avatar?ImageId=${imageId}&ContentId=${contentId}`;
+        return this.hostPath + `image/content/get-avatar?ImageId=${imageId}&ContentId=${contentId}`;
     }
 }

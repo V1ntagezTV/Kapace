@@ -1,7 +1,7 @@
 <template>
   <div v-show="dataIsReady" class="material edit-list__main">
     <async-search-selector
-      class="edit-list__search m-radius-1 m-border m-border-active"
+      class="edit-list__search m-radius-1 m3-bg-1 m-border m-border-active"
       :placeholder="'Поиск'"
       :values="searchSelectableValueModels?.map(x => x.Title) ?? []"
       :is-dropped="isSearchMenuDropped"
@@ -12,14 +12,14 @@
     <div class="edit-list__filters gap-8">
       <filter-chips
         v-show="currentUserStore.loggedIn"
-        class="m3-bg-2 m-radius-1"
+        class=" m-radius-1"
         :class="{'edit-list__filters-unit--enabled': filters.isMy.value}"
         :text="'Мои'"
         @click.stop="clickOnMineFilter"
       />
       <base-selector
         v-model="filters.orderBy.value"
-        class="edit-list__filters-unit m3-bg-2 m-radius-1"
+        class="edit-list__filters-unit m3-bg-1 m-radius-circle m-border"
         :title="'Сортировать по'"
         :menu-alignment="MenuAlignment.Left"
         :selectable-values="['По идентификатору', 'По названию', 'Сначала новые', 'Сначала старые']"
@@ -27,7 +27,7 @@
       />
       <base-selector
         v-model="filters.historyType.value"
-        class="edit-list__filters-unit m3-bg-2 m-radius-1"
+        class="edit-list__filters-unit m3-bg-1 m-radius-circle m-border"
         :title="'Тип'"
         :menu-alignment="MenuAlignment.Left"
         :selectable-values="['Все', 'Дорама', 'Серия']"
@@ -35,7 +35,7 @@
       />
       <base-selector
         v-model="filters.status.value"
-        class="edit-list__filters-unit m3-bg-2 m-radius-1"
+        class="edit-list__filters-unit m3-bg-1 m-radius-circle m-border"
         :title="'Статус'"
         :menu-alignment="MenuAlignment.Left"
         :selectable-values="['Все', 'Не одобрено', 'Одобрено']"
@@ -46,7 +46,7 @@
     <base-background
       v-for="unit in changes" :key="unit"
       :type="2"
-      class="edit-list__history m-radius-28 m3-bg-2"
+      class="edit-list__history m-radius-28 m3-bg-1"
     >
       <div class="edit-list__header dynamic">
         <div>
@@ -126,26 +126,28 @@
         v-if="unit.ApprovedBy === null"
         class="edit-list__footer h__space-between v__center"
       >
-        <base-button
-          :variant="'filled'"
-          class="material m-radius-circle body-large edit-list__icon"
-          @click="approveClick(unit.HistoryId, currentUserStore.userId ?? 0)"
-        >
-          Одобрить
-        </base-button>
+        <a>
+          <base-button
+            :variant="'filled'"
+            class="material m-radius-circle body-large edit-list__icon"
+            @click="approveClick(unit.HistoryId)"
+          >
+            Одобрить
+          </base-button>
+        </a>
       </div>
     </base-background>
     <div class="row gap-16" style="width: 100%">
       <base-text-button
         v-if="offset !== 0"
-        class="edit-list__paging-button title-medium m3-bg-2 m-radius-28 gap-8"
+        class="edit-list__paging-button title-medium m3-bg-1 m-radius-28 gap-8"
         @click="updatePage(-10)"
       >
         <nav-left-arrow-icon />
         Предыдущая страница
       </base-text-button>
       <base-text-button
-        class="edit-list__paging-button title-medium m3-bg-2 m-radius-28 gap-8"
+        class="edit-list__paging-button title-medium m3-bg-1 m-radius-28 gap-8"
         @click="updatePage(5)"
       >
         Следующая страница
@@ -284,17 +286,14 @@ async function approveClick(historyId: number) {
   const userId = currentUserStore.userId;
   const unit = changes.value.find(change => change.HistoryId === historyId);
 
-  const response = await changesHistoryService.approve({
-    HistoryId: historyId,
-    UserId: userId
-  });
+  const response = (await changesHistoryService.approve(historyId, userId))
+    .onException(() => clientEventStore.push("Ошибка сервера! Заявка не одобрена.", EventTypes.Error as typeof EventTypes))
+    .onBusinessError((error) => clientEventStore.push(error.Message, EventTypes.Error as typeof EventTypes));
 
-  if (response.ok) {
+  if (response.data) {
     unit.ApprovedAt = Date.now();
     unit.ApprovedBy = userId;
-    clientEventStore.push("Успех! Одобрено!", EventTypes.Success);
-  } else {
-    clientEventStore.push("Ошибка! Заявка не одобрена. Ошибка сервиса: " + response.body.toString(), EventTypes.Success);
+    clientEventStore.push("Успех! Одобрено!", EventTypes.Success)
   }
 }
 
@@ -395,12 +394,8 @@ async function searchByInput(input: string, isSelected: boolean) {
   }
 
   &__search {
-    background: var(--surface-container-low96);
+    background: var(--surface-container-lowest100);
     transition: background-color 0.2s;
-
-    &:hover {
-      background: var(--surface-container-high92);
-    }
   }
 
   &__filters {
@@ -429,8 +424,8 @@ async function searchByInput(input: string, isSelected: boolean) {
     grid-auto-rows: max-content;
     justify-items: center;
     align-items: center;
-    padding: 20px 12px 48px;
-    gap: 16px;
+    padding-bottom: 40px;
+    gap: 10px;
   }
 
   &__history {

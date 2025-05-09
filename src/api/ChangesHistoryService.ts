@@ -37,7 +37,6 @@ export class ChangesHistoryService extends ApiService {
             'create-content'
         );
     }
-
     public async createEpisodeChange(request: V1CreateEpisodeChangeRequest) {
         return await this.CallPostHandlerAsync<V1CreateEpisodeChangeRequest>(request, 'create-episode')
     }
@@ -50,7 +49,7 @@ export class ChangesHistoryService extends ApiService {
         );
     }
 
-    public async approve(request: V1ApproveRequest) : Promise<Response> {
-        return await this.CallPostHandlerAsync(request, 'approve');
+    public async approve(historyId: number, userId: number) : Promise<ApiResponse<Response>> {
+        return await this.fetchV2({ HistoryId: historyId, UserId: userId }, 'approve');
     }
 }

@@ -99,12 +99,10 @@ function choosePage() : SettingsPageTypes {
   }
 
   &__box {
-    display: grid;
-    grid-template-columns: min-content 1fr;
-    grid-template-rows: max-content;
+    display: flex;
+    flex-direction: column;
     height: fit-content;
-    background: var(--surface-container-lowest100);
-    padding-left: 12px;
+    gap: 20px
   }
   
   &__right-box {

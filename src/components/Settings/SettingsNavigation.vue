@@ -1,12 +1,8 @@
 <template>
   <div class="material settings-nav__container">
     <div class="settings-nav__category">
-      <div class="settings-nav__label row gap-12">
+      <div class="settings-nav__label row gap-12 padding-8">
         <menu-icon />
-
-        <p v-show="!isMobile" class="title-small">
-          Редактор
-        </p>
       </div>
 
       <router-link
@@ -16,7 +12,7 @@
       >
         <folder-icon />
         <div v-show="!isMobile" class="text__one-line">
-          Мой список
+          Изменения
         </div>
       </router-link>
       <router-link
@@ -28,7 +24,7 @@
       >
         <add-note />
         <div v-show="!isMobile">
-          Дорама
+          Добавить контент
         </div>
       </router-link>
       <router-link
@@ -40,7 +36,7 @@
       >
         <add-library-icon />
         <div v-show="!isMobile">
-          Серия
+          Добавить эпизод
         </div>
       </router-link>
     </div>
@@ -54,6 +50,7 @@ import MenuIcon from "@/components/Icons/MenuIcon.vue";
 import FolderIcon from "@/components/Icons/FolderIcon.vue";
 import AddNote from "@/components/Icons/AddNote.vue";
 import AddLibraryIcon from "@/components/Icons/AddLibraryIcon.vue";
+import IconButton from "@/components/Base/Buttons/IconButton.vue";
 
 const props = defineProps({
   current: {type: SettingsPageTypes, required: true}
@@ -85,9 +82,8 @@ onBeforeUnmount(() => {
     display: grid;
     grid-template-rows: min-content;
     height: fit-content;
-    background: var(--primary98);
+    background: var(--surface-container-lowest100);
     margin-top: 20px;
-    margin-bottom: 12px;
     padding: 12px;
     border-radius: 16px;
   }
@@ -108,8 +104,7 @@ onBeforeUnmount(() => {
   }
 
   &__category {
-    display: grid;
-    grid-template-rows: auto;
+    display: flex;
     height: fit-content;
     align-items: stretch;
     text-align: start;

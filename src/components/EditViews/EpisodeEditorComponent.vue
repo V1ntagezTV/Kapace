@@ -359,8 +359,6 @@ async function onChangeContentInput(newInput: string, isSelected: boolean) {
   }
 }
 
-/* Вызывается при изменении input переводчика */
-
 async function onChangeTranslatorInput(newInput: string, isSelected: boolean) {
   translatorInput.value = newInput;
   translatorSelectedTitle.value = isSelected ? newInput : undefined;
@@ -470,7 +468,6 @@ async function onChangeTranslatorInput(newInput: string, isSelected: boolean) {
     grid-template-rows: min-content;
     grid-auto-rows: min-content;
     padding: 20px;
-    margin: 20px 12px;
     gap: 26px;
   }
 
