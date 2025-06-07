@@ -1,5 +1,5 @@
 <template>
-  <div v-show="dataIsReady" class="material edit-list__main">
+  <div class="material edit-list__main">
     <async-search-selector
       class="edit-list__search m-radius-1 m3-bg-1 m-border m-border-active"
       :placeholder="'Поиск'"
@@ -12,14 +12,14 @@
     <div class="edit-list__filters gap-8">
       <filter-chips
         v-show="currentUserStore.loggedIn"
-        class=" m-radius-1"
+        class="m3-bg-1 m-border"
         :class="{'edit-list__filters-unit--enabled': filters.isMy.value}"
         :text="'Мои'"
         @click.stop="clickOnMineFilter"
       />
       <base-selector
         v-model="filters.orderBy.value"
-        class="edit-list__filters-unit m3-bg-1 m-radius-circle m-border"
+        class="edit-list__filters-unit m3-bg-1 m-radius-8 m-border"
         :title="'Сортировать по'"
         :menu-alignment="MenuAlignment.Left"
         :selectable-values="['По идентификатору', 'По названию', 'Сначала новые', 'Сначала старые']"
@@ -27,7 +27,7 @@
       />
       <base-selector
         v-model="filters.historyType.value"
-        class="edit-list__filters-unit m3-bg-1 m-radius-circle m-border"
+        class="edit-list__filters-unit m3-bg-1 m-radius-8 m-border"
         :title="'Тип'"
         :menu-alignment="MenuAlignment.Left"
         :selectable-values="['Все', 'Дорама', 'Серия']"
@@ -35,7 +35,7 @@
       />
       <base-selector
         v-model="filters.status.value"
-        class="edit-list__filters-unit m3-bg-1 m-radius-circle m-border"
+        class="edit-list__filters-unit m3-bg-1 m-radius-8 m-border"
         :title="'Статус'"
         :menu-alignment="MenuAlignment.Left"
         :selectable-values="['Все', 'Не одобрено', 'Одобрено']"
@@ -44,7 +44,8 @@
     </div>
 
     <base-background
-      v-for="unit in changes" :key="unit"
+      v-for="unit in changes"
+      v-show="dataIsReady" :key="unit"
       :type="2"
       class="edit-list__history m-radius-28 m3-bg-1"
     >

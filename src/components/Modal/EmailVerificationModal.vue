@@ -75,7 +75,6 @@ const props = defineProps({
   userToken: {type: String, required: true}
 });
 
-const currentEmail = user.email;
 const refIsVisible = ref<boolean | null>(props.isVisible);
 
 const verificationCode = ref<string>();

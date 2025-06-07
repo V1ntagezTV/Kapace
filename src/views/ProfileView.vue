@@ -7,7 +7,7 @@
         :src="userImageUrl"
       />
 
-      <router-link :to="'settings'">
+      <router-link :to="'/settings'">
         <base-button
           class="theater__edit fill m-border m-radius-circle body-medium "
           :variant="'outline'"
@@ -101,6 +101,13 @@
               {{ favorite.Title }}
             </div>
             <div class="gap-16 row v__center">
+              <div
+                v-show="favorite.Stars"
+                class="body-small m-radius-8 padding-8 fit-content m3-bg-2 m-border row gap-16"
+              >
+                <star-icon />
+                <p>{{ favorite.EpisodeId }}</p>
+              </div>
               <div
                 v-show="favorite.Stars"
                 class="body-small m-radius-8 padding-8 fit-content m3-bg-2 m-border row gap-16"
@@ -207,8 +214,6 @@ function getDateStr(dateNum: number): string {
 }
 
 async function loadFavorites() {
-  console.log(selectedFavoritesStatus)
-
   const favorites = await favoritesApi.getList(selectedFavoritesStatus.value, 10, 0);
   userFavorites.value = favorites.data.Favorites ?? [];
 }

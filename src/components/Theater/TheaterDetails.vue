@@ -1,14 +1,21 @@
 <template>
   <BaseBackground :type="2" class="material content-details__details">
     <div class="content-details__title-main">
-      <div class="content-details__title-primary">
-        <h1 class="headline-medium content-details__title">
-          {{ details.Content.Title }}
-        </h1>
-        <HeartSVG
-          :is-selected="isFavorite"
-          class="content-details__icon-style"
-          @click="emits('on:clickHeart')"
+      <div class="row v__center row-dynamic gap-8 h__space-between">
+        <div class="row v__center gap-8">
+          <h1 class="headline-medium content-details__title">
+            {{ details.Content.Title }}
+          </h1>
+          <HeartSVG
+            :is-selected="isFavorite"
+            class="content-details__icon-style"
+            @click="emits('on:clickHeart')"
+          />
+        </div>
+        <stars-rate-component
+          :current-rate="4"
+          :user-rate="3"
+          :users-rated-counter="1000"
         />
       </div>
 
@@ -82,9 +89,10 @@ import {mapContentTypeToRuStr} from "@/api/Enums/ContentType";
 import {FavoriteApi} from "@/api/FavoriteApi";
 import {userStore} from "@/store/UserStore";
 import {FavoriteStatus} from "@/models/FavoriteStatuses";
+import HeartEmptyIcon from "@/components/Icons/HeartEmptyIcon.vue";
+import StarsRateComponent from "@/components/UseReadyComponents/StarsRateComponent.vue";
 
 const user = userStore();
-const favoritesApi = inject<FavoriteApi>('favorite-api');
 
 const props = defineProps({
   details: {type: Object as PropType<V1GetFullContentResponse>, required: true},
@@ -135,13 +143,6 @@ const otherTitles = (details: V1GetFullContentResponse) : string => {
     text-align: left;
     padding: 0;
     margin: 0;
-  }
-
-  &__title-primary {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    align-items: center;
   }
 
   &__main {

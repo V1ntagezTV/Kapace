@@ -72,13 +72,16 @@
           </template>
 
           <template #menu="{ onClick }">
-            <base-background class="header__menu m-radius-1 column v__start h__center" @click="onClick">
+            <base-background
+              class="header__menu m-radius-1 column v__start h__center"
+              @click="onClick"
+            >
               <router-link to="/profile" class="header__menu-button row gap-8 v__center h__start">
                 <user-icon />
                 Профиль
               </router-link>
-              <router-link to="settings" class="header__menu-button row gap-8 v__center h__start">
-                <details-icon />
+              <router-link to="/settings" class="header__menu-button row gap-8 v__center h__start">
+                <settings-icon />
                 Настройки
               </router-link>
               <router-link
@@ -112,6 +115,7 @@ import {ref, onMounted, onBeforeUnmount, computed} from 'vue'
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 import MenuIcon from "@/components/Icons/MenuIcon.vue";
 import {useRouter} from "vue-router";
+import SettingsIcon from "@/components/Icons/SettingsIcon.vue";
 
 const store = userStore();
 const router = useRouter();

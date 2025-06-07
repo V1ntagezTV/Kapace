@@ -9,19 +9,28 @@
       </p>
 
       <div class="registration-view__input-container">
+        <p class="row label-medium text__one-line">
+          Отображаемое имя
+        </p>
         <base-input
           v-model="nicknameInput"
           :mark-as-invalid-input="isNicknameInputInvalid"
           class="m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
-          :place-holder="'Придумайте никнейм'"
+          :place-holder="'Отображаемое имя'"
         />
+        <p class="row label-medium text__one-line">
+          Электронная почта
+        </p>
         <base-input
           v-model="emailInput"
           class="m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
           :mark-as-invalid-input="isEmailInputInvalid"
-          :place-holder="'Введите email'"
+          :place-holder="'Введите эл. почту'"
           type="email"
         />
+        <p class="row label-medium text__one-line">
+          Пароль
+        </p>
         <base-input
           v-model="firstPasswordInput"
           class="m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
@@ -29,6 +38,9 @@
           :place-holder="'Введите пароль'"
           type="password"
         />
+        <p class="row label-medium text__one-line">
+          Подтвердите пароль
+        </p>
         <base-input
           v-model="secondPasswordInput"
           class="m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
@@ -44,7 +56,7 @@
         :variant="'filled'"
         @click="registrationButtonAction"
       >
-        Зарегистрировать
+        Зарегистрироваться
       </base-button>
 
       <div class="registration-view__links">
@@ -97,6 +109,10 @@ async function registrationButtonAction() {
   if (!StringExtensions.isNullOrEmpty(firstPasswordInput.value)) {
     if (firstPasswordInput.value.length < 10) {
       eventStore.push('Ошибка! Длина пароля должна быть НЕ меньше 10 символов.', EventTypes.Error);
+      isPasswordInputInvalid.value = true;
+    }
+    else if (!StringExtensions.validateAlphanumeric(firstPasswordInput.value)) {
+      eventStore.push('Ошибка! Пароль может состоять только из латинских букв и чисел.', EventTypes.Error);
       isPasswordInputInvalid.value = true;
     }
     else if (firstPasswordInput.value != secondPasswordInput.value) {
@@ -230,15 +246,32 @@ async function registrationButtonAction() {
     align-items: center;
   }
 
-  &__container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 25px;
-    height: fit-content;
-    width: 420px;
-    padding: 40px;
+  @media (min-width: 0px) {
+    &__container {
+      display: flex;
+      height: fit-content;
+      width: 100%;
+      padding: 40px 20px;
+
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+  }
+  @media (min-width: 720px) {
+    &__container {
+      display: flex;
+      height: fit-content;
+      width: fit-content;
+      min-width: 400px;
+      padding: 40px 20px;
+
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
   }
 
   &__input-container {

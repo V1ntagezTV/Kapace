@@ -2,17 +2,23 @@
   <div class="login-view__main">
     <BaseBackground :type="2" class="login-view__container gap-16">
       <p class="title-large">
-        Авторизация
+        Вход
       </p>
 
       <div class="login-view__input-container gap-8 h__start">
+        <p class="label-medium text__one-line">
+          Электронная почта
+        </p>
         <base-input
           v-model="loginInput"
           class="m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
           :mark-as-invalid-input="isLoginInputInvalid"
-          :place-holder="'Введите email'"
+          :place-holder="'Введите эл. почту'"
           type="email"
         />
+        <p class="label-medium text__one-line">
+          Пароль
+        </p>
         <base-input
           v-model="passwordInput"
           class="m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
@@ -29,7 +35,7 @@
         </base-input>
       </div>
 
-      <div class="row h__space-between">
+      <div class="row gap-26 h__space-between h__fill">
         <base-text-button
           class="login-view__rememberMe row gap-8 h__space-between"
           @click="() => isRememberMe = !isRememberMe"
@@ -46,7 +52,7 @@
         </base-text-button>
       </div>
 
-      <div class="column gap-16">
+      <div class="column gap-8 h__fill">
         <base-button
           class="m-radius-circle"
           :button-type="2"
@@ -232,13 +238,30 @@ function IsInputsValid() : boolean {
     align-items: center;
   }
 
-  &__container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: fit-content;
-    width: 420px;
-    padding: 40px;
+  @media (min-width: 0px) {
+    &__container {
+      display: flex;
+      height: fit-content;
+      width: 100%;
+      padding: 40px 20px;
+
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+  @media (min-width: 720px) {
+    &__container {
+      display: flex;
+      height: fit-content;
+      width: fit-content;
+      min-width: 400px;
+      padding: 40px 20px;
+
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
   }
 
   &__input-container {

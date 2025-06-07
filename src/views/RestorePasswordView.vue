@@ -1,24 +1,26 @@
 <template>
   <div class="restore-password__main">
     <BaseBackground :type="2" class="restore-password__container">
-      <router-link to="/">
-        <img
-          class="restore-password__logo" src="@/assets/images/Logo.svg"
-          alt="Логотип"
-        >
-      </router-link>
+      <p class="title-large">
+        Восстановление пароля
+      </p>
 
       <div
         v-if="passwordResetScope === PasswordResetScope.EmailSend"
-        class="column gap-8 restore-password__input-container"
+        class="column gap-16 restore-password__input-container"
       >
-        <base-input
-          v-model="emailInput"
-          class="row m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
-          :mark-as-invalid-input="isEmailInputInvalid"
-          :place-holder="'Введите почту'"
-          type="text"
-        />
+        <div class="column gap-8">
+          <p class="row label-medium text__one-line">
+            Электронная почта
+          </p>
+          <base-input
+            v-model="emailInput"
+            class="row m-radius-1 m3-bg-2 m-border m-border-hover m-border-active"
+            :mark-as-invalid-input="isEmailInputInvalid"
+            :place-holder="'Введите эл. почту'"
+            type="text"
+          />
+        </div>
         <base-button
           class="m-radius-circle"
           :button-type="2"
@@ -89,7 +91,7 @@
         <router-link to="/login">
           Войти
         </router-link>
-        <router-link to="/restore">
+        <router-link to="/reg">
           Зарегистрироваться
         </router-link>
       </div>
@@ -296,22 +298,38 @@ async function resetPasswordClick() {
     align-items: center;
   }
 
-  &__container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    height: fit-content;
-    width: 420px;
-    padding: 60px;
+  @media (min-width: 0px) {
+    &__container {
+      display: flex;
+      height: fit-content;
+      width: 100%;
+      padding: 40px 20px;
+
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+  }
+  @media (min-width: 720px) {
+    &__container {
+      display: flex;
+      height: fit-content;
+      width: fit-content;
+      min-width: 400px;
+      padding: 40px 20px;
+
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
   }
 
   &__input-container {
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: 10px;
   }
 }
 </style>

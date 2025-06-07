@@ -29,6 +29,57 @@ export class StringExtensions {
         return alphanumericRegex.test(input);
     }
 
+    validatePassword(password: string) {
+        const errors: string[] = [];
+
+        // Минимальная длина
+        if (password.length < 10) {
+            errors.push("Пароль должен содержать минимум 10 символов");
+        }
+
+        // Только латиница и цифры
+        if (!/^[A-Za-z0-9]+$/.test(password)) {
+            errors.push("Пароль может содержать только латинские буквы и цифры");
+        }
+
+        // Минимум одна заглавная буква
+        if (!/[A-Z]/.test(password)) {
+            errors.push("Добавьте минимум одну заглавную букву");
+        }
+
+        // Минимум одна строчная буква
+        if (!/[a-z]/.test(password)) {
+            errors.push("Добавьте минимум одну строчную букву");
+        }
+
+        // Минимум одна цифра
+        if (!/\d/.test(password)) {
+            errors.push("Добавьте минимум одну цифру");
+        }
+
+        // Проверка на повторяющиеся символы подряд
+        if (/(.)\1{1,}/.test(password)) {
+            errors.push("Не используйте повторяющиеся символы подряд");
+        }
+
+        // Запрещенные простые пароли (можно расширить список)
+        const weakPasswords = [
+            "password",
+            "1234567890",
+            "qwertyuiop",
+            "abcdefghij",
+            "0000000000"
+        ];
+        if (weakPasswords.includes(password.toLowerCase())) {
+            errors.push("Этот пароль слишком простой и ненадежный");
+        }
+
+        return {
+            isValid: errors.length === 0,
+            errors
+        };
+    };
+
     /**
      * Метод для форматирования даты в строковый вид. (например 21:53 09.03.2025)
      */

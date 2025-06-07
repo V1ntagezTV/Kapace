@@ -140,6 +140,16 @@ export class UserApi extends ApiService {
             requestHeaders
         );
     }
+
+    async UpdatePassword(oldPassword: string, newPassword: string) {
+        return await this.fetchV2<{}, {OldPassword: string, NewPassword: string}>(
+            {
+                OldPassword: oldPassword,
+                NewPassword: newPassword
+            },
+            'registration/verify-mail'
+        );
+    }
 }
 
 export type VerifyPasswordResetCodeRequest = {
