@@ -22,9 +22,4 @@ COPY --from=build-stage /app/dist /usr/share/nginx/html
 # Конфигурация nginx для SPA (для Vue Router history mode)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 8080
-EXPOSE 80
-EXPOSE 8888
-EXPOSE 8443
-
 CMD ["nginx", "-g", "daemon off;"]

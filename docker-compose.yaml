@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: vue-app
     ports:
-      - "8888:80"
+      - "8888:8080"
       - "8443:443"  # Открываем порт 443 для HTTPS
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
@@ -25,7 +25,8 @@ services:
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; certbot certonly --webroot -w /var/www/certbot -d $${LETSENCRYPT_HOST} --email $${LETSENCRYPT_EMAIL} --agree-tos --no-eff-email && tail -f /dev/null'"
+    #entrypoint: "/bin/sh -c 'trap exit TERM; certbot certonly --webroot -w /var/www/certbot -d $${LETSENCRYPT_HOST} --email $${LETSENCRYPT_EMAIL} --agree-tos --no-eff-email && tail -f /dev/null'"
+    entrypoint: "/bin/sh -c 'trap exit TERM; certbot certonly --dry-run --webroot -w /var/www/certbot -d $${LETSENCRYPT_HOST} -d www.insurka.ru'"
     environment:
       - LETSENCRYPT_HOST=insurka.ru
       - LETSENCRYPT_EMAIL=insur.kunafin@yandex.ru
