@@ -29,4 +29,3 @@ services:
     environment:
       - LETSENCRYPT_HOST=insurka.ru
       - LETSENCRYPT_EMAIL=insur.kunafin@yandex.ru
-    restart: "on-failure"
