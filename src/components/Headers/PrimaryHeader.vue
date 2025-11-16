@@ -87,7 +87,7 @@
               <router-link
                 class="header__menu-button row gap-8 v__center h__start"
                 to="/"
-                @click="store.LogOut"
+                @click="Logout"
               >
                 <log-out-icon />
                 Выйти
@@ -110,15 +110,16 @@ import {userStore} from "@/store/UserStore";
 import MaterialDropArrow from "@/components/Icons/MaterialDropArrow.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
-import DetailsIcon from "@/components/Icons/DetailsIcon.vue";
-import {ref, onMounted, onBeforeUnmount, computed} from 'vue'
+import {ref, onMounted, onBeforeUnmount, computed, inject} from 'vue'
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 import MenuIcon from "@/components/Icons/MenuIcon.vue";
 import {useRouter} from "vue-router";
 import SettingsIcon from "@/components/Icons/SettingsIcon.vue";
+import {UserApi} from "@/api/UserApi";
 
 const store = userStore();
 const router = useRouter();
+const userApi: UserApi = inject<UserApi>('user-api');
 const isHeadersMenuDropped = ref(false);
 const selectedMenu = ref("")
 const menuValues = ['Главная', 'Редактор', 'Поиск'];
@@ -145,6 +146,12 @@ function selectMenuHandler(value: string) {
   }
 
   isHeadersMenuDropped.value = false;
+}
+
+async function Logout() {
+  await userApi.logout();
+  store.LogOut();
+  await router.push('/');
 }
 
 

@@ -26,11 +26,13 @@ export class ContentService extends ApiService {
         );
     }
 
-    async V1GetById(contentId: number, userId: number): Promise<V1GetFullContentResponse> {
+    async V1GetById(contentId: number): Promise<V1GetFullContentResponse> {
         const request = new V1GetFullContentRequest(
             contentId,
-            ContentSelectedInfo.ContentGenres | ContentSelectedInfo.UserInfo | ContentSelectedInfo.Episodes,
-            userId
+            ContentSelectedInfo.ContentGenres |
+            ContentSelectedInfo.UserInfo |
+            ContentSelectedInfo.Episodes |
+            ContentSelectedInfo.StarsAggregates
         );
 
         return this.CallHandlerAsync<V1GetFullContentResponse, V1GetFullContentRequest>(request, "get-by-id");

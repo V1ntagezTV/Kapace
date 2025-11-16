@@ -150,6 +150,10 @@ export class UserApi extends ApiService {
             'registration/verify-mail'
         );
     }
+
+    async logout() : Promise<ApiResponse<{}>> {
+        return await this.fetchV2<{}, {}>({}, 'cookie-logout');
+    }
 }
 
 export type VerifyPasswordResetCodeRequest = {

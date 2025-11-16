@@ -86,6 +86,18 @@
         :is-favorite="isInFavorites"
         @on:click-heart="heartOnClick"
       />
+      <stars-rate-component
+        v-if="isDataReady"
+        class="h__center"
+        :stars="details.StarsAggregates.Stars"
+        :one="details.StarsAggregates.One"
+        :two="details.StarsAggregates.Two"
+        :three="details.StarsAggregates.Three"
+        :four="details.StarsAggregates.Four"
+        :five="details.StarsAggregates.Five"
+        :user-rate="userStars"
+        @on:click-star="(starIndex) => clickOnStar(starIndex)"
+      />
       <translations-list-component-v2
         v-if="isDataReady"
         :translators="mapToTranslators(episodeTranslations.Translators)"
@@ -106,9 +118,9 @@
 </template>
 
 <script lang="ts" setup>
-import {useRoute} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import TheaterDetails from "@/components/Theater/TheaterDetails.vue";
-import {inject, onMounted, ref, watch} from "vue";
+import {inject, onMounted, ref} from "vue";
 import TheaterAvatar from "@/components/Theater/TheaterAvatar.vue";
 import {V1GetFullContentEpisode, V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
 import {ContentService} from "@/api/ContentService";
@@ -118,30 +130,36 @@ import BaseButton from "@/components/Base/BaseButton.vue";
 import TranslationsListComponentV2 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV2.vue";
 import {
   ALL_FILTER,
-  mapToEpisodeOrderType, mapToEpisodes, mapToTranslators,
-  Order, Translation
+  mapToEpisodeOrderType,
+  mapToEpisodes,
+  mapToTranslators,
+  Order,
+  Translation
 } from "@/components/UseReadyComponents/EpisodesList/TranslationsListViewModel";
 
-import {
-  V1GetByEpisodeResponse
-} from "@/api/Responses/V1GetByEpisodeResponse";
+import {V1GetByEpisodeResponse} from "@/api/Responses/V1GetByEpisodeResponse";
 import {V1GetByEpisodeRequest} from "@/api/Requests/V1GetByEpisodeRequest";
 import {TranslationService} from "@/api/TranslationService";
-import {Favorite, FavoriteApi} from "@/api/FavoriteApi";
+import {FavoriteApi} from "@/api/FavoriteApi";
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 import {FavoriteStatus, FavoriteStatuses, getFavoritesStatusKeyByValue} from "@/models/FavoriteStatuses";
 import {userStore} from "@/store/UserStore";
+import StarsRateComponent from "@/components/UseReadyComponents/StarsRateComponent.vue";
+
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const user = userStore();
+const router = useRouter();
 const route = useRoute();
 const contentId = ref(+route.params.id);
 const contentService: ContentService = inject("content-service");
 const translationService: TranslationService = inject('translation-service');
 const favoritesApi: FavoriteApi = inject('favorite-api');
 
-let startWatchEpisodeId = ref<number>();
+
+const userStars = ref<number>(0);
+const startWatchEpisodeId = ref<number>();
 const isDataReady = ref(false);
 const details = ref<V1GetFullContentResponse>(null);
 const tags = ref<Map<string, string | number>>();
@@ -157,12 +175,23 @@ const userFavoriteStatus = ref<FavoriteStatuses | null>("Добавить в и�
 
 onMounted(async() => {
   isDataReady.value = false;
-  details.value = await contentService.V1GetById(contentId.value, 0);
+  details.value = await contentService.V1GetById(contentId.value);
   await contentService.incrementViews(details.value.Content.Id);
   tags.value = getTagsFromDetails(details.value);
   startWatchEpisodeId.value = getFirstEpisodeIdOrDefault(details.value.Episodes);
   await updateEpisodesList();
-  await loadUserFavorites();
+
+  if (userStore().loggedIn && details.value.UserInfo !== null) {
+    isInFavorites.value = details.value.UserInfo.FavouriteStatus !== null;
+    userFavoriteStatus.value =
+      details.value.UserInfo.FavouriteStatus === null ?
+        "Добавить в избранное":
+        FavoriteStatuses[details.value.UserInfo.FavouriteStatus as keyof typeof FavoriteStatuses];
+    userStars.value = details.value.UserInfo.Stars;
+  } else {
+    isInFavorites.value = false;
+  }
+
   isDataReady.value = true;
 });
 
@@ -177,6 +206,16 @@ async function heartOnClick() {
   await favoritesApi.setStatus(contentId.value, FavoriteStatus.Stash);
   userFavoriteStatus.value = FavoriteStatuses.Stash;
   isInFavorites.value = true;
+}
+
+async function clickOnStar(starIndex: number) {
+  if (!user.loggedIn) {
+    await router.push('/login');
+    return;
+  }
+
+  await favoritesApi.setStars(details.value.Content.Id, starIndex);
+  userStars.value = starIndex;
 }
 
 async function addToFavorites(favoriteStatusStr: string) {
@@ -212,21 +251,6 @@ function getFirstEpisodeIdOrDefault(episodes: V1GetFullContentEpisode[]) {
   // Значение по умолчанию приводит к скрытию кнопки "Начать просмотр"
   const defaultValue = -1;
   return !episodes || episodes.length <= 0 ? defaultValue : episodes[0].Id;
-}
-
-async function loadUserFavorites() {
-  if (userStore().loggedIn) {
-    const favorites = (await favoritesApi.query(contentId.value))
-
-    if (favorites.data && favorites.data.Favorites.length === 1) {
-      const userContentFavorite = favorites.data.Favorites[0];
-
-      isInFavorites.value = userContentFavorite.Status !== null;
-      userFavoriteStatus.value = FavoriteStatuses[userContentFavorite.Status as keyof typeof FavoriteStatuses];
-    } else {
-      isInFavorites.value = false;
-    }
-  }
 }
 
 function getTagsFromDetails(details: V1GetFullContentResponse) : Map<string, string | number> {

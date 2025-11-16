@@ -12,11 +12,6 @@
             @click="emits('on:clickHeart')"
           />
         </div>
-        <stars-rate-component
-          :current-rate="4"
-          :user-rate="3"
-          :users-rated-counter="1000"
-        />
       </div>
 
       <h2 class="title-small content-details__title">

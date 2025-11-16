@@ -1,11 +1,13 @@
 import {QueryContent} from "@/api/BaseQuery/QueryContent";
+import {FavoriteStatus} from "@/models/FavoriteStatuses";
 
 export class V1GetFullContentResponse {
     constructor(
         public Content: QueryContent,
         public Episodes: V1GetFullContentEpisode[],
         public Genres: V1GetFullContentGenre[],
-        public UserInfo: V1GetFullContentUserInfo | null) {
+        public UserInfo: V1GetFullUserFavouriteInfo | null,
+        public StarsAggregates: StarsAggregate) {
     }
 }
 
@@ -26,13 +28,17 @@ export class V1GetFullContentEpisode {
 }
 
 
-export class V1GetFullContentUserInfo {
-    constructor(
-        public ContentId: number,
-        public UserId: number,
-        public IsInFavourite: boolean,
-        public LastViewedSeries: number,
-        public Rating: number
-    ) {
-    }
+export type V1GetFullUserFavouriteInfo = {
+    FavouriteStatus: typeof FavoriteStatus | null,
+    EpisodeId: number | null,
+    Stars: number
+}
+
+export type StarsAggregate = {
+    One: number,
+    Two: number,
+    Three: number,
+    Four: number,
+    Five: number,
+    Stars: number
 }

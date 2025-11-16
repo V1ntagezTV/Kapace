@@ -221,11 +221,12 @@ async function loadFavorites() {
 async function loadCurrentUser() {
   try {
     const userResponse = (await userApi.getCurrent())
-      .onBusinessError((errorDetails: ErrorDetails) => {
+      .onBusinessError(async (errorDetails: ErrorDetails) => {
         eventStore.push(errorDetails.Message, EventTypes.Error)
         if (errorDetails.ErrorCode === 'Unauthorized') {
+          await userApi.logout();
           currentUser.LogOut();
-          router.push('/login')
+          await router.push('/login');
         }
       })
       .onException(() => eventStore.push('Ошибка сервера! Попробуйте снова позже.', EventTypes.Error));

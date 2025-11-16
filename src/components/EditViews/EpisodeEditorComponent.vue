@@ -175,7 +175,7 @@ const clientEventStore = ClientEventStore();
 
 onMounted(async () => {
   if (props.contentId) {
-    const contentInfo = await contentApi.V1GetById(props.contentId, 0);
+    const contentInfo = await contentApi.V1GetById(props.contentId);
     searchContentListV2.value = [{ContentId: contentInfo.Content.Id, Title: contentInfo.Content.Title}];
     contentSelectedTitle.value = contentInfo.Content.Title;
     contentInput.value = contentInfo.Content.Title;

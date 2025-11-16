@@ -300,7 +300,7 @@ const channel = ref<string | null>(null);
 
 onMounted(async() => {
   if (props.contentId && props.contentId > 0) {
-    const content = await contentService.V1GetById(props.contentId, 0);
+    const content = await contentService.V1GetById(props.contentId);
     imageUrl.value = imageService.getImageLink(content.Content.ImageId, content.Content.Id);
     imageId.value = content.Content.ImageId;
     title.value = content.Content.Title;
