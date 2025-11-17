@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: vue-app
     ports:
-      - "8000:8000"
+      - "80:80"
       - "443:443"  # Открываем порт 443 для HTTPS
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
