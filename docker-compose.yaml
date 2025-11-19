@@ -6,16 +6,17 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: vue-app
+    restart: unless-stopped
     ports:
-      - "80:8081"
-      - "443:8443"  # Открываем порт 443 для HTTPS
+      - "80:80"
+      - "443:443"
     volumes:
+      # Монтируем сертификаты в Nginx
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
-    environment:
-      - VIRTUAL_HOST=insurka.ru
-      - LETSENCRYPT_HOST=insurka.ru
-      - LETSENCRYPT_EMAIL=insur.kunafin@yandex.ru
+    extra_hosts:
+      # Позволяет обращаться к хост-машине как host.docker.internal (для Linux)
+      - "host.docker.internal:host-gateway"
     depends_on:
       - certbot
 
@@ -25,8 +26,9 @@ services:
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
-    #entrypoint: "/bin/sh -c 'trap exit TERM; certbot certonly --webroot -w /var/www/certbot -d $${LETSENCRYPT_HOST} --email $${LETSENCRYPT_EMAIL} --agree-tos --no-eff-email && tail -f /dev/null'"
+    # Эта команда проверяет сертификаты на обновление каждые 12 часов
     entrypoint: "/bin/sh -c 'trap exit TERM; certbot certonly --dry-run --webroot -w /var/www/certbot -d $${LETSENCRYPT_HOST} -d www.insurka.ru'"
+    # entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     environment:
       - LETSENCRYPT_HOST=insurka.ru
       - LETSENCRYPT_EMAIL=insur.kunafin@yandex.ru
