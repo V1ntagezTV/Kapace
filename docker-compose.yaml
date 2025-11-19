@@ -7,28 +7,9 @@ services:
       dockerfile: Dockerfile
     container_name: vue-app
     restart: unless-stopped
+    # Открываем порт только для локального хоста, чтобы из интернета нельзя было зайти на порт 8080 напрямую, минуя HTTPS
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      # Монтируем сертификаты в Nginx
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
+      - "127.0.0.1:8080:80"
+    # Эта настройка нужна, чтобы изнутри контейнера видеть API на хосте (ваши 5000 порт)
     extra_hosts:
-      # Позволяет обращаться к хост-машине как host.docker.internal (для Linux)
       - "host.docker.internal:host-gateway"
-    depends_on:
-      - certbot
-
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
-    # Эта команда проверяет сертификаты на обновление каждые 12 часов
-    entrypoint: "/bin/sh -c 'trap exit TERM; certbot certonly --dry-run --webroot -w /var/www/certbot -d $${LETSENCRYPT_HOST} -d www.insurka.ru'"
-    # entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    environment:
-      - LETSENCRYPT_HOST=insurka.ru
-      - LETSENCRYPT_EMAIL=insur.kunafin@yandex.ru
