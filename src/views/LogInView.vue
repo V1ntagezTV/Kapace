@@ -68,13 +68,19 @@
         </base-button>
       </div>
     </BaseBackground>
+    <email-verification-modal
+      :is-visible="emailVerificationIsVisible"
+      :current-email="loginInput"
+      :user-token="emailVerificationAuthTempToken"
+      @on:close="emailVerificationIsVisible = false;"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
-      import {inject, ref} from "vue";
+import {inject, ref} from "vue";
 import {userStore} from "@/store/UserStore"
 import {UserApi} from "@/api/UserApi";
 import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
@@ -85,6 +91,8 @@ import Eye from "@/components/Icons/MaterialIcons/Eye.vue";
 import IconButton from "@/components/Base/Buttons/IconButton.vue";
 import EyeCross from "@/components/Icons/EyeCross.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
+import EmailVerificationModal from "@/components/Modal/EmailVerificationModal.vue";
+import {ErrorDetails} from "@/api/ApiService";
 
 const router = useRouter();
 const store = userStore();
@@ -96,6 +104,9 @@ const isLoginInputInvalid = ref<boolean>(false);
 const isPasswordInputInvalid = ref<boolean>(false);
 const loginInput = ref<string>(undefined);
 const passwordInput = ref<string>(undefined);
+const emailVerificationIsVisible = ref<boolean>(false);
+const emailVerificationAuthTempToken = ref<string|null>(null);
+
 
 async function logInClick() {
   const wrongInputErrorStr = 'Ошибка! Не корректно введены логин или пароль!';
@@ -105,8 +116,23 @@ async function logInClick() {
     eventStore.push(wrongInputErrorStr, EventTypes.Error as typeof EventTypes);
   }
 
-  const response = await userApi.logIn(loginInput.value, passwordInput.value, isRememberMe.value);
+  const response = await userApi.logIn(loginInput.value, passwordInput.value, isRememberMe.value)
   if (userApi.isErrorDetails(response)) {
+    if (response.ErrorCode === 'EmailNotVerified') {
+      const errorDetails = response as ErrorDetails
+      const tempToken = errorDetails.ErrorDetails['TemporaryBearerToken']
+      if (!tempToken) {
+        eventStore.push(wrongInputErrorStr, EventTypes.Error as typeof EventTypes)
+        return
+      }
+
+      emailVerificationAuthTempToken.value = tempToken;
+      emailVerificationIsVisible.value = true;
+      (await userApi.sendMailVerifyCode(emailVerificationAuthTempToken.value))
+        .onBusinessError(error => eventStore.push(error.Message, EventTypes.Error as typeof EventTypes))
+        .onException(() => eventStore.push('Не удалось отправить код! Попробуйте еще раз!', EventTypes.Error as typeof EventTypes));
+      return
+    }
     eventStore.push(wrongInputErrorStr, EventTypes.Error as typeof EventTypes);
     return;
   }

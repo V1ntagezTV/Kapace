@@ -103,19 +103,17 @@ const firstPasswordInput = ref<string>(null);
 const secondPasswordInput = ref<string>(null);
 
 const emailVerificationIsVisible = ref<boolean>(false);
-let authTempToken = ref<string|null>(null);
+const authTempToken = ref<string|null>(null);
 
 async function registrationButtonAction() {
   if (!StringExtensions.isNullOrEmpty(firstPasswordInput.value)) {
     if (firstPasswordInput.value.length < 10) {
       eventStore.push('Ошибка! Длина пароля должна быть НЕ меньше 10 символов.', EventTypes.Error);
       isPasswordInputInvalid.value = true;
-    }
-    else if (!StringExtensions.validateAlphanumeric(firstPasswordInput.value)) {
+    } else if (!StringExtensions.validateAlphanumeric(firstPasswordInput.value)) {
       eventStore.push('Ошибка! Пароль может состоять только из латинских букв и чисел.', EventTypes.Error);
       isPasswordInputInvalid.value = true;
-    }
-    else if (firstPasswordInput.value != secondPasswordInput.value) {
+    } else if (firstPasswordInput.value != secondPasswordInput.value) {
       eventStore.push('Ошибка! Введенные пароли не совпадают.', EventTypes.Error);
       isPasswordInputInvalid.value = true;
     } else {
@@ -143,8 +141,7 @@ async function registrationButtonAction() {
     } else if (!StringExtensions.validateAlphanumeric(nicknameInput.value)) {
       isNicknameInputInvalid.value = true;
       eventStore.push('Ошибка! Никнейм должен содержать только английские буквы и цифры.', EventTypes.Error);
-    }
-    else {
+    } else {
       isNicknameInputInvalid.value = false;
     }
   }
