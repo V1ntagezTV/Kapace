@@ -103,7 +103,7 @@ const events = computed(() => clientEventStore.$state.events);
 * {
   box-sizing: border-box;
   a {
-    color: var(--dark-primary);
+    color: #49454F;
     text-decoration: none;
   }
 
@@ -140,7 +140,7 @@ const events = computed(() => clientEventStore.$state.events);
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 20px minmax(min-content, 1200px) 20px 1fr;
-  grid-template-rows: 56px auto;
+  grid-template-rows: 60px auto;
 }
 
 .header-grid {

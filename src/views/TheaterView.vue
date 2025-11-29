@@ -11,20 +11,18 @@
       <base-button
         v-show="startWatchEpisodeId !== -1"
         v-if="isDataReady && details"
-        class="m-radius-circle"
+        class="m-radius-circle body-medium"
         :variant="'filled'"
-      >
-        <router-link
-          class="body-medium"
-          :to="{
+        @click="() => router.push(
+          {
             name: 'episode',
             params: {
               content: details.Content.Id,
               episode: startWatchEpisodeId
-            }}"
-        >
-          Начать просмотр
-        </router-link>
+            }
+          })"
+      >
+        Начать просмотр
       </base-button>
 
       <base-selector
@@ -39,7 +37,7 @@
           FavoriteStatuses.Finished,
           FavoriteStatuses.Dropped,
         ]"
-        class="m3-bg-1 fit-content m-border m-border-hover m-border-active m-radius-circle"
+        class="m3-bg-1 m-border m-border-hover m-border-active m-radius-circle"
         :class="{'theater__favorite-active': userFavoriteStatus !== 'Добавить в избранное'}"
         @update:model-value="async (value) => await addToFavorites(value)"
       />
@@ -61,21 +59,19 @@
       </base-background>
 
       <base-button
-        class="theater__edit m-border m-radius-circle"
+        class="m-border-primary m-radius-circle"
         :variant="'outline'"
+        @click="() => router.push({name: 'edit-episode', params: {content: +route.params.id}})"
       >
-        <router-link class="body-medium" :to="{name: 'edit-episode', params: {content: +route.params.id} }">
-          Добавить серию
-        </router-link>
+        Добавить серию
       </base-button>
 
       <base-button
-        class="theater__edit m-border m-radius-circle"
+        class="m-border-primary m-radius-circle"
         :variant="'outline'"
+        @click="() => router.push({name: 'edit-content', params: {content: +route.params.id}})"
       >
-        <router-link class="body-medium" :to="{name: 'edit-content', params: {content: +route.params.id}}">
-          Редактировать
-        </router-link>
+        Редактировать
       </base-button>
     </div>
 
@@ -308,15 +304,6 @@ function getTagsFromDetails(details: V1GetFullContentResponse) : Map<string, str
     display: flex;
     flex-direction: column;
     gap: 16px;
-  }
-
-  &__edit {
-    display: flex;
-    justify-content: center;
-
-    & a {
-      color: var(--primary40);
-    }
   }
 
   &__tag-name {

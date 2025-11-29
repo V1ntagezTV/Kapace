@@ -200,11 +200,11 @@ function getMenuAlignmentClasses() {
 
     border-radius: 8px;
     transition: outline-width 0.3s, outline-color 0.3s;
-    background: var(--surface-container-default94);
+    background: var(--surface-container-lowest100);
     z-index: 999999999;
 
     box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.15),
-                0 1px 2px 0 rgba(0, 0, 0, 0.3);
+                0 1px 2px 0 rgba(0, 0, 0, 0.15);
 
     &-bordered {
       border: 1px solid #767680;

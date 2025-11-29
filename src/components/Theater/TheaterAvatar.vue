@@ -3,14 +3,12 @@
     class="image-column__main m-radius-2"
     :type="2"
   >
-    <div>
-      <img
-        class="image-column__image"
-        :src="imageService.getImageLink(imageId, contentId)"
-        alt="Изображение"
-        @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
-      >
-    </div>
+    <image-zoom
+      class="image-column__image"
+      :src="imageService.getImageLink(imageId, contentId)"
+      alt="Изображение"
+      @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
+    />
   </BaseBackground>
 </template>
 
@@ -18,6 +16,7 @@
 import {defineProps, inject} from 'vue';
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import {ImageService} from "@/api/ImageService";
+import ImageZoom from "@/components/UseReadyComponents/ImageZoom.vue";
 
 const imageService: ImageService = inject<ImageService>("image-service");
 
@@ -30,6 +29,7 @@ const props = defineProps({
 <style lang="scss" scoped>
 .image-column {
   &__main {
+    display: flex;
     overflow: hidden;
   }
 

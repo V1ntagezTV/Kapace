@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 56px" class="row h__space-between v__center">
+  <div style="height: 60px" class="row h__space-between v__center">
     <nav v-show="isMobile" class="row gap-16 v__center">
       <base-selector
         :model-value="selectedMenu"
@@ -61,14 +61,13 @@
       <div v-else class="row gap-8">
         <base-drop-menu class="header__user gap-16">
           <template #header="{ onClick }">
-            <base-button
+            <a
               class="header__text-button gap-8 v__center m-radius-circle"
-              :button-type="3"
               @click="onClick"
             >
               {{ store.nickname }}
               <material-drop-arrow />
-            </base-button>
+            </a>
           </template>
 
           <template #menu="{ onClick }">
@@ -219,9 +218,11 @@ async function Logout() {
     color: white;
     padding: 10px 12px;
 
+
     &:hover {
       color: var(--font-gray-v1);
       background: #21222A;
+      cursor: pointer;
     }
   }
 }

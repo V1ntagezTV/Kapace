@@ -25,7 +25,7 @@
 }
 
 .splitter {
-  border: 1px solid #EEEFF4
+  border-bottom: 1px solid var(--primary80);
 }
 
 .column {
@@ -60,6 +60,7 @@
     justify-content: center;
   }
   &__padding-16 { padding-left: 16px; padding-right: 16px; }
+  &__padding-8 { padding-left: 8px; padding-right: 8px; }
 }
 
 .text {

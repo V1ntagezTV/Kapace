@@ -42,13 +42,18 @@ const props = defineProps({
     height: 46px;
     padding: 12px 24px;
     display: flex;
+    background: white;
+
     justify-content: center;
-    background: transparent;
     align-items: center;
 
     -webkit-user-select: none;
     cursor: pointer;
-    transition: color 0.25s, background-color 0.25s, border 0.25s;;
+    transition: color 0.25s, background-color 0.25s, border 0.25s;
+
+    a {
+      color: white;
+    }
   }
 
   &__light {
@@ -90,10 +95,6 @@ const props = defineProps({
     color: white;
     background: var(--primary40);
 
-    a {
-      color: white;
-    }
-
     &:hover {
       background: var(--primary50);
     }
@@ -105,19 +106,14 @@ const props = defineProps({
 
   &__outline {
     color: var(--primary40);
-    background-color: white;
-
-    a {
-      color: var(--primary40);
-    }
+    background: var(--surface-container-lowest100);
 
     &:hover {
-      background-color: color-mix(in srgb, var(--primary40) 8%, transparent);
+      background: var(--surface-container-default94);
     }
 
     &:active {
-      background-color: color-mix(in srgb, var(--primary40) 12%, transparent);
-      border-color: var(--primary40);
+      background: var(--surface-container-default94);
     }
   }
 }

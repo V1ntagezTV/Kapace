@@ -25,16 +25,19 @@
         :email="userEmail"
       />
 
-      <base-background :type="3" class="column profile__favorites">
+      <base-background
+        :type="2"
+        class="column m-border-primary"
+        style="background: var(--primary95)"
+      >
         <div class="profile__favorites-header row dynamic h__space-between v__center h__padding-16">
           <p class="title-large v__padding-8">
             Избранные
           </p>
 
           <div class="fit-content v__center gap-8">
-            <filter-chips
-              class="profile__filter m3-bg-3 fit-content m-radius-16"
-              text="Все"
+            <filter-chips-v2
+              class="profile__filter m-border-primary"
               :class="{'profile__filter-enabled': favoritesAllCategory}"
               @click="() => {
                 favoritesAllCategory = !favoritesAllCategory;
@@ -42,10 +45,15 @@
                 favoriteSelectedCategory = defaultFavoriteStatus;
                 loadFavorites();
               }"
-            />
-            <filter-chips
-              class="profile__filter m3-bg-3 fit-content m-radius-16"
-              text="Смотрю"
+            >
+              <template #text>
+                <p class="body-medium h__padding-8">
+                  Все
+                </p>
+              </template>
+            </filter-chips-v2>
+            <filter-chips-v2
+              class="profile__filter m-border-primary"
               :class="{'profile__filter-enabled': favoritesWatchingCategory}"
               @click="() => {
                 favoritesWatchingCategory = !favoritesWatchingCategory;
@@ -53,7 +61,13 @@
                 favoriteSelectedCategory = defaultFavoriteStatus;
                 loadFavorites();
               }"
-            />
+            >
+              <template #text>
+                <p class="body-medium h__padding-8">
+                  Смотрю
+                </p>
+              </template>
+            </filter-chips-v2>
             <base-selector
               v-model="favoriteSelectedCategory"
               :is-dropped="isFavoritesMenuDropped"
@@ -75,7 +89,7 @@
               <template #header>
                 <filter-chips
                   :class="{'profile__filter-enabled': favoriteSelectedCategory !== defaultFavoriteStatus}"
-                  class="profile__filter m3-bg-3 m-radius-16"
+                  class="profile__filter m-border-primary m3-bg-3 m-radius-16"
                   :text="favoriteSelectedCategory"
                   :enable-menu-icon="true"
                   @click="isFavoritesMenuDropped = !isFavoritesMenuDropped;"
@@ -88,7 +102,8 @@
             </base-selector>
           </div>
         </div>
-        <div style="width: 100%; height: 1px; background: var(--font-gray-v1);" />
+
+        <div class="splitter" />
 
         <div class="profile__favorites-list">
           <router-link
@@ -100,29 +115,46 @@
             <div class="profile__favorite-title body-large">
               {{ favorite.Title }}
             </div>
-            <div class="gap-16 row v__center">
-              <div
+            <div class="gap-8 row v__center">
+              <filter-chips-v2
                 v-show="favorite.Stars"
-                class="body-small m-radius-8 padding-8 fit-content m3-bg-2 m-border row gap-16"
+                class="profile__favorite-tag"
+                :enable-text-icon="true"
               >
-                <star-icon />
-                <p>{{ favorite.EpisodeId }}</p>
-              </div>
-              <div
-                v-show="favorite.Stars"
-                class="body-small m-radius-8 padding-8 fit-content m3-bg-2 m-border row gap-16"
-              >
-                <star-icon />
-                <p>{{ favorite.Stars }}</p>
-              </div>
-              <filter-chips
+                <template #text>
+                  <p class="profile__favorite-tag-title body-small row h__padding-8">
+                    {{ favorite.Stars }}
+                  </p>
+                </template>
+                <template #text-icon>
+                  <star-icon style="color: var(--on-primary-container-light)" />
+                </template>
+              </filter-chips-v2>
+
+              <filter-chips-v2 class="profile__favorite-tag">
+                <template #text>
+                  <p
+                    class="profile__favorite-tag-title body-small text__one-line h__padding-8"
+                    style="color: var(--on-primary-container-light)"
+                  >
+                    {{ getDateStr(favorite.CreatedAt) }}
+                  </p>
+                </template>
+              </filter-chips-v2>
+
+              <filter-chips-v2
                 v-show="favorite.Status && selectedFavoritesStatus === null"
-                class="body-small m3-bg-2 m-border"
-                :text="FavoriteStatuses[favorite.Status]"
-              />
-              <div class="fit-content">
-                {{ getDateStr(favorite.CreatedAt) }}
-              </div>
+                class="profile__favorite-tag"
+              >
+                <template #text>
+                  <p
+                    class="profile__favorite-tag-title body-small text__one-line h__padding-8"
+                    style="color: var(--on-primary-container-light)"
+                  >
+                    {{ FavoriteStatuses[favorite.Status] }}
+                  </p>
+                </template>
+              </filter-chips-v2>
             </div>
           </router-link>
         </div>
@@ -149,6 +181,7 @@ import FilterChips from "@/components/UseReadyComponents/MaterialComponents/Filt
 import MaterialDropArrow from "@/components/Icons/MaterialDropArrow.vue";
 import StarIcon from "@/components/Icons/StarIcon.vue";
 import {FavoriteStatus, getFavoritesStatusKeyByValue} from "@/models/FavoriteStatuses";
+import FilterChipsV2 from "@/components/UseReadyComponents/MaterialComponents/FilterChipsV2.vue";
 
 const router = useRouter()
 const eventStore = ClientEventStore();
@@ -253,20 +286,17 @@ async function loadCurrentUser() {
     min-height: 64px;
     height: fit-content;
   }
+
   &__filter {
     width: fit-content;
-
-    &:hover {
-      background: var(--surface-container-highest90);
-    }
+    background: var(--on-primary-light);
+    color: var(--primary40);
+    padding: 0 8px;
   }
+
   &__filter-enabled {
     background: var(--primary40);
-    color: white;
-
-    &:hover {
-      background: var(--primary50);
-    }
+    color: var(--on-primary-light);
   }
 
   &__favorites-list {
@@ -280,28 +310,28 @@ async function loadCurrentUser() {
     width: fit-content;
   }
 
+  &__favorite-tag {
+    background: var(--primary-container-light);
+  }
+
+  &__favorite-tag-title {
+    color: var(--on-primary-container-light);
+  }
+
   &__favorites-unit {
     display: flex;
     min-height: 48px;
     min-width: 0;
-    height: fit-content;
     padding-left: 16px;
     padding-right: 16px;
-    color: #49454F;
 
     &:hover {
-      color: var(--primary40);
-      background: color-mix(in srgb, var(--primary40) 8%, transparent);
+      color: var(--on-primary-container-light);
+      background: var(--primary-container-light);
     }
-  }
-  &__tag-name {
-    display: flex;
-    color: #969BAB;
-    margin: 0;
-  }
-
-  &__tag-value {
-    margin: 0;
+    &:hover .profile__favorite-tag {
+      background: var(--primary80);
+    }
   }
 }
 

@@ -6,7 +6,7 @@
   &-5 { box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.3), 0 8px 12px 6px rgba(0, 0, 0, 0.15); }
 }
 .m-radius {
-  &-circle { border-radius: 999999px; }
+  &-circle { border-radius: 999999px !important; }
   &-0 { border-radius: 4px; }
   &-1 { border-radius: 8px; }
   &-2 { border-radius: 16px; }
@@ -41,6 +41,17 @@
 
 .m-border {
   border: 1px solid var(--outline-variant-light);
+  transition:
+          border-radius .3s cubic-bezier(.2,0,0,1),
+          background-color .3s cubic-bezier(.2,0,0,1),
+          border-bottom-color .3s cubic-bezier(.2,0,0,1),
+          border-top-color .3s cubic-bezier(.2,0,0,1),
+          border-left-color .3s cubic-bezier(.2,0,0,1),
+          border-right-color .3s cubic-bezier(.2,0,0,1);
+}
+
+.m-border-primary {
+  border: 1px solid var(--primary40);
   transition:
           border-radius .3s cubic-bezier(.2,0,0,1),
           background-color .3s cubic-bezier(.2,0,0,1),
