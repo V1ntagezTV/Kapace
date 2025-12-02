@@ -76,12 +76,13 @@
     </div>
 
     <div class="theater__body">
-      <TheaterDetails
+      <theater-details
         v-if="isDataReady"
         :details="details"
         :is-favorite="isInFavorites"
         @on:click-heart="heartOnClick"
       />
+      <album-images v-if="myImages.length > 0" :images="myImages" />
       <stars-rate-component
         v-if="isDataReady"
         class="h__center"
@@ -142,6 +143,8 @@ import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 import {FavoriteStatus, FavoriteStatuses, getFavoritesStatusKeyByValue} from "@/models/FavoriteStatuses";
 import {userStore} from "@/store/UserStore";
 import StarsRateComponent from "@/components/UseReadyComponents/StarsRateComponent.vue";
+import {ImageService} from "@/api/ImageService";
+import AlbumImages from "@/components/UseReadyComponents/AlbumImages.vue";
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -152,7 +155,7 @@ const contentId = ref(+route.params.id);
 const contentService: ContentService = inject("content-service");
 const translationService: TranslationService = inject('translation-service');
 const favoritesApi: FavoriteApi = inject('favorite-api');
-
+const imageService: ImageService = inject<ImageService>("image-service");
 
 const userStars = ref<number>(0);
 const startWatchEpisodeId = ref<number>();
@@ -168,6 +171,7 @@ const episodesListParams = {
 };
 const isInFavorites = ref<boolean>(false);
 const userFavoriteStatus = ref<FavoriteStatuses | null>("Добавить в избранное");
+const myImages = ref<{}>([]);
 
 onMounted(async() => {
   isDataReady.value = false;
@@ -175,6 +179,10 @@ onMounted(async() => {
   await contentService.incrementViews(details.value.Content.Id);
   tags.value = getTagsFromDetails(details.value);
   startWatchEpisodeId.value = getFirstEpisodeIdOrDefault(details.value.Episodes);
+
+  myImages.value = [
+    // TODO: Заполнить изображениями после реализации
+  ];
   await updateEpisodesList();
 
   if (userStore().loggedIn && details.value.UserInfo !== null) {
@@ -228,7 +236,9 @@ async function updateEpisodesList() {
       translatorId = null;
     } else {
       const translator = episodeTranslations.value.Translators.find(x => x.Name === episodesListParams.translator.value);
-      translatorId = translator.Id;
+      if (translator !== undefined) {
+        translatorId = translator.Id;
+      }
     }
   }
 

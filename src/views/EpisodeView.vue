@@ -114,6 +114,17 @@
       </router-link>
     </div>
 
+    <base-background v-if="selectedTranslation !== null" class="column gap-8 ">
+      <div>
+        Переводычи:
+      </div>
+      {{translations.Translators}}
+      <div>
+        Инфа о текущем переводе
+      </div>
+      {{selectedTranslation}}
+    </base-background>
+
     <translations-list-component-v2
       v-if="dataIsReady"
       :content-id="contentId"
@@ -171,10 +182,8 @@ import NavRightArrowIcon from "@/components/Icons/MaterialIcons/NavRightArrowIco
 const route = useRoute();
 let episodeId = route.params.episode as number;
 let contentId = route.params.content as number;
-
-console.log("EPISODE: " + episodeId + "\nCONTENT: " + contentId);
-
 let translationId = +route.params.translation > 0 ? (+route.params.translation) : 1;
+console.log("EPISODE: " + episodeId + "\nCONTENT: " + contentId);
 
 const contentService: ContentService = inject('content-service');
 const translationService: TranslationService = inject('translation-service');
@@ -201,17 +210,17 @@ onMounted(async() => {
 });
 
 async function updateEpisodesList() {
-  let translatorId = null
+  let translatorId: number = null
   if (episodesListParams.translator.value) {
     if (episodesListParams.translator.value === ALL_FILTER) {
       translatorId = null;
     } else {
       const translator = translations.value.Translators.find(x => x.Name === episodesListParams.translator.value);
-      translatorId = translator.Id;
+      if (translator !== undefined) {
+        translatorId = translator.Id;
+      }
     }
   }
-
-  console.log(episodesListParams.sortBy.value as Order);
 
   const request = new V1GetByEpisodeRequest(
     contentId,

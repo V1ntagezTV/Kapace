@@ -1,6 +1,6 @@
 import {V1GetByEpisodeResponseEpisode, V1GetByEpisodeResponseTranslator} from "@/api/Responses/V1GetByEpisodeResponse";
 
-export const ALL_FILTER = "Все";
+export const ALL_FILTER = "По умолчанию: Все";
 
 export type Translation = {
     EpisodeId: number,
@@ -12,16 +12,15 @@ export type Translation = {
 }
 
 export enum Order {
+    ByDefault = 'По умолчанию',
     ByNumber = 'По возрастанию',
     ByNumberDescending = 'По убыванию',
     ByViews = 'По просмотрам',
-    ByStars = 'По оценке'
 }
 
 export enum EpisodeOrderType {
     ByNumber = 'ByNumber',
     ByNumberDescending = 'ByNumberDescending',
-    ByStars = 'ByStars',
     ByViews = 'ByViews'
 }
 
@@ -32,8 +31,6 @@ export function mapToEpisodeOrderType(value: Order) {
         return EpisodeOrderType.ByNumberDescending;
     } else if (value === Order.ByViews) {
         return EpisodeOrderType.ByViews;
-    } else if (value === Order.ByStars) {
-        return EpisodeOrderType.ByStars;
     }
     return undefined;
 }
@@ -57,7 +54,7 @@ export function mapToEpisodes(data: V1GetByEpisodeResponseEpisode[]) : Translati
 
 export function mapToTranslators(
     data: V1GetByEpisodeResponseTranslator[],
-    unknownTranslatorName: string = "Неизвестный переводчик")
+    unknownTranslatorName: string = "Неизвестный")
     : Translator[] {
     return data.map(translator => ({
        TranslatorId: translator.Id,

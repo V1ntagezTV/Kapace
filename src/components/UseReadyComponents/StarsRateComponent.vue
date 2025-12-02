@@ -34,7 +34,7 @@
           </template>
         </div>
         <p class="label-medium">
-          ({{ allCounters }})
+          (Всего оценок: {{ allCounters }})
         </p>
       </div>
     </base-background>
