@@ -125,21 +125,10 @@
       {{selectedTranslation}}
     </base-background>
 
-    <translations-list-component-v2
+    <translations-list-component-v3
       v-if="dataIsReady"
       :content-id="contentId"
-      :episodes="episodes"
-      :episodes-total-count="0"
-      :translators="mapToTranslators(translations?.Translators ?? [])"
       :selected-translator-id="translationId"
-      @sort-by:update="(value) => {
-        episodesListParams.sortBy.value = value;
-        updateEpisodesList();
-      }"
-      @translator:update="(value) => {
-        episodesListParams.translator.value = value;
-        updateEpisodesList();
-      }"
     />
   </div>
 </template>
@@ -165,7 +154,6 @@ import {EpisodeService} from "@/api/EpisodeService";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import {mapContentTypeToRuStr} from "@/api/Enums/ContentType";
 import {mapContentStatusToRuStr} from "@/api/Enums/ContentStatus";
-import TranslationsListComponentV2 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV2.vue";
 import {
   ALL_FILTER,
   EpisodeOrderType,
@@ -177,7 +165,7 @@ import {
 } from "@/components/UseReadyComponents/EpisodesList/TranslationsListViewModel";
 import NavLeftArrowIcon from "@/components/Icons/MaterialIcons/NavLeftArrowIcon.vue";
 import NavRightArrowIcon from "@/components/Icons/MaterialIcons/NavRightArrowIcon.vue";
-
+import TranslationsListComponentV3 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV3.vue";
 
 const route = useRoute();
 let episodeId = route.params.episode as number;

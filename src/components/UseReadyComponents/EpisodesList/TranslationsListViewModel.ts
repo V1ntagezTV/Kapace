@@ -1,4 +1,5 @@
 import {V1GetByEpisodeResponseEpisode, V1GetByEpisodeResponseTranslator} from "@/api/Responses/V1GetByEpisodeResponse";
+import moment from "moment";
 
 export const ALL_FILTER = "По умолчанию: Все";
 
@@ -8,6 +9,7 @@ export type Translation = {
     Title: string,
     Views: number,
     Stars: number,
+    CreatedAt: number,
     HasTranslations: boolean
 }
 
@@ -48,6 +50,7 @@ export function mapToEpisodes(data: V1GetByEpisodeResponseEpisode[]) : Translati
             Title: episode.Title,
             Views: episode.Views,
             Stars: episode.Stars,
+            CreatedAt: episode.CreatedAt,
             HasTranslations: episode.Translations ? (episode.Translations.length > 0) : false
         }));
 }

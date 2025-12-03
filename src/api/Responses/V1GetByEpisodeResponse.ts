@@ -12,6 +12,7 @@ export type V1GetByEpisodeResponseEpisode = {
     Number: number,
     Views: number
     Stars: number,
+    CreatedAt: number,
     Translations: V1GetByEpisodeResponseTranslation[]
 }
 
