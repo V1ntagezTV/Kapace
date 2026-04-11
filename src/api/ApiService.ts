@@ -41,11 +41,7 @@ export class ApiService {
 
         try {
             response = await this.baseFetch(requestBody, handlerPath, headers);
-            console.log({
-                Path: handlerPath,
-                Request: requestBody,
-                Response: response
-            });
+            console.log({Path: handlerPath, Request: requestBody, Response: response});
         } catch (e) {
             exception = e;
         }

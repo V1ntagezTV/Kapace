@@ -1,72 +1,74 @@
 <template>
-  <div class="material episode__body-box gap-16">
+  <div class="episode gap-16">
+    <!-- Основной блок с плеером и информацией -->
     <BaseBackground
       v-if="dataIsReady"
       :type="2"
-      class="episode__main"
+      class="episode__card"
     >
-      <div class="episode__title-main">
-        <router-link v-if="content" :to="{ name: 'theater', params: { id: contentId }}">
-          <p class="headline-medium episode__title" style="color: var(--primary40)">
+      <!-- Заголовок и мета-информация -->
+      <div class="episode__header">
+        <router-link
+          v-if="content"
+          :to="{ name: 'theater', params: { id: contentId }}"
+          class="episode__back-link"
+        >
+          <p class="headline-medium episode__title">
             {{ content.Content.Title }}
           </p>
         </router-link>
 
         <div v-if="currentEpisode">
-          <p class="title-medium episode__title">
+          <p class="title-medium episode__subtitle">
             {{ "Серия " + currentEpisode.Number }}{{ currentEpisode.Title ? (': ' + currentEpisode.Title) : "" }}
           </p>
         </div>
 
-        <div class="episode__title-secondary dynamic">
+        <div class="episode__meta">
           <filter-chips
-            v-show="content.Content.Type"
-            class="m3-bg-2"
-            style="color: var(--primary40)"
+            v-if="content.Content.Type"
+            class="m3-bg-2 episode__chip"
             :text="(mapContentTypeToRuStr(content.Content.Type)).toString()"
           />
           <filter-chips
-            v-show="content.Content.Status"
-            class="m3-bg-2"
-            style="color: var(--primary40)"
+            v-if="content.Content.Status"
+            class="m3-bg-2 episode__chip"
             :text="(mapContentStatusToRuStr(content.Content.Status)).toString()"
           />
           <filter-chips
-            v-show="content.Content.ReleasedAt"
-            class="m3-bg-2"
-            style="color: var(--primary40)"
-            :text="moment(new Date(content.Content.ReleasedAt)).format('YYYY')"
+            v-if="content.Content.ReleasedAt"
+            class="m3-bg-2 episode__chip"
+            :text="moment(content.Content.ReleasedAt).format('YYYY')"
           />
           <filter-chips
-            v-show="content.Content.Country !== undefined"
-            class="m3-bg-2"
-            style="color: var(--primary40)"
+            v-if="content.Content.Country"
+            class="m3-bg-2 episode__chip"
             :text="content.Content.Country.toString()"
           />
           <filter-chips
-            v-show="content.Content.MinAgeLimit > 0"
-            class="m3-bg-2"
-            style="color: var(--primary40)"
+            v-if="content.Content.MinAgeLimit > 0"
+            class="m3-bg-2 episode__chip"
             :text="content.Content.MinAgeLimit.toString()+'+'"
           />
           <filter-chips
-            v-show="content.Genres?.length > 0"
-            class="m3-bg-2"
-            style="color: var(--primary40)"
+            v-if="content.Genres?.length > 0"
+            class="m3-bg-2 episode__chip"
             :text="content.Genres[0]?.Name"
           />
         </div>
       </div>
-      <div v-if="selectedTranslation" class="episode__video-main">
+
+      <!-- Плеер -->
+      <div v-if="selectedTranslation" class="episode__player-wrapper">
         <iframe
           v-if="isSelectedVideoLinkValid"
-          class="episode__player"
+          class="episode__iframe"
           :src="selectedTranslation.Link"
           frameborder="0"
           allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
           allowfullscreen
         />
-        <div v-else class="episode__video-unavailable m-border m-radius-16 v__center h__center m3-bg-5">
+        <div v-else class="episode__player-placeholder m-border m-radius-16 v__center h__center m3-bg-5">
           <p class="title-large">
             Видео сейчас не доступно
           </p>
@@ -74,10 +76,11 @@
       </div>
     </BaseBackground>
 
-    <div v-show="previousEpisode || nextEpisode" class="row gap-16">
+    <!-- Кнопки навигации -->
+    <div v-show="previousEpisode || nextEpisode" class="episode__nav row gap-16">
       <router-link
         v-if="previousEpisode"
-        class="episode__move-button m-radius-16 column gap-8"
+        class="episode__nav-btn m-radius-16 column gap-8"
         :to="{
           name: 'episode',
           params: {
@@ -96,7 +99,7 @@
 
       <router-link
         v-if="nextEpisode"
-        class="episode__move-button m-radius-16 column gap-8"
+        class="episode__nav-btn m-radius-16 column gap-8"
         :to="{
           name: 'episode',
           params: {
@@ -118,13 +121,14 @@
       <div>
         Переводычи:
       </div>
-      {{translations.Translators}}
+      {{ translations.Translators }}
       <div>
         Инфа о текущем переводе
       </div>
-      {{selectedTranslation}}
+      {{ selectedTranslation }}
     </base-background>
 
+    <!-- Список эпизодов (компонент) -->
     <translations-list-component-v3
       v-if="dataIsReady"
       :content-id="contentId"
@@ -134,234 +138,174 @@
 </template>
 
 <script lang="ts" setup>
-import {inject, onMounted, ref, watch} from "vue";
-import {ContentService} from "@/api/ContentService";
-import {V1GetFullContentEpisode} from "@/api/Responses/V1GetFullContentResponse";
-import {TranslationService} from "@/api/TranslationService"
-import {useRoute} from "vue-router";
+import { inject, onMounted, ref, watch, computed } from "vue";
+import { useRoute } from "vue-router";
 import moment from "moment/moment";
+
+// Components
 import BaseBackground from "@/components/Base/BaseBackground.vue";
-import {V1GetByEpisodeRequest} from "@/api/Requests/V1GetByEpisodeRequest";
+import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
+import TranslationsListComponentV3 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV3.vue";
+import NavLeftArrowIcon from "@/components/Icons/MaterialIcons/NavLeftArrowIcon.vue";
+import NavRightArrowIcon from "@/components/Icons/MaterialIcons/NavRightArrowIcon.vue";
+
+// Models & Enums
+import { mapContentTypeToRuStr } from "@/api/Enums/ContentType";
+import { mapContentStatusToRuStr } from "@/api/Enums/ContentStatus";
+import { ContentSelectedInfo } from "@/api/Enums/ContentSelectedInfo";
+import { EpisodeOrderType } from "@/components/UseReadyComponents/EpisodesList/TranslationsListViewModel";
+
+// Services & Requests
+import { ContentService } from "@/api/ContentService";
+import { TranslationService } from "@/api/TranslationService";
+import { EpisodeService } from "@/api/EpisodeService";
+import { V1GetByEpisodeRequest } from "@/api/Requests/V1GetByEpisodeRequest";
+import { V1GetByQueryRequest, V1GetByQuerySearchFilters } from "@/api/Requests/V1GetByQueryRequest";
+import { V1GetFullContentEpisode } from "@/api/Responses/V1GetFullContentResponse";
 import {
   V1GetByEpisodeResponse,
   V1GetByEpisodeResponseEpisode,
   V1GetByEpisodeResponseTranslation
 } from "@/api/Responses/V1GetByEpisodeResponse";
-import {V1GetByQueryResponseContent} from "@/api/Requests/V1GetByQueryResponse";
-import {V1GetByQueryRequest, V1GetByQuerySearchFilters} from "@/api/Requests/V1GetByQueryRequest";
-import {ContentSelectedInfo} from "@/api/Enums/ContentSelectedInfo";
-import {EpisodeService} from "@/api/EpisodeService";
-import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
-import {mapContentTypeToRuStr} from "@/api/Enums/ContentType";
-import {mapContentStatusToRuStr} from "@/api/Enums/ContentStatus";
-import {
-  ALL_FILTER,
-  EpisodeOrderType,
-  mapToEpisodeOrderType,
-  mapToEpisodes,
-  mapToTranslators,
-  Order,
-  Translation
-} from "@/components/UseReadyComponents/EpisodesList/TranslationsListViewModel";
-import NavLeftArrowIcon from "@/components/Icons/MaterialIcons/NavLeftArrowIcon.vue";
-import NavRightArrowIcon from "@/components/Icons/MaterialIcons/NavRightArrowIcon.vue";
-import TranslationsListComponentV3 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV3.vue";
+import { V1GetByQueryResponseContent } from "@/api/Requests/V1GetByQueryResponse";
 
 const route = useRoute();
-let episodeId = route.params.episode as number;
-let contentId = route.params.content as number;
-let translationId = +route.params.translation > 0 ? (+route.params.translation) : 1;
-console.log("EPISODE: " + episodeId + "\nCONTENT: " + contentId);
 
-const contentService: ContentService = inject('content-service');
-const translationService: TranslationService = inject('translation-service');
-const episodeService: EpisodeService = inject('episode-service');
+// Services
+const contentService = inject<ContentService>('content-service')!;
+const translationService = inject<TranslationService>('translation-service')!;
+const episodeService = inject<EpisodeService>('episode-service')!;
 
+// State
 const dataIsReady = ref<boolean>(false);
-const content = ref<V1GetByQueryResponseContent>(null);
-const translations = ref<V1GetByEpisodeResponse>(null);
+const content = ref<V1GetByQueryResponseContent | null>(null);
+const translations = ref<V1GetByEpisodeResponse | null>(null);
+
+const currentEpisode = ref<V1GetFullContentEpisode | null>(null);
 const previousEpisode = ref<V1GetFullContentEpisode | null>(null);
-const currentEpisode = ref<V1GetFullContentEpisode>(null);
 const nextEpisode = ref<V1GetFullContentEpisode | null>(null);
-const selectedTranslation = ref<V1GetByEpisodeResponseTranslation>(null);
+
+const selectedTranslation = ref<V1GetByEpisodeResponseTranslation | null>(null);
 const isSelectedVideoLinkValid = ref<boolean>(false);
 
-let episodes: Translation[] = [];
-const episodesListParams = {
-  translator: ref<string>(),
-  sortBy: ref<string>(Order.ByNumber)
-};
+// Computed params for cleaner access
+const contentId = computed(() => Number(route.params.content));
+const episodeId = computed(() => Number(route.params.episode));
+const translationId = computed(() => Number(route.params.translation) > 0 ? Number(route.params.translation) : 0);
 
-onMounted(async() => {
-  await SetContents()
-  await updateEpisodesList();
+onMounted(async () => {
+  await setContents();
 });
 
-async function updateEpisodesList() {
-  let translatorId: number = null
-  if (episodesListParams.translator.value) {
-    if (episodesListParams.translator.value === ALL_FILTER) {
-      translatorId = null;
-    } else {
-      const translator = translations.value.Translators.find(x => x.Name === episodesListParams.translator.value);
-      if (translator !== undefined) {
-        translatorId = translator.Id;
-      }
-    }
-  }
+watch(() => route.params.episode, async (newVal) => {
+  if (newVal) await setContents();
+});
 
-  const request = new V1GetByEpisodeRequest(
-    contentId,
-    null,
-    translatorId,
-    mapToEpisodeOrderType(episodesListParams.sortBy.value as Order)
-  );
-
-  translations.value = await translationService.V1GetByEpisodeAsync(request);
-  episodes = mapToEpisodes(translations.value.Episodes);
-}
-
-async function SetContents() {
-  nextEpisode.value = null;
-  previousEpisode.value = null;
-  const request = new V1GetByQueryRequest();
-  const filters = new V1GetByQuerySearchFilters();
-  request.SelectedInfo = ContentSelectedInfo.Episodes;
-  filters.ContentIds = new Array<number>(contentId);
-  request.Filters = filters;
-
-  contentId = route.params.content as number;
-  episodeId = route.params.episode as number;
-  translationId = +route.params.translation > 0 ? (+route.params.translation) : 0;
+async function setContents() {
   dataIsReady.value = false;
+  isSelectedVideoLinkValid.value = false;
+  previousEpisode.value = null;
+  nextEpisode.value = null;
 
-  const contentsResponse = await contentService.V1GetByQuery(request)
-  if (contentsResponse.Content.length !== 1) {
-    const error = new Error();
-    error.message = "Content not found exception";
-    throw error;
-  }
+  try {
+    // 1. Get Content Info
+    const request = new V1GetByQueryRequest();
+    const filters = new V1GetByQuerySearchFilters();
+    request.SelectedInfo = ContentSelectedInfo.Episodes;
+    filters.ContentIds = [contentId.value];
+    request.Filters = filters;
 
-  content.value = contentsResponse.Content.find(x => x.Content.Id == contentId);
-  const translationsRequest = new V1GetByEpisodeRequest(contentId, null, null, EpisodeOrderType.ByNumber);
-  translations.value = await translationService.V1GetByEpisodeAsync(translationsRequest);
-  currentEpisode.value = content.value.Episodes.find(value => value.Id == episodeId);
-  selectedTranslation.value = getCurrentEpisodeTranslation(translationId, translations.value.Episodes);
+    const contentsResponse = await contentService.V1GetByQuery(request);
+    if (contentsResponse.Content.length !== 1) {
+      throw new Error("Content not found exception");
+    }
+    content.value = contentsResponse.Content.find(x => x.Content.Id == contentId.value)!;
+    // 2. Determine Current, Prev, Next
+    currentEpisode.value = content.value.Episodes.find(value => value.Id == episodeId.value) || null;
 
-  const orderedEpisodes = translations.value.Episodes.sort(value => value.Number);
-  for (let index = 0; index < orderedEpisodes.length; index++) {
-    const episode = orderedEpisodes[index];
-    if (episode.Number === currentEpisode.value.Number) {
-      if (index != 0) {
-        previousEpisode.value = orderedEpisodes[index - 1];
+    // 3. Get Translations/Episodes for Player logic
+    const translationsRequest = new V1GetByEpisodeRequest(contentId.value, currentEpisode.value.Id, null, EpisodeOrderType.ByNumber);
+    translations.value = await translationService.V1GetByEpisodeAsync(translationsRequest);
+
+
+    if (currentEpisode.value) {
+      // Ищем эпизод в списке переводов, чтобы достать ссылку на видео
+      if (translations.value?.Episodes) {
+        selectedTranslation.value = getCurrentEpisodeTranslation(translationId.value, translations.value.Episodes);
+
+        // Сортируем и ищем соседей
+        const orderedEpisodes = [...translations.value.Episodes].sort((a, b) => a.Number - b.Number);
+        const currentIndex = orderedEpisodes.findIndex(ep => ep.Number === currentEpisode.value!.Number);
+
+        if (currentIndex !== -1) {
+          if (currentIndex > 0) previousEpisode.value = orderedEpisodes[currentIndex - 1];
+          if (currentIndex < orderedEpisodes.length - 1) nextEpisode.value = orderedEpisodes[currentIndex + 1];
+        }
       }
-
-      if (index != orderedEpisodes.length - 1) {
-        nextEpisode.value = orderedEpisodes[index + 1];
-      }
     }
-  }
 
-  await validateVideoLink();
-  await episodeService.incrementViews(episodeId);
-  dataIsReady.value = true;
-}
+    // 4. Post-actions
+    await validateVideoLink();
+    await episodeService.incrementViews(episodeId.value);
 
-async function validateVideoLink() {
-  if (selectedTranslation.value.Link) {
-    try {
-      console.log(selectedTranslation.value.Link);
-      await fetch(selectedTranslation.value.Link, { mode: 'no-cors'})
-        .then((resp) => {
-          let status = true;
-          if (!resp.ok || resp.status != 200) status = false;
-          if (resp.type == "opaque") status = true;
-
-          isSelectedVideoLinkValid.value = status;
-        });
-
-      console.log("Site status: " + isSelectedVideoLinkValid.value);
-    }
-    catch (exception) {
-      console.log(exception);
-      isSelectedVideoLinkValid.value = false;
-    }
+  } catch (e) {
+    console.error("Error loading episode:", e);
+  } finally {
+    dataIsReady.value = true;
   }
 }
 
 function getCurrentEpisodeTranslation(
   pathTranslationId: number,
-  episodesWithTranslations: V1GetByEpisodeResponseEpisode[]) : V1GetByEpisodeResponseTranslation {
+  episodesWithTranslations: V1GetByEpisodeResponseEpisode[]
+) : V1GetByEpisodeResponseTranslation | null {
 
-  if (episodesWithTranslations.length === 0) {
-    throw new Error("Translations not found! (1)")
-  }
+  if (!episodesWithTranslations || episodesWithTranslations.length === 0) return null;
 
-  const episode = episodesWithTranslations.find(episode => episode.Id == episodeId);
-  if (episode.Translations.length === 0) {
-    throw new Error("Translations not found! (2)")
-  }
+  const episode = episodesWithTranslations.find(ep => ep.Id == episodeId.value);
+  if (!episode || !episode.Translations || episode.Translations.length === 0) return null;
 
   if (pathTranslationId > 0) {
-    const selectedTranslator = episode.Translations.find(translation => translation.Id === pathTranslationId);
-    if (selectedTranslator != undefined) {
-      return selectedTranslator;
-    }
+    const selected = episode.Translations.find(t => t.Id === pathTranslationId);
+    if (selected) return selected;
   }
 
-  // as default;
+  // default
   return episode.Translations[0];
 }
 
-watch(() => route.params.episode, async () => {
-  if (!route.params.episode) {
+async function validateVideoLink() {
+  if (!selectedTranslation.value?.Link) {
+    isSelectedVideoLinkValid.value = false;
     return;
   }
 
-  await SetContents();
-})
-
+  try {
+    const resp = await fetch(selectedTranslation.value.Link, { mode: 'no-cors'});
+    // no-cors возвращает opaque response. status всегда 0, ok всегда false.
+    // Если запрос не упал с network error, считаем что ссылка живая.
+    isSelectedVideoLinkValid.value = (resp.type === "opaque" || resp.ok);
+  } catch (exception) {
+    console.error("Video link validation failed:", exception);
+    isSelectedVideoLinkValid.value = false;
+  }
+}
 </script>
 
 <style lang="scss" scoped>
 .episode {
-  &__move-button {
-    background: white;
-    padding: 24px;
-    width: 100%;
-    text-align: start;
-    justify-content: center;
-    transition: background-color .3s cubic-bezier(.2,0,0,1);
+  display: grid;
+  grid-template-rows: max-content;
+  padding: 20px 0;
 
-    &:hover {
-      color: var(--on-secondary-container-light);
-      background: var(--secondary-container-light);
-    }
-  }
-
-  &__video-unavailable {
-    display: flex;
-    padding: 20px;
-    margin: 16px;
-    width: 100%;
-  }
-
-  &__body-box {
-    display: grid;
-    grid-template-rows: max-content;
-    padding-bottom: 20px;
-    padding-top: 20px;
-  }
-
-  &__main {
+  &__card {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: fit-content;
     overflow: hidden;
   }
 
-  &__title-main {
+  &__header {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -369,97 +313,79 @@ watch(() => route.params.episode, async () => {
     padding: 20px;
   }
 
-  &__player-box {
-    border-top: 1px solid var(--font-gray-v2);
-  }
-
-  &__player {
-    width: 100%;
-    height: 607.5px;
+  &__back-link {
+    text-decoration: none;
   }
 
   &__title {
     text-align: left;
+    padding: 0;
+    margin: 0;
+    color: var(--primary40);
+  }
 
+  &__subtitle {
+    text-align: left;
     padding: 0;
     margin: 0;
   }
 
-  &__icon-style {
-    color: var(--primary);
-
-    &:hover {
-      cursor: pointer;
-      color: var(--secondary);
-    }
-  }
-
-  &__title-secondary {
+  &__meta {
     display: flex;
-    flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     gap: 12px;
-    color: var(--font-gray-v4);
-    font-weight: 700;
-    font-size: 14px;
 
-    & p {
-      margin: 0;
-    }
+    /* Dynamic styles from original code moved to scss if possible,
+       but chips use inline styles in template for specific colors */
   }
 
-  &__title-rating {
-    background: var(--secondary);
-    color: #FFF;
-    padding: 4px;
-    border-radius: 4px;
+  &__chip {
+    color: var(--primary40) !important;
   }
 
-  &__video {
-    width: 100%;
-    height: 600px;
-  }
-
-  &__video-main {
+  &__player-wrapper {
     display: flex;
     width: 100%;
-    flex-direction: row;
+    background: #000; /* Fallback background */
   }
 
-  &__video-translations {
-		display: flex;
-		flex-direction: column;
+  &__iframe {
     width: 100%;
-    max-height: inherit;
-  }
+    height: 607.5px;
+    border: none;
 
-  &__video-tabs {
-    display: grid;
-    grid-template-columns: repeat(2, 2fr);
-    border-bottom: 1px solid var(--font-gray-v1);
-  }
-
-  &__video-translate {
-    font-weight: 500;
-    color: var(--font-gray);
-    text-align: start;
-    border-radius: 0;
-    padding-left: 20px;
-    padding-right: 20px;
-    transition: none;
-
-    &:hover {
-      background: var(--white);
-      text-decoration: underline;
-      color: var(--primary);
-      text-underline: var(--primary);
-      border: none;
+    @media (max-width: 768px) {
+      height: 300px;
     }
   }
-  
-  &__episodes {
-    display: grid;
+
+  &__player-placeholder {
+    display: flex;
+    padding: 20px;
+    margin: 16px;
+    width: 100%;
+    min-height: 200px;
+  }
+
+  &__nav {
+    /* row and gap-16 are utility classes */
+  }
+
+  &__nav-btn {
+    background: white;
+    padding: 24px;
+    width: 100%;
+    text-align: start;
+    justify-content: center;
+    transition: background-color .3s cubic-bezier(.2,0,0,1);
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+      color: var(--on-secondary-container-light);
+      background: var(--secondary-container-light);
+    }
   }
 }
-
 </style>

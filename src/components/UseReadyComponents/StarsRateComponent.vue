@@ -48,7 +48,6 @@
           <heart-filled-icon class="orange" />
           <div class="row gap-8">
             <div
-              v-show="calculatePercentage(value) > 0"
               :style="{width: (calculatePercentage(value)) + '%'}"
               class="line-filled h__fill m-radius-16"
             />

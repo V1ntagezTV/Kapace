@@ -246,7 +246,7 @@ import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import {Country} from "@/api/Enums/Country";
 import {ContentType} from "@/api/Enums/ContentType";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
-import {computed, inject, onMounted, PropType, ref} from "vue";
+import {computed, inject, onMounted, ref} from "vue";
 import BaseImageInput from "@/components/Base/BaseImageInput.vue";
 import {ImageService} from "@/api/ImageService";
 import {ChangesHistoryService} from "@/api/ChangesHistoryService";
@@ -265,12 +265,12 @@ import {ContentService} from "@/api/ContentService";
 import {StringExtensions} from "@/helpers/StringExtensions";
 import {userStore} from "@/store/UserStore";
 
-const props = defineProps({
-  contentId: {type: Object as PropType<number | any>, required: false, default: undefined}
-});
+const props = defineProps<{
+  contentId?: number
+}>();
 
-const showEngTitleInputField = ref<Boolean>(false);
-const showOriginTitleInputField = ref<Boolean>(false);
+const showEngTitleInputField = ref<boolean>(false);
+const showOriginTitleInputField = ref<boolean>(false);
 
 const contentService = inject<ContentService>('content-service');
 const imageService = inject<ImageService>('image-service');
@@ -279,7 +279,7 @@ const genreService = inject<GenreService>('genre-service');
 const currentUserStore = userStore();
 const clientEventStore = ClientEventStore();
 
-let currentImage: FlatConfigFileSpec | FlatConfigFileSpec[];
+let currentImage: File | undefined;
 let currentImageUrl = ref<string>();
 
 const imageId = ref<number | null>(null);
@@ -436,7 +436,7 @@ async function onClickInsertContent() {
   }
 }
 
-async function updateImage(image: FlatConfigFileSpec | FlatConfigFileSpec[], imageUrl: string) {
+async function updateImage(image: File, imageUrl: string) {
   currentImage = image;
   currentImageUrl.value = imageUrl;
 }

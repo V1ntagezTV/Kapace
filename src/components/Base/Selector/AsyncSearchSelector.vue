@@ -1,10 +1,10 @@
 <template>
   <base-selector
     v-model="selectedValue"
+    v-model:is-dropped="isDroppedRef"
     :mark-as-invalid-input="isInvalid"
     :selectable-values="values"
     :menu-alignment="MenuAlignment.Left"
-    :is-dropped="isDroppedRef"
     @input="onChangeInput"
     @update:model-value="onSelectValue"
   >

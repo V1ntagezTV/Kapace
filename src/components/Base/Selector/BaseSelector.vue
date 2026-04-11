@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="rootRef"
     class="selector__box"
     :class="{'selector__box-errored': markAsInvalidInput }"
   >
@@ -41,12 +42,15 @@
 </template>
 
 <script lang="ts" setup>
-import {PropType, ref, watch} from "vue";
+import {onMounted, onUnmounted, PropType, ref, watch} from "vue";
 import MaterialDropArrow from "@/components/Icons/MaterialDropArrow.vue";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 
-const emits = defineEmits<{(emit: 'update:modelValue', value: string): void}>();
+const emits = defineEmits<{
+  (e: 'update:modelValue', value: string): void
+  (e: 'update:isDropped', value: boolean): void
+}>();
 
 //TODO: Хорошо бы стили относящиеся к дефолтной кнопке вынести в отдельную модельку типа defaultStyles: {title, label, buttonBorder, buttonBackground}
 const props = defineProps({
@@ -68,6 +72,35 @@ const titleRef = ref(((props.modelValue?.length ?? 0) > 0)
   : props.title ?? "");
 
 const isDroppedRef = ref(false);
+const rootRef = ref<HTMLElement | null>(null);
+
+function closeMenu() {
+  if (!isDroppedRef.value) {
+    return;
+  }
+  isDroppedRef.value = false;
+  emits('update:isDropped', false);
+}
+
+function onDocumentPointerDown(event: PointerEvent) {
+  if (!isDroppedRef.value) {
+    return;
+  }
+  const root = rootRef.value;
+  const target = event.target as Node | null;
+  if (!root || !target || root.contains(target)) {
+    return;
+  }
+  closeMenu();
+}
+
+onMounted(() => {
+  document.addEventListener('pointerdown', onDocumentPointerDown, true);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('pointerdown', onDocumentPointerDown, true);
+});
 
 // Синхронизация локального состояния с пропсом
 watch(() => props.modelValue, (newValue) => {
@@ -88,25 +121,26 @@ watch(() => props.isDisabled, (isDisabled) => {
 
 function clickOnHeader(isDropped: boolean) {
   if (props.isDisabled) {
-    isDroppedRef.value = false;
+    closeMenu();
     return;
   }
 
   if (props.selectableValues.length > 0) {
     isDroppedRef.value = isDropped;
+    emits('update:isDropped', isDropped);
     return;
   }
 
-  isDroppedRef.value = false;
+  closeMenu();
 }
 
 function clickOnMenu() {
-  isDroppedRef.value = false;
+  closeMenu();
 }
 
 function selectFilter(value: string) {
   titleRef.value = value;
-  isDroppedRef.value = false;
+  closeMenu();
   emits('update:modelValue', value);
 }
 
