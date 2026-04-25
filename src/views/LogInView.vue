@@ -93,6 +93,7 @@ import EyeCross from "@/components/Icons/EyeCross.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import EmailVerificationModal from "@/components/Modal/EmailVerificationModal.vue";
 import {ErrorDetails} from "@/api/ApiService";
+import { AuthSession } from "@/api/AuthSession";
 
 const router = useRouter();
 const store = userStore();
@@ -160,6 +161,7 @@ async function logInClick() {
     currentUser.User.ImageUrl,
     currentUser.Roles.map(x => x.Alias)
   );
+  AuthSession.resetAuthLostFlagForTestsOrLogin();
   await router.push('/');
 }
 

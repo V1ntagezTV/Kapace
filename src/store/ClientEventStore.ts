@@ -7,9 +7,11 @@ export const EventTypes = {
     Success: 'Success',
 } as const;
 
+type EventType = (typeof EventTypes)[keyof typeof EventTypes];
+
 type Event = {
-    eventType: typeof EventTypes,
-    text: string,
+    eventType: EventType;
+    text: string;
 }
 
 interface EventAction {
@@ -23,8 +25,8 @@ export const ClientEventStore = defineStore('client-event-store', {
         };
     },
     actions: {
-        push(text: string, type: typeof EventTypes) {
-            this.events.push({eventType: type, text: text});
+        push(text: string, type: EventType) {
+            this.events.push({ eventType: type, text: text });
         }
     }
 })

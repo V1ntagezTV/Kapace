@@ -1,3 +1,5 @@
+import { AuthSession } from "@/api/AuthSession";
+
 export class ApiService {
     protected hostPath: string = process.env.VUE_APP_SERVER_API_ADDRESS;
 
@@ -32,21 +34,32 @@ export class ApiService {
             .then(response => response as TResponse);
     }
 
-    private async CallHandlerV2<TResponse, TRequest>(
-        requestBody: TRequest,
-        handlerPath: string,
-        headers: Headers | null = null) : Promise<ApiResponse<TResponse>> {
-        let response: Response | undefined = undefined;
-        let exception: any;
+    private static readonly genericServerError: ErrorDetails = {
+        ErrorCode: "0",
+        Message: "Что-то пошло не так! Ошибка сервера.",
+        ErrorDetails: new Map<string, string>()
+    };
 
-        try {
-            response = await this.baseFetch(requestBody, handlerPath, headers);
-            console.log({Path: handlerPath, Request: requestBody, Response: response});
-        } catch (e) {
-            exception = e;
-        }
+    private static readonly unauthorizedBusinessError: ErrorDetails = {
+        ErrorCode: "Unauthorized",
+        Message: "Для начала необходимо авторизоваться!",
+        ErrorDetails: new Map<string, string>()
+    };
 
+    private shouldSkipAuthRefresh(handlerPath: string): boolean {
+        return handlerPath === 'refresh-cookie' || handlerPath === 'cookie-logout';
+    }
+
+    private wrapApiResponse<TResponse>(
+        data: TResponse | undefined,
+        error: ErrorDetails | undefined,
+        businessError: ErrorDetails | undefined,
+        exception: any
+    ): ApiResponse<TResponse> {
         const apiResponse: ApiResponse<TResponse> = {
+            data,
+            error,
+            businessError,
             onException: (callback) => {
                 if (exception) {
                     callback();
@@ -55,46 +68,108 @@ export class ApiService {
                 return apiResponse;
             },
             onBusinessError: (callback) => {
-                if (response && response.status === 400) {
-                    response.json().then(model => {
-                        callback(model);
-                    });
-                }
-
-                if (response && response.status === 401) {
-                    callback({
-                        ErrorCode: "Unauthorized",
-                        Message: "Для начала необходимо авторизоваться!",
-                        ErrorDetails: new Map<string, string>()
-                    });
+                if (businessError) {
+                    callback(businessError);
                 }
 
                 return apiResponse;
             }
         };
 
-        if (response && response.status === 200) {
-            try {
-                const contentLength = response.headers.get('Content-Length');
-                if (contentLength === '0' || !response.body) {
-                    apiResponse.data = {} as TResponse;
-                } else {
-                    apiResponse.data = await response.json() as TResponse;
+        return apiResponse;
+    }
+
+    private async parseResponseToApiResult<TResponse>(
+        response: Response | undefined,
+        exception: any
+    ): Promise<{
+        data: TResponse | undefined;
+        error: ErrorDetails | undefined;
+        businessError: ErrorDetails | undefined;
+    }> {
+        const genericServerError = ApiService.genericServerError;
+
+        let data: TResponse | undefined = undefined;
+        let error: ErrorDetails | undefined = undefined;
+        let businessError: ErrorDetails | undefined = undefined;
+
+        if (!exception && response) {
+            if (response.status === 200) {
+                try {
+                    const contentLength = response.headers.get('Content-Length');
+                    if (contentLength === '0' || !response.body) {
+                        data = {} as TResponse;
+                    } else {
+                        data = await response.json() as TResponse;
+                    }
+                } catch (e) {
+                    data = {} as TResponse;
+                    console.error("JSON parsing error:", e);
                 }
-            } catch (e) {
-                // Если парсинг не удался, обрабатываем как пустой ответ
-                apiResponse.data = {} as TResponse;
-                console.error("JSON parsing error:", e);
+            } else if (response.status === 400) {
+                try {
+                    businessError = await response.json() as ErrorDetails;
+                } catch (e) {
+                    console.error("JSON parsing error (400):", e);
+                    businessError = { ...genericServerError };
+                }
+                error = genericServerError;
+            } else if (response.status === 401) {
+                businessError = { ...ApiService.unauthorizedBusinessError };
+                error = genericServerError;
+            } else {
+                error = genericServerError;
             }
-        } else {
-            apiResponse.error = {
-                ErrorCode: "0",
-                Message: "Что-то пошло не так! Ошибка сервера.",
-                ErrorDetails: new Map<string, string>()
-            };
         }
 
-        return apiResponse;
+        return { data, error, businessError };
+    }
+
+    private unauthorizedApiResponse<TResponse>(): ApiResponse<TResponse> {
+        const genericServerError = ApiService.genericServerError;
+        const businessError = { ...ApiService.unauthorizedBusinessError };
+        return this.wrapApiResponse<TResponse>(undefined, genericServerError, businessError, undefined);
+    }
+
+    private async CallHandlerV2<TResponse, TRequest>(
+        requestBody: TRequest,
+        handlerPath: string,
+        headers: Headers | null = null): Promise<ApiResponse<TResponse>> {
+        let response: Response | undefined = undefined;
+        let exception: any;
+
+        try {
+            response = await this.baseFetch(requestBody, handlerPath, headers);
+            console.log({ Path: handlerPath, Request: requestBody, Response: response });
+        } catch (e) {
+            exception = e;
+        }
+
+        const skipAuthRefresh = this.shouldSkipAuthRefresh(handlerPath);
+
+        if (!exception && response?.status === 401 && !skipAuthRefresh) {
+            const refreshed = await AuthSession.refresh();
+            if (!refreshed) {
+                await AuthSession.handleAuthLost();
+                return this.unauthorizedApiResponse<TResponse>();
+            }
+
+            try {
+                response = await this.baseFetch(requestBody, handlerPath, headers);
+                console.log({ Path: handlerPath, Request: requestBody, Response: response, RetriedAfterRefresh: true });
+            } catch (e) {
+                exception = e;
+                response = undefined;
+            }
+
+            if (!exception && response?.status === 401) {
+                await AuthSession.handleAuthLost();
+                return this.unauthorizedApiResponse<TResponse>();
+            }
+        }
+
+        const parsed = await this.parseResponseToApiResult<TResponse>(response, exception);
+        return this.wrapApiResponse<TResponse>(parsed.data, parsed.error, parsed.businessError, exception);
     }
 
     // Obsolete
@@ -102,20 +177,20 @@ export class ApiService {
         requestBody: TRequest,
         handlerPath: string): Promise<TResponse> {
         const response = await this.CallHandler<TResponse, TRequest>(requestBody, handlerPath);
-        console.log({path: this.servicePath + handlerPath, request: requestBody, response: response});
+        console.log({ path: this.servicePath + handlerPath, request: requestBody, response: response });
         return response;
     }
 
     protected async fetchV2<TResponse, TRequest>(
         requestBody: TRequest,
         handlerPath: string,
-        headers: Headers | null = null) : Promise<ApiResponse<TResponse>> {
+        headers: Headers | null = null): Promise<ApiResponse<TResponse>> {
         return await this.CallHandlerV2<TResponse, TRequest>(requestBody, handlerPath, headers);
     }
 
-    protected async CallPostHandlerAsync<TRequest>(requestBody: TRequest, handlerPath: string) : Promise<Response> {
+    protected async CallPostHandlerAsync<TRequest>(requestBody: TRequest, handlerPath: string): Promise<Response> {
         const response = await this.baseFetch<TRequest>(requestBody, handlerPath);
-        console.log({path: this.servicePath + handlerPath, request: requestBody, response: response});
+        console.log({ path: this.servicePath + handlerPath, request: requestBody, response: response });
         return response;
     }
 
@@ -130,7 +205,7 @@ export class ApiService {
         })
             .then(result => console.log(result))
             .catch(error => console.log("error", error)
-        );
+            );
     }
 
     public isErrorDetails(response: any): response is ErrorDetails {
@@ -141,6 +216,8 @@ export class ApiService {
 export interface ApiResponse<T> {
     data?: T;
     error?: ErrorDetails;
+    /** Распарсенное тело при 400/401; доступно сразу после await fetchV2 */
+    businessError?: ErrorDetails;
     onException(callback: (error: void) => void): ApiResponse<T>;
     onBusinessError(callback: (error: ErrorDetails) => void): ApiResponse<T>;
 }

@@ -2,7 +2,9 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import {createPinia} from "pinia";
+import { bootstrapAuth } from "@/bootstrapAuth";
 
 const pinia = createPinia();
 
 createApp(App).use(pinia).use(router).mount('#app')
+void bootstrapAuth();
