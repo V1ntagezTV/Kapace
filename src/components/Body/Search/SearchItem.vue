@@ -199,7 +199,6 @@ watch(
     z-index: 1;
     overflow: hidden;
     height: fit-content;
-    gap: 8px;
     padding: 16px;
 
     grid-row-start: 2;
