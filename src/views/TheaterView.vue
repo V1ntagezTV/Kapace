@@ -429,6 +429,13 @@ function normalizeTimestampToMs(value: number): number {
     flex-shrink: 0;
   }
 
+  &__meta-icon :deep(svg) {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    min-height: 16px;
+  }
+
   &__meta-label {
     color: #969BAB;
     margin: 0;
