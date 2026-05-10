@@ -24,21 +24,25 @@
         :menu-alignment="MenuAlignment.Left"
         :selectable-values="favoriteValues"
         class="m3-bg-1 m-border m-border-hover m-border-active m-radius-circle theater__favorite-selector"
-        :class="{'theater__favorite-selector--active': userFavoriteStatus !== 'Добавить в избранное'}"
+        :class="{'theater__favorite-selector--active': userFavoriteStatus !== DEFAULT_FAVORITE_STATUS}"
         @update:model-value="addToFavorites"
       />
 
-      <base-background class="theater__tags column gap-8" :type="2">
+      <base-background class="theater__meta" :type="2">
         <div
-          v-for="([key, value], index) in tags"
-          :key="index"
-          class="theater__tag-row row space-between"
+          v-for="item in metaItems"
+          :key="item.id"
+          class="theater__meta-item"
+          :class="{ 'theater__meta-item--stacked': item.id === 'updated' || item.id === 'created' }"
         >
-          <p class="label-large theater__tag-label">
-            {{ key }}
-          </p>
-          <p class="theater__tag-value">
-            {{ value }}
+          <div class="theater__meta-main">
+            <component :is="item.icon" class="theater__meta-icon" />
+            <p class="label-large theater__meta-label">
+              {{ item.label }}
+            </p>
+          </div>
+          <p class="theater__meta-value">
+            {{ item.value }}
           </p>
         </div>
       </base-background>
@@ -96,9 +100,8 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, onMounted, ref, computed } from "vue";
+import { inject, onMounted, ref, type Component } from "vue";
 import { useRoute, useRouter } from 'vue-router';
-import moment from "moment/moment";
 
 // Components
 import TheaterDetails from "@/components/Theater/TheaterDetails.vue";
@@ -109,6 +112,10 @@ import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import StarsRateComponent from "@/components/UseReadyComponents/StarsRateComponent.vue";
 import AlbumImages from "@/components/UseReadyComponents/AlbumImages.vue";
 import TranslationsListComponentV3 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV3.vue";
+import AddLibraryIcon from "@/components/Icons/AddLibraryIcon.vue";
+import EyeIcon from "@/components/Icons/MaterialIcons/Eye.vue";
+import LoopIcon from "@/components/Icons/LoopIcon.vue";
+import CalendarIcon from "@/components/Icons/Calendar.vue";
 
 // APIs & Services
 import { ContentService } from "@/api/ContentService";
@@ -132,15 +139,16 @@ const favoritesApi = inject<FavoriteApi>('favorite-api')!;
 
 // State
 const contentId = ref<string>(String(route.params.id ?? ""));
+const DEFAULT_FAVORITE_STATUS = "Добавить в избранное";
 const isDataReady = ref(false);
 const details = ref<V1GetFullContentResponse | null>(null);
-const tags = ref<Map<string, string | number>>(new Map());
+const metaItems = ref<TheaterMetaItem[]>([]);
 const startWatchEpisodeId = ref<number>(-1);
 const myImages = ref<{ src: string; alt: string }[]>([]);
 
 // Favorites & Rating State
 const isInFavorites = ref<boolean>(false);
-const userFavoriteStatus = ref<string>("Добавить в избранное");
+const userFavoriteStatus = ref<string>(DEFAULT_FAVORITE_STATUS);
 const userStars = ref<number>(0);
 
 const favoriteValues = [
@@ -171,14 +179,14 @@ onMounted(async () => {
       })
     ]);
 
-    tags.value = getTagsFromDetails(details.value);
+    metaItems.value = getMetaItemsFromDetails(details.value);
     startWatchEpisodeId.value = getFirstEpisodeIdOrDefault(details.value.Episodes);
 
     if (user.loggedIn && details.value.UserInfo) {
       const status = details.value.UserInfo.FavouriteStatus;
       isInFavorites.value = status !== null;
       userFavoriteStatus.value = status === null
-        ? "Добавить в избранное"
+        ? DEFAULT_FAVORITE_STATUS
         : FavoriteStatuses[status as keyof typeof FavoriteStatuses];
       userStars.value = details.value.UserInfo.Stars;
     } else {
@@ -209,7 +217,7 @@ async function heartOnClick() {
   if (isInFavorites.value) {
     await favoritesApi.setStatus(contentId.value, null);
     isInFavorites.value = false;
-    userFavoriteStatus.value = "Добавить в избранное";
+    userFavoriteStatus.value = DEFAULT_FAVORITE_STATUS;
   } else {
     await favoritesApi.setStatus(contentId.value, FavoriteStatus.Stash);
     userFavoriteStatus.value = FavoriteStatuses.Stash;
@@ -238,32 +246,107 @@ function getFirstEpisodeIdOrDefault(episodes: V1GetFullContentEpisode[] | null):
   return (!episodes || episodes.length <= 0) ? -1 : episodes[0].Id;
 }
 
-function getTagsFromDetails(data: V1GetFullContentResponse): Map<string, string | number> {
-  const map = new Map<string, string | number>();
-  if (!data) return map;
+type TheaterMetaItem = {
+  id: "episodes" | "views" | "duration" | "updated" | "created";
+  label: string;
+  value: string;
+  icon: Component;
+};
 
+function getMetaItemsFromDetails(data: V1GetFullContentResponse | null): TheaterMetaItem[] {
+  const items: TheaterMetaItem[] = [];
+  if (!data) return items;
   const { Content } = data;
 
-  // Duration formatting
-  const hours = Math.floor(Content.Duration / 60);
-  const mins = Content.Duration % 60;
-  const durationStr = (hours > 0 ? `${hours} ч ` : "") + (mins > 0 ? `${mins} мин` : "");
+  items.push({
+    id: "episodes",
+    label: "Серий",
+    value: `${Content.OutSeries}/${Content.PlannedSeries}`,
+    icon: AddLibraryIcon
+  });
 
-  map.set("Серий", `${Content.OutSeries}/${Content.PlannedSeries}`);
-  if (Content.Views > 0) map.set("Просмотров", Content.Views);
-  if (durationStr) map.set("Длительность", durationStr.trim());
+  if (Content.Views > 0) {
+    items.push({
+      id: "views",
+      label: "Просмотров",
+      value: String(Content.Views),
+      icon: EyeIcon
+    });
+  }
 
-  // Date formatting using moment correctly
-  moment.locale('ru'); // Ensure locale if needed, or rely on global config
-  const updateDate = moment(Content.LastUpdateAt);
-  const createDate = moment(Content.CreatedAt);
+  const durationStr = formatDuration(Content.Duration);
+  if (durationStr) {
+    items.push({
+      id: "duration",
+      label: "Длительность",
+      value: durationStr,
+      icon: LoopIcon
+    });
+  }
 
-  // Формат: Чт Aug 2023 в 14:30 (как было в оригинале, но через moment)
-  // Оригинальный код использовал names[month-1], что было багом для января.
-  map.set("Обновлено", updateDate.format('ddd MMM YYYY в HH:mm'));
-  map.set("Создано", createDate.format('ddd MMM YYYY в HH:mm'));
+  const updateDate = formatDate(Content.LastUpdateAt);
+  if (updateDate) {
+    items.push({
+      id: "updated",
+      label: "Обновлено",
+      value: updateDate,
+      icon: CalendarIcon
+    });
+  }
 
-  return map;
+  const createDate = formatDate(Content.CreatedAt);
+  if (createDate) {
+    items.push({
+      id: "created",
+      label: "Создано",
+      value: createDate,
+      icon: CalendarIcon
+    });
+  }
+
+  return items;
+}
+
+function formatDuration(durationInMinutes: number | null): string | null {
+  if (durationInMinutes === null || durationInMinutes <= 0) {
+    return null;
+  }
+
+  const hours = Math.floor(durationInMinutes / 60);
+  const minutes = durationInMinutes % 60;
+  const parts = [
+    hours > 0 ? `${hours} ч` : "",
+    minutes > 0 ? `${minutes} мин` : "",
+  ].filter(Boolean);
+
+  return parts.length > 0 ? parts.join(" ") : null;
+}
+
+function formatDate(value: number | null | undefined): string | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const normalizedValue = normalizeTimestampToMs(value);
+  const date = new Date(normalizedValue);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  // Корпоративный и однозначный формат даты: DD.MM.YYYY, HH:mm
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+function normalizeTimestampToMs(value: number): number {
+  // Поддерживаем как unix-seconds, так и unix-milliseconds.
+  return value < 1_000_000_000_000 ? value * 1000 : value;
 }
 </script>
 
@@ -299,23 +382,68 @@ function getTagsFromDetails(data: V1GetFullContentResponse): Map<string, string 
     }
   }
 
-  &__tags {
-    display: grid;
-    padding: 16px;
-  }
-
-  &__tag-row {
-    /* row и space-between из утилит */
-  }
-
-  &__tag-label {
+  &__meta {
     display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+  }
+
+  &__meta-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 4px;
+    border-bottom: 1px solid #EEEFF4;
+
+    &:first-child {
+      padding-top: 4px;
+    }
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 4px;
+    }
+  }
+
+  &__meta-item--stacked {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  &__meta-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  &__meta-icon {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    min-height: 16px;
+    color: var(--primary40);
+    flex-shrink: 0;
+  }
+
+  &__meta-label {
     color: #969BAB;
     margin: 0;
+    white-space: nowrap;
   }
 
-  &__tag-value {
+  &__meta-value {
     margin: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  &__meta-item--stacked &__meta-value {
+    text-align: left;
+    padding-left: 24px;
   }
 }
 </style>
