@@ -63,13 +63,12 @@
 </template>
 
 <script lang="ts" setup>
-import {defineProps, inject, PropType, ref} from "vue";
+import {defineProps, PropType, ref, watch} from "vue";
 import FavoriteIcon from "@/components/Icons/FavoriteIcon.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import DetailsIcon from "@/components/Icons/DetailsIcon.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import {OptionsApi} from "@/options/OptionsApi";
-import {ImageService} from "@/api/ImageService";
 import {SearchItemViewModel} from "@/components/Body/Search/ViewModels/SearchItemViewModel";
 
 const props = defineProps({
@@ -80,9 +79,14 @@ const removeDuplicates = (arr: string[]): string[] => {
   return [...new Set(arr)];
 }
 
-const imageService: ImageService = inject<ImageService>("image-service");
-const imageLink = imageService.getImageLink(props.content.ImageId, props.content.Id);
-const image = ref<string>(imageLink);
+const image = ref<string>(props.content.AvatarImageLink);
+
+watch(
+  () => props.content.AvatarImageLink,
+  (value) => {
+    image.value = value;
+  }
+);
 </script>
 
 <style lang="scss" scoped>

@@ -179,14 +179,13 @@ const events = computed(() => clientEventStore.$state.events);
     width: fit-content;
     height: fit-content;
     flex-direction: column;
-    top: 40px;
-    justify-self: end;
+    top: 72px;
 
     padding: 20px 0;
     gap: 8px;
-    position: sticky;
-    grid-column: 3 / 3;
-    grid-row: 2 / 2;
+    position: fixed;
+    right: max(20px, calc((100vw - 1240px) / 2 + 20px));
+    z-index: 9000;
   }
 
   &__unit {

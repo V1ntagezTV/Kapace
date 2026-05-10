@@ -39,8 +39,8 @@ export function useSettingsNickname() {
         () => user.nickname,
         (next) => {
             nickname.value = next;
-            const t = nickname.value.trim();
-            if (!StringExtensions.isNullOrEmpty(t) && t === next.trim()) {
+            const trimmedNickname = nickname.value.trim();
+            if (!StringExtensions.isNullOrEmpty(trimmedNickname) && trimmedNickname === next.trim()) {
                 availability.value = 'unchanged';
                 pendingForce.value = false;
             } else {

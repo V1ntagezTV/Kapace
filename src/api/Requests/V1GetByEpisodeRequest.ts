@@ -2,7 +2,7 @@ import {EpisodeOrderType} from "@/components/UseReadyComponents/EpisodesList/Tra
 
 export class V1GetByEpisodeRequest {
     constructor(
-        public ContentId: number,
+        public ContentId: string | number,
         public EpisodeId: number | null = null,
         public TranslatorId: number | null = null,
         public OrderBy: typeof EpisodeOrderType | null = null

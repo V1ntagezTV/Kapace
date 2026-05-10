@@ -10,7 +10,6 @@ export type QueryContent = {
     Description: string,
     Type: typeof ContentType,
     Status: typeof ContentStatus | null,
-    ImageId: number,
     ImportStars: number,
     OutSeries: number,
     PlannedSeries: number,
@@ -21,4 +20,6 @@ export type QueryContent = {
     LastUpdateAt: number,
     MinAgeLimit: number,
     Duration: number | null,
+    AvatarImageLink: string,
+    Images: string[],
 }

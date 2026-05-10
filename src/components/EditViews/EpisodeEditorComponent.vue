@@ -158,12 +158,12 @@ import {TranslatorService, V1TranslatorQueryResponseUnit} from "@/api/Translator
 import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 
 type UnitOfSelection = {
-  ContentId: number,
+  ContentId: string | number,
   Title: string
 };
 
 const props = defineProps({
-  contentId: {type: Number, required: true, default: null},
+  contentId: {type: [String, Number], required: true, default: null},
   episodeId: {type: Number, required: true, default: null}
 });
 
@@ -174,17 +174,18 @@ const translatorApi = inject<TranslatorService>('translator-service');
 const clientEventStore = ClientEventStore();
 
 onMounted(async () => {
-  if (props.contentId) {
-    const contentInfo = await contentApi.V1GetById(props.contentId);
+  const contentId = getContentIdOrNull();
+  if (contentId !== null) {
+    const contentInfo = await contentApi.V1GetById(contentId);
     searchContentListV2.value = [{ContentId: contentInfo.Content.Id, Title: contentInfo.Content.Title}];
     contentSelectedTitle.value = contentInfo.Content.Title;
     contentInput.value = contentInfo.Content.Title;
   }
 
-  if (props.episodeId && props.contentId) {
+  if (props.episodeId && contentId !== null) {
     const request = new V1EpisodeQueryRequest();
     request.EpisodeIds = [props.episodeId];
-    request.ContentIds = [props.contentId];
+    request.ContentIds = [contentId];
     request.Limit = 1;
 
     const episodesQuery = await episodesApi.query(request);
@@ -290,6 +291,10 @@ async function onClickUpsertEpisode() {
 
     console.log(quality.value as VideoQuality as number);
     const content = searchContentListV2.value.find(content => content.Title === contentSelectedTitle.value);
+    if (!content) {
+      clientEventStore.push("Ошибка! Не удалось определить выбранный контент.", EventTypes.Error);
+      return;
+    }
     const episode = episodeSelectedTitle.value as number;
     const languageType = language.value as typeof Language;
     const translationTypeValue = translationType.value as typeof TranslationType;
@@ -328,6 +333,14 @@ async function onClickUpsertEpisode() {
   } else {
     clientEventStore.push("Ошибка! Заполните обязательные поля.", EventTypes.Error)
   }
+}
+
+function getContentIdOrNull(): string | number | null {
+  if (props.contentId === null || props.contentId === undefined || props.contentId === "") {
+    return null;
+  }
+
+  return props.contentId as string | number;
 }
 
 /* Вызывается при изменении input дорамы */

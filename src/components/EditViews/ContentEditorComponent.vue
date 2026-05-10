@@ -36,6 +36,53 @@
     </div>
 
     <div class="content-edit__unit-box">
+      <div class="content-edit__details">
+        <p class="body-large">
+          Дополнительные изображения
+        </p>
+        <label class="body-medium">Можно добавить несколько изображений и удалить ненужные</label>
+      </div>
+      <div class="column gap-8">
+        <input
+          ref="additionalImagesInputRef"
+          type="file"
+          accept="image/png, image/jpeg, image/jpg"
+          multiple
+          style="display: none;"
+          @change="onAdditionalImagesSelected"
+        >
+        <BaseTextButton
+          class="material m-radius-circle content-edit__text-button"
+          @click="openAdditionalImagesDialog"
+        >
+          Добавить изображения
+        </BaseTextButton>
+
+        <div v-if="additionalImages.length > 0" class="content-edit__additional-images">
+          <div
+            v-for="image in additionalImages"
+            :key="image.LocalId"
+            class="content-edit__additional-image"
+          >
+            <button
+              class="content-edit__additional-image-delete material m-radius-circle"
+              type="button"
+              @click="removeAdditionalImage(image.LocalId)"
+            >
+              <x-icon />
+            </button>
+            <img
+              :src="image.Url"
+              class="m-radius-8 m-border"
+              style="height: 160px; width: 110px; object-fit: cover;"
+              alt="Дополнительное изображение"
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-edit__unit-box">
       <div class="content-edit__box-activities-column">
         <div class="content-edit__box-activities row gap-16">
           <p class="body-large">
@@ -165,6 +212,7 @@
         :call-updater-delay="500"
         :is-dropped="isGenresMenuDropped"
         @change:input="onChangeGenreInput"
+        @onkeydown:enter="onEnterGenreInput"
       />
     </div>
 
@@ -250,8 +298,6 @@ import {computed, inject, onMounted, ref} from "vue";
 import BaseImageInput from "@/components/Base/BaseImageInput.vue";
 import {ImageService} from "@/api/ImageService";
 import {ChangesHistoryService} from "@/api/ChangesHistoryService";
-import {Linter} from "eslint";
-import FlatConfigFileSpec = Linter.FlatConfigFileSpec;
 import {V1ChangeableFields} from "@/api/Requests/V1CreateContentRequest";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
@@ -264,9 +310,10 @@ import {ContentStatus} from "@/api/Enums/ContentStatus";
 import {ContentService} from "@/api/ContentService";
 import {StringExtensions} from "@/helpers/StringExtensions";
 import {userStore} from "@/store/UserStore";
+import {resolveBackendImageLink } from "@/helpers/ImageLinkResolver";
 
 const props = defineProps<{
-  contentId?: number
+  contentId: string | null
 }>();
 
 const showEngTitleInputField = ref<boolean>(false);
@@ -282,7 +329,16 @@ const clientEventStore = ClientEventStore();
 let currentImage: File | undefined;
 let currentImageUrl = ref<string>();
 
-const imageId = ref<number | null>(null);
+type AdditionalImage = {
+  LocalId: number;
+  Url: string;
+  File: File | null;
+  IsUploaded: boolean;
+};
+
+const additionalImagesInputRef = ref<HTMLInputElement | null>(null);
+const additionalImages = ref<AdditionalImage[]>([]);
+
 const imageUrl = ref<string | null>(null);
 const title = ref<string | null>(null);
 const engTitle = ref<string | null>(null);
@@ -299,14 +355,24 @@ const minAge = ref<number | null>(null);
 const channel = ref<string | null>(null);
 
 onMounted(async() => {
-  if (props.contentId && props.contentId > 0) {
-    const content = await contentService.V1GetById(props.contentId);
-    imageUrl.value = imageService.getImageLink(content.Content.ImageId, content.Content.Id);
-    imageId.value = content.Content.ImageId;
+  const existingContentId = getExistingContentId();
+  if (existingContentId !== null) {
+    const content = await contentService.V1GetById(existingContentId);
+    const contentAvatarLink = resolveBackendImageLink(content.Content.AvatarImageLink);
+    imageUrl.value = contentAvatarLink;
     title.value = content.Content.Title;
     contentType.value = content.Content.Type;
     contentStatus.value = content.Content.Status;
     genres.value = content.Genres.map(x => x.Name);
+    additionalImages.value = (content.Content.Images ?? [])
+      .map(link => resolveBackendImageLink(link))
+      .filter(link => !!link && link !== contentAvatarLink)
+      .map(link => ({
+        LocalId: generateLocalId(),
+        Url: link,
+        File: null,
+        IsUploaded: true
+      }));
     country.value = content.Content.Country;
     description.value = content.Content.Description;
     duration.value = minTwoDigits(Math.trunc(content.Content.Duration / 60)) + ":" + (content.Content.Duration % 60);
@@ -344,11 +410,12 @@ const isMarkAsInvalidRequiredProperties = ref({
   ContentStatus: false
 });
 
-//#region Genres
 const genreInput = ref<string>('');
 const genresQuery = ref<GenreQueryResponseGenre[]>([]);
 const genreSelectableValues = computed(() => genresQuery.value.map(g => g.Name));
 const isGenresMenuDropped = ref(false);
+const maxGenresCount = 20;
+const maxGenreLength = 64;
 
 async function onChangeGenreInput(input: string, isSelected: boolean) {
   if (!isSelected) {
@@ -371,20 +438,62 @@ async function onChangeGenreInput(input: string, isSelected: boolean) {
       isGenresMenuDropped.value = true;
     }
   } else {
-    const isAlreadySelected = genres.value.find(genreName => genreName === input);
-    if (!isAlreadySelected) {
-      genres.value.push(input);
-    }
+    addGenre(input);
 
     genreInput.value = '';
     genresQuery.value = [];
+    isGenresMenuDropped.value = false;
   }
+}
+
+function onEnterGenreInput(input: string) {
+  addGenre(input);
+  genreInput.value = '';
+  genresQuery.value = [];
+  isGenresMenuDropped.value = false;
 }
 
 function deleteSelectedGenre(genreName: string) {
   genres.value = genres.value.filter(genre => genre !== genreName);
 }
-//endregion
+
+function normalizeGenre(genreName: string): string {
+  const trimmedName = genreName
+    .trim()
+    .split(/\s+/)
+    .join(' ');
+
+  if (!trimmedName) {
+    return '';
+  }
+
+  const lowerValue = trimmedName.toLowerCase();
+  return lowerValue.charAt(0).toUpperCase() + lowerValue.slice(1);
+}
+
+function addGenre(genreName: string) {
+  const normalizedGenre = normalizeGenre(genreName);
+  if (!normalizedGenre) {
+    return;
+  }
+
+  if (normalizedGenre.length > maxGenreLength) {
+    clientEventStore.push(`Жанр не может быть длиннее ${maxGenreLength} символов.`, EventTypes.Error);
+    return;
+  }
+
+  if (genres.value.length >= maxGenresCount) {
+    clientEventStore.push(`Можно добавить не более ${maxGenresCount} жанров.`, EventTypes.Error);
+    return;
+  }
+
+  const isAlreadySelected = genres.value
+    .some(selectedGenre => selectedGenre.toLowerCase() === normalizedGenre.toLowerCase());
+  if (!isAlreadySelected) {
+    genres.value.push(normalizedGenre);
+  }
+}
+
 const durationInMinutes = (duration: string): number | null => {
   if (!duration) {
     return null;
@@ -397,9 +506,33 @@ const durationInMinutes = (duration: string): number | null => {
   return (hours * 60) + minutes;
 };
 
+function getRandomBigInt() {
+  const maxPostgresBigInt = BigInt("9223372036854775807");
+  const randomValues = crypto.getRandomValues(new Uint32Array(2));
+
+  const firstPart = BigInt(randomValues[0]);
+  const secondPart = BigInt(randomValues[1]) & BigInt("2147483647");
+  const candidate = (firstPart << BigInt(31)) | secondPart;
+
+  // ID не должен быть 0 и должен попадать в диапазон signed BIGINT.
+  return (candidate % maxPostgresBigInt) + BigInt(1);
+}
+let randomBigInt = getRandomBigInt();
+
 async function onClickInsertContent() {
+  randomBigInt = getRandomBigInt();
+  const normalizedGenres = genres.value
+    .map(normalizeGenre)
+    .filter((genreName, index, allGenres) =>
+      genreName.length > 0 &&
+      genreName.length <= maxGenreLength &&
+      allGenres.findIndex(genre => genre.toLowerCase() === genreName.toLowerCase()) === index)
+    .slice(0, maxGenresCount);
+  genres.value = normalizedGenres;
+
   const request: V1ChangeableFields = {
-    ImageId: imageId.value,
+    PortraitImageName: null,
+    AdditionalImageNames: [],
     Channel: channel.value,
     ContentStatus: contentStatus.value,
     ContentType: contentType.value,
@@ -407,13 +540,13 @@ async function onClickInsertContent() {
     Description: description.value,
     Duration:  durationInMinutes(duration.value),
     EngTitle: engTitle.value,
-    Genres: genres.value,
+    Genres: normalizedGenres,
     MinAge: minAge.value,
     OriginalTitle: originalTitle.value,
     PlannedSeries: plannedSeries.value,
     ReleasedAt: releasedAt.value,
     Title: title.value
-  };
+  }
 
   if (!IsAllRequiredPropertiesValid(request)) {
     clientEventStore.push('Ошибка! Заполните обязательные поля.', EventTypes.Error)
@@ -421,24 +554,85 @@ async function onClickInsertContent() {
   }
 
   try {
-    const response = await changesHistoryService.createContentChange({
+    const existingContentId = getExistingContentId();
+    const hasExistingContentId = existingContentId !== null;
+    const generatedId = hasExistingContentId ? null : randomBigInt;
+    const contentOrFakeId = hasExistingContentId ? existingContentId : generatedId;
+
+    if (contentOrFakeId === null || contentOrFakeId === undefined || contentOrFakeId <= 0n) {
+      clientEventStore.push('Ошибка! Не удалось получить идентификатор контента.', EventTypes.Error);
+      return;
+    }
+
+    if (currentImage != null) {
+      const image = await imageService.insertImage(contentOrFakeId, currentImage);
+      request.PortraitImageName = image.ImageName;
+    }
+
+    const pendingUploads = additionalImages.value.filter(image => !image.IsUploaded && image.File != null);
+    for (const image of pendingUploads) {
+      const imageData = await imageService.insertImage(contentOrFakeId, image.File as File);
+      request.AdditionalImageNames.push(imageData.ImageName);
+    }
+
+    await changesHistoryService.createContentChange({
       ChangeableFields: request,
-      ContentId: props.contentId > 0 ? props.contentId : 0,
+      GeneratedId: generatedId,
+      ContentId: hasExistingContentId ? existingContentId : 0n,
       CreatedBy: currentUserStore.loggedIn ? currentUserStore.userId : 0
     });
-    if (currentImage != null) {
-      await imageService.insertImage(props.contentId ?? null, response.HistoryId, currentImage);
-    }
 
     clientEventStore.push('Успех! Заявка на добавление изменений создано.', EventTypes.Success)
   } catch (exception) {
     clientEventStore.push('Ошибка! Неизвестная ошибка сервера.', EventTypes.Error);
+    console.log("exception: " + exception);
+  }
+}
+
+function getExistingContentId(): bigint | null {
+  if (!props.contentId) {
+    return null;
+  }
+
+  try {
+    const parsedId = BigInt(props.contentId);
+    return parsedId > 0n ? parsedId : null;
+  } catch {
+    return null;
   }
 }
 
 async function updateImage(image: File, imageUrl: string) {
   currentImage = image;
   currentImageUrl.value = imageUrl;
+}
+
+function openAdditionalImagesDialog() {
+  additionalImagesInputRef.value?.click();
+}
+
+function onAdditionalImagesSelected(event: Event) {
+  const input = event.target as HTMLInputElement;
+  if (!input.files || input.files.length === 0) {
+    return;
+  }
+
+  for (const file of Array.from(input.files)) {
+    const localImageUrl = URL.createObjectURL(file);
+    additionalImages.value.push({
+      LocalId: generateLocalId(),
+      Url: localImageUrl,
+      File: file as File,
+      IsUploaded: false
+    });
+  }
+
+  input.value = '';
+}
+
+let localImageIdSequence = 0;
+function generateLocalId(): number {
+  return ++localImageIdSequence;
 }
 
 function IsAllRequiredPropertiesValid(request: V1ChangeableFields): boolean {
@@ -482,6 +676,46 @@ function IsAllRequiredPropertiesValid(request: V1ChangeableFields): boolean {
 
   &__genres-selected {
     flex-flow: wrap;
+  }
+
+  &__additional-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  &__additional-image {
+    position: relative;
+    display: flex;
+    width: 110px;
+
+    &:hover .content-edit__additional-image-delete {
+      background: color-mix(in srgb, var(--primary40) 92%, white 8%);
+    }
+  }
+
+  &__additional-image-delete {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 1;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    background: var(--primary40);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.15s ease, transform 0.15s ease;
+    cursor: pointer;
+
+    &:hover {
+      background: color-mix(in srgb, var(--primary40) 92%, white 8%);
+      transform: scale(1.03);
+    }
   }
 
   &__buttons-rowed {

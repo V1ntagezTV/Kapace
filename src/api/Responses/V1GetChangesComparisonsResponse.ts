@@ -5,9 +5,10 @@ export type V1GetChangesComparisonsResponse = {
 }
 
 export type ChangeUnit = {
-    HistoryId: number
+    HistoryId: string
     TargetId: number | null
-    ImageId: number | null
+    AvatarImageLink: string | null
+    ImageIds?: number[] | null
     HistoryType: typeof HistoryType
     FieldsComparisons: { Name: string, OldValue: string, NewValue: string }[]
     Title: string | null

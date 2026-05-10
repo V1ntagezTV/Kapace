@@ -18,7 +18,7 @@ export class EpisodeService extends ApiService {
 
 export class V1EpisodeQueryRequest {
     public EpisodeIds: number[] | undefined;
-    public ContentIds: number[] | undefined;
+    public ContentIds: Array<string | number> | undefined;
     public Limit: number | null | undefined;
     public Offset: number | null | undefined;
 }

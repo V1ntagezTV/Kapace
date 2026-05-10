@@ -3,13 +3,15 @@ import {Country} from "../Enums/Country"
 import {ContentStatus} from "@/api/Enums/ContentStatus";
 
 export type V1CreateContentRequest = {
-    readonly ContentId: number,
+    readonly GeneratedId: bigint | null
+    readonly ContentId: bigint,
     readonly ChangeableFields: V1ChangeableFields,
     readonly CreatedBy: number
 }
 
 export type V1ChangeableFields = {
-    ImageId: number | null
+    PortraitImageName: string | null,
+    AdditionalImageNames: string[] | null,
     Title: string | null,
     EngTitle: string | null,
     OriginalTitle: string | null,

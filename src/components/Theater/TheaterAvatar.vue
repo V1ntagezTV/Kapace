@@ -5,7 +5,7 @@
   >
     <image-zoom
       class="image-column__image"
-      :src="imageService.getImageLink(imageId, contentId)"
+      :src="props.imageLink"
       alt="Изображение"
       @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
     />
@@ -13,16 +13,12 @@
 </template>
 
 <script lang="ts" setup>
-import {defineProps, inject} from 'vue';
+import {defineProps} from 'vue';
 import BaseBackground from "@/components/Base/BaseBackground.vue";
-import {ImageService} from "@/api/ImageService";
 import ImageZoom from "@/components/UseReadyComponents/ImageZoom.vue";
 
-const imageService: ImageService = inject<ImageService>("image-service");
-
 const props = defineProps({
-  imageId: {type: Number, required: true},
-  contentId: {type: Number, required: true}
+  imageLink: {type: String, required: true}
 })
 </script>
 

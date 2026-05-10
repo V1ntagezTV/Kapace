@@ -25,17 +25,32 @@ import {useRoute} from "vue-router";
 
 const route = useRoute();
 
-const contentId = ref<number | null>(null);
+const contentId = ref<string | null>(null);
 const episodeId = ref<number | null>(null);
 
 
-contentId.value = +route.params.content;
-episodeId.value = +route.params.episode;
+updateRouteIds();
 const selectedPage = ref<typeof SettingsPageTypes>(choosePage());
 
 watch(() => route.fullPath, () => {
+  updateRouteIds();
   selectedPage.value = choosePage();
 });
+
+function updateRouteIds() {
+  contentId.value = getStringRouteParam(route.params.content);
+
+  const episodeParam = getStringRouteParam(route.params.episode);
+  episodeId.value = episodeParam ? Number(episodeParam) : null;
+}
+
+function getStringRouteParam(routeParam: string | string[] | undefined): string | null {
+  if (routeParam === undefined) {
+    return null;
+  }
+
+  return Array.isArray(routeParam) ? routeParam[0] : routeParam;
+}
 
 function choosePage() : SettingsPageTypes {
   if (route.fullPath.includes("content")) {

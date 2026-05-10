@@ -84,12 +84,7 @@
         <div class="edit-list__image-box">
           <img
             class="edit-list__content-image m-radius-2"
-            :src="imageService.getImageLink(
-              unit.ImageId,
-              // Идентификатор будущего контента формирует
-              // HistoryId - если контент новый
-              // TargetId - если редактируется существующий материал
-              (unit.TargetId === null || unit.TargetId === 0) ? unit.HistoryId : unit.TargetId)"
+            :src="resolveBackendImageLink(unit.AvatarImageLink)"
             alt="Изображение контента"
             @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
           >
@@ -170,7 +165,6 @@ import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 import AsyncSearchSelector from "@/components/Base/Selector/AsyncSearchSelector.vue";
 import {ContentService, V1SearchByResponseUnit} from "@/api/ContentService";
-import {ImageService} from "@/api/ImageService";
 import MarkIcon from "@/components/Icons/MaterialIcons/MarkIcon.vue";
 import UserIconOutlined from "@/components/Icons/MaterialIcons/UserIconOutlined.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
@@ -180,8 +174,8 @@ import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 import {StringExtensions} from "@/helpers/StringExtensions";
 import {userStore} from "@/store/UserStore";
 import {useRouter} from "vue-router";
+import { resolveBackendImageLink } from "@/helpers/ImageLinkResolver";
 
-const imageService = inject<ImageService>('image-service');
 const changesHistoryService = inject<ChangesHistoryService>('changes-history-service');
 const contentService = inject<ContentService>('content-service');
 const clientEventStore = ClientEventStore();
@@ -277,7 +271,7 @@ async function clickOnMineFilter() {
   clientEventStore.push("Сначала необходимо авторизоваться!", EventTypes.Error);
 }
 
-async function approveClick(historyId: number) {
+async function approveClick(historyId: string) {
   if (!currentUserStore.loggedIn) {
     clientEventStore.push('Для начала необходимо авторизоваться!', EventTypes.Error);
     await router.push('/login');
@@ -288,8 +282,8 @@ async function approveClick(historyId: number) {
   const unit = changes.value.find(change => change.HistoryId === historyId);
 
   const response = (await changesHistoryService.approve(historyId, userId))
-    .onException(() => clientEventStore.push("Ошибка сервера! Заявка не одобрена.", EventTypes.Error as typeof EventTypes))
-    .onBusinessError((error) => clientEventStore.push(error.Message, EventTypes.Error as typeof EventTypes));
+    .onException(() => clientEventStore.push("Ошибка сервера! Заявка не одобрена.", EventTypes.Error))
+    .onBusinessError((error) => clientEventStore.push(error.Message, EventTypes.Error));
 
   if (response.data) {
     unit.ApprovedAt = Date.now();

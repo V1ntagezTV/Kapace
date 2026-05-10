@@ -1,13 +1,14 @@
 import {ApiResponse, ApiService} from "@/api/ApiService";
 import {V1CreateContentResponse} from "@/api/Responses/V1CreateContentResponse";
-import {V1CreateContentRequest} from "@/api/Requests/V1CreateContentRequest";
+import {V1ChangeableFields, V1CreateContentRequest} from "@/api/Requests/V1CreateContentRequest";
 import {V1GetChangesComparisonsRequest} from "@/api/Requests/V1GetChangesComparisonsRequest";
 import {V1GetChangesComparisonsResponse} from "@/api/Responses/V1GetChangesComparisonsResponse";
+import {V1ApproveRequest} from "@/api/Requests/V1ApproveRequest";
 import { Language } from "./Enums/Language";
 import {TranslationType} from "@/api/Enums/TranslationType";
 
 export type V1CreateEpisodeChangeRequest = {
-    ContentId: number,
+    ContentId: string | number,
     ChangeableFields: ChangeableEpisodeFields,
     CreatedBy: number
 }
@@ -23,15 +24,11 @@ export type ChangeableEpisodeFields = {
     Quality: number | null,
 }
 
-type V1ApproveRequest = {
-    HistoryId: number,
-    UserId: number
-}
-
 export class ChangesHistoryService extends ApiService {
     constructor() { super("v1/changes/"); }
 
-    public async createContentChange(request: V1CreateContentRequest): Promise<V1CreateContentResponse>  {
+    public async createContentChange(request: { CreatedBy: number; ContentId: bigint; ChangeableFields: V1ChangeableFields; GeneratedId: bigint | null })
+        : Promise<V1CreateContentResponse>  {
         return await this.CallHandlerAsync<V1CreateContentResponse, V1CreateContentRequest>(
             request,
             'create-content'
@@ -49,7 +46,11 @@ export class ChangesHistoryService extends ApiService {
         );
     }
 
-    public async approve(historyId: number, userId: number) : Promise<ApiResponse<Response>> {
-        return await this.fetchV2({ HistoryId: historyId, UserId: userId }, 'approve');
+    public async approve(historyId: string, userId: number) : Promise<ApiResponse<Response>> {
+        const request: V1ApproveRequest = {
+            HistoryId: historyId,
+            UserId: userId
+        };
+        return await this.fetchV2(request, 'approve');
     }
 }

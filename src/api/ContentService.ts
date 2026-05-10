@@ -26,16 +26,21 @@ export class ContentService extends ApiService {
         );
     }
 
-    async V1GetById(contentId: number): Promise<V1GetFullContentResponse> {
+    async V1GetById(contentId: bigint | string): Promise<V1GetFullContentResponse> {
         const request = new V1GetFullContentRequest(
-            contentId,
+            typeof contentId === "string" ? BigInt(contentId) : contentId,
             ContentSelectedInfo.ContentGenres |
             ContentSelectedInfo.UserInfo |
             ContentSelectedInfo.Episodes |
             ContentSelectedInfo.StarsAggregates
         );
 
-        return this.CallHandlerAsync<V1GetFullContentResponse, V1GetFullContentRequest>(request, "get-by-id");
+        const response = await this.fetchV2<V1GetFullContentResponse, V1GetFullContentRequest>(request, "get-by-id");
+        if (!response.data) {
+            throw new Error("Failed to load content by id");
+        }
+
+        return response.data;
     }
 
     async V1GetByQuery(request: V1GetByQueryRequest) : Promise<V1GetByQueryResponse> {
@@ -46,8 +51,8 @@ export class ContentService extends ApiService {
         return this.CallHandlerAsync<V1SearchByResponse, V1SearchByRequest>({Search: searchInput} as V1SearchByRequest, "search-by")
     }
 
-    async incrementViews(contentId: number) {
-        return this.CallPostHandlerAsync<{ContentId: number}>(
+    async incrementViews(contentId: string | number) {
+        return this.CallPostHandlerAsync<{ContentId: string | number}>(
             {ContentId: contentId},
             "increment-views");
     }
@@ -64,6 +69,7 @@ interface V1SearchByResponse {
 export interface V1SearchByResponseUnit {
     ContentId: number;
     Title: string;
-    ImageId: number;
+    AvatarImageLink: string;
+    Images: string[];
 }
 

@@ -4,6 +4,7 @@ import moment from "moment";
 import {Country} from "@/api/Enums/Country";
 import {QueryContent} from "@/api/BaseQuery/QueryContent";
 import {V1GetMainPageContentContent} from "@/api/Responses/V1GetMainPageContentResponse";
+import {resolveBackendImageLink, resolveBackendImageLinks} from "@/helpers/ImageLinkResolver";
 
 export class SearchContentFactory {
     static mapToViewModel(content: V1GetMainPageContentContent) : SearchItemViewModel  {
@@ -24,7 +25,8 @@ export class SearchContentFactory {
 
         return {
             Id: content.Content.Id,
-            ImageId: content.Content.ImageId,
+            AvatarImageLink: resolveBackendImageLink(content.Content.AvatarImageLink),
+            Images: resolveBackendImageLinks(content.Content.Images),
             Title: content.Content.Title,
             Description: description.join(' / '),
             Translates: [],
@@ -54,7 +56,8 @@ export class SearchContentFactory {
 
         return {
             Id: content.Content.Id,
-            ImageId: content.Content.ImageId,
+            AvatarImageLink: resolveBackendImageLink(content.Content.AvatarImageLink),
+            Images: resolveBackendImageLinks(content.Content.Images),
             Title: content.Content.Title,
             Description: description.join(' / '),
             Translates: content.Translations.map(x => x.Language.toString()),

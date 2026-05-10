@@ -1,28 +1,25 @@
 import {ApiService} from "@/api/ApiService";
-import {Linter} from "eslint";
-import FlatConfigFileSpec = Linter.FlatConfigFileSpec;
 
 export class ImageService extends ApiService {
     constructor() { super("image"); }
 
-    public async insertImage(
-        contentId: number | null,
-        historyId: number,
-        image: FlatConfigFileSpec | FlatConfigFileSpec[]): Promise<any> {
+    public async insertImage(contentId: bigint, image: File): Promise<InsertImageResponse> {
         const formData = new FormData();
-
-        // @ts-ignore
         formData.append("Image", image);
-        if (contentId != null) formData.append("ContentId", contentId.toString());
-        formData.append("HistoryId", historyId.toString());
+        formData.append("ContentId", contentId.toString());
 
-        await this.CallHandlerByFormDataAsync(
-            "/content/insert",
-            formData,
-        );
-    }
+        const path = `${this.hostPath}${this.servicePath}/content/insert`;
+        const response = await fetch(path, {
+            method: "POST",
+            body: formData,
+            credentials: "include"
+        });
 
-    public getImageLink(imageId: number, contentId: number): string {
-        return this.hostPath + `image/content/get-avatar?ImageId=${imageId}&ContentId=${contentId}`;
+        return await response.json() as InsertImageResponse;
     }
+}
+
+type InsertImageResponse = {
+    ImageName: string,
+    ImageLink: string,
 }

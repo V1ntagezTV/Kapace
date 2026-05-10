@@ -7,6 +7,21 @@ export class ApiService {
         console.log(this.hostPath);
     }
 
+    private stringifyRequestBody<TRequest>(requestBody: TRequest): string {
+        const body = requestBody === undefined ? {} : requestBody;
+        return JSON.stringify(body, (_, value) => typeof value === 'bigint' ? value.toString() : value);
+    }
+
+    private parseJsonWithSafeIds<TResponse>(jsonText: string): TResponse {
+        // JS number cannot precisely represent int64 values, so coerce large *Id fields to strings before parsing.
+        const normalizedJsonText = jsonText.replace(
+            /"([A-Za-z0-9_]*Ids?)"\s*:\s*(-?\d{16,})/g,
+            (_, key: string, idValue: string) => `"${key}":"${idValue}"`
+        );
+
+        return JSON.parse(normalizedJsonText) as TResponse;
+    }
+
     private baseFetch<TRequest>(
         requestBody: TRequest,
         handlerPath: string,
@@ -20,7 +35,7 @@ export class ApiService {
             method: 'POST',
             headers: requestHeaders,
             credentials: 'include',
-            body: requestBody === undefined ? JSON.stringify({}) : JSON.stringify(requestBody),
+            body: this.stringifyRequestBody(requestBody),
         });
     }
 
@@ -100,7 +115,10 @@ export class ApiService {
                     if (contentLength === '0' || !response.body) {
                         data = {} as TResponse;
                     } else {
-                        data = await response.json() as TResponse;
+                        const responseText = await response.text();
+                        data = responseText
+                            ? this.parseJsonWithSafeIds<TResponse>(responseText)
+                            : {} as TResponse;
                     }
                 } catch (e) {
                     data = {} as TResponse;

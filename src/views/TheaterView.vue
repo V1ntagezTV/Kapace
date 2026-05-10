@@ -4,8 +4,7 @@
     <div class="theater__sidebar column gap-16">
       <TheaterAvatar
         v-if="isDataReady && details"
-        :image-id="details.Content.ImageId"
-        :content-id="details.Content.Id"
+        :image-link="resolveBackendImageLink(details.Content.AvatarImageLink)"
         :user-info="details.UserInfo"
       />
 
@@ -114,13 +113,13 @@ import TranslationsListComponentV3 from "@/components/UseReadyComponents/Episode
 // APIs & Services
 import { ContentService } from "@/api/ContentService";
 import { FavoriteApi } from "@/api/FavoriteApi";
-import { ImageService } from "@/api/ImageService"; // Оставлено, так как используется (хоть и для пустого массива пока)
 import { userStore } from "@/store/UserStore";
 
 // Models & Enums
 import { V1GetFullContentEpisode, V1GetFullContentResponse } from "@/api/Responses/V1GetFullContentResponse";
 import { MenuAlignment } from "@/components/Base/Selector/Internal/MenuAlignment";
 import { FavoriteStatus, FavoriteStatuses, getFavoritesStatusKeyByValue } from "@/models/FavoriteStatuses";
+import { resolveBackendImageLink, resolveBackendImageLinks } from "@/helpers/ImageLinkResolver";
 
 // --- Setup ---
 const user = userStore();
@@ -130,15 +129,14 @@ const route = useRoute();
 // Services
 const contentService = inject<ContentService>("content-service")!;
 const favoritesApi = inject<FavoriteApi>('favorite-api')!;
-const imageService = inject<ImageService>("image-service")!;
 
 // State
-const contentId = ref<number>(+route.params.id);
+const contentId = ref<string>(String(route.params.id ?? ""));
 const isDataReady = ref(false);
 const details = ref<V1GetFullContentResponse | null>(null);
 const tags = ref<Map<string, string | number>>(new Map());
 const startWatchEpisodeId = ref<number>(-1);
-const myImages = ref<any[]>([]);
+const myImages = ref<{ src: string; alt: string }[]>([]);
 
 // Favorites & Rating State
 const isInFavorites = ref<boolean>(false);
@@ -163,9 +161,14 @@ onMounted(async () => {
 
     // Async tasks parallel execution where possible
     await Promise.all([
-      contentService.incrementViews(details.value.Content.Id),
-      // Загрузка картинок (пока пустая)
-      Promise.resolve().then(() => { myImages.value = []; })
+      contentService.incrementViews(contentId.value),
+      Promise.resolve().then(() => {
+        const content = details.value?.Content;
+        myImages.value = resolveBackendImageLinks(content?.Images).map((src, index) => ({
+          src,
+          alt: `${content?.Title ?? "Контент"} #${index + 1}`
+        }));
+      })
     ]);
 
     tags.value = getTagsFromDetails(details.value);
@@ -194,7 +197,7 @@ function navigateToEpisode() {
   router.push({
     name: 'episode',
     params: {
-      content: details.value?.Content.Id,
+      content: contentId.value,
       episode: startWatchEpisodeId.value
     }
   });
@@ -221,7 +224,7 @@ async function clickOnStar(starIndex: number) {
   }
   if (!details.value) return;
 
-  await favoritesApi.setStars(details.value.Content.Id, starIndex);
+  await favoritesApi.setStars(contentId.value, starIndex);
   userStars.value = starIndex;
 }
 

@@ -7,7 +7,7 @@ export class FavoriteApi extends ApiService {
     }
 
     public async query(
-        contentId: number | null = null,
+        contentId: string | number | null = null,
         episodeId: number | null = null,
         limit: number = 1,
         offset: number = 0)
@@ -38,7 +38,7 @@ export class FavoriteApi extends ApiService {
         );
     }
 
-    public async setStatus(contentId: number, status: FavoriteStatus | null) {
+    public async setStatus(contentId: string | number, status: FavoriteStatus | null) {
         return await this.fetchV2<{}, {}>(
             {
                 ContentId: contentId,
@@ -48,7 +48,7 @@ export class FavoriteApi extends ApiService {
         );
     }
 
-    public async setStars(contentId: number, stars: number) {
+    public async setStars(contentId: string | number, stars: number) {
         return await this.fetchV2<{}, {}>(
             {
                 ContentId: contentId,
@@ -58,7 +58,7 @@ export class FavoriteApi extends ApiService {
         );
     }
 
-    public async setEpisode(contentId: number, episodeId: number) {
+    public async setEpisode(contentId: string | number, episodeId: number) {
         return await this.fetchV2<{}, {}>(
             {
                 ContentId: contentId,
