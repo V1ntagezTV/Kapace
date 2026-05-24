@@ -4,12 +4,11 @@
       Аватар
     </p>
     <div
-      class="settings-profile-header__avatar-wrapper fill m-border m-radius-8"
+      class="settings-profile-header__avatar-wrapper m-border m-radius-8"
       :class="{ 'settings-profile-header__avatar-wrapper--uploading': uploading }"
     >
       <avatar-component
         class="settings-profile-header__avatar"
-        style="overflow: hidden;"
         :src="displayImageUrl"
       />
       <button
@@ -111,6 +110,9 @@ async function onFileSelected(event: Event) {
 
   &__avatar-wrapper {
     position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    align-self: flex-start;
     overflow: hidden;
     border-radius: 8px;
 
@@ -121,7 +123,28 @@ async function onFileSelected(event: Event) {
   }
 
   &__avatar {
+    display: block;
+    width: 100%;
+    height: 100%;
     border-radius: 8px;
+
+    :deep(.profile-avatar) {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    :deep(.profile-avatar__container) {
+      width: 100%;
+      height: 100%;
+    }
+
+    :deep(.profile-avatar__avatar) {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
   &__file-input {
