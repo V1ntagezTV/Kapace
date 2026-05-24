@@ -9,5 +9,9 @@ export async function bootstrapAuth(): Promise<void> {
     }
 
     const userApi = new UserApi();
-    await userApi.getCurrent();
+    const response = await userApi.getCurrent();
+
+    if (response.data) {
+        store.applyCurrentUser(response.data);
+    }
 }

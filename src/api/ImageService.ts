@@ -15,11 +15,33 @@ export class ImageService extends ApiService {
             credentials: "include"
         });
 
+        if (!response.ok) {
+            throw new Error(`insertImage failed: ${response.status}`);
+        }
+
+        return await response.json() as InsertImageResponse;
+    }
+
+    public async insertUserAvatar(image: File): Promise<InsertImageResponse> {
+        const formData = new FormData();
+        formData.append('Image', image);
+
+        const path = `${this.hostPath}${this.servicePath}/user/insert`;
+        const response = await fetch(path, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            throw new Error(`insertUserAvatar failed: ${response.status}`);
+        }
+
         return await response.json() as InsertImageResponse;
     }
 }
 
-type InsertImageResponse = {
+export type InsertImageResponse = {
     ImageName: string,
     ImageLink: string,
 }

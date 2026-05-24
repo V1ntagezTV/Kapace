@@ -25,7 +25,6 @@ const props = defineProps({
 const localSelected = ref(props.isSelected);
 
 watch(() => props.isSelected, (newValue) => {
-  console.log('it changed!')
   localSelected.value = newValue;
 })
 
@@ -34,13 +33,13 @@ watch(() => props.isSelected, (newValue) => {
 <style lang="scss" scoped>
 .not-selected {
   path {
-    --active-stroke: #577399;
-    --active-fill: #fff;
+    --active-stroke: currentColor;
+    --active-fill: transparent;
     transition: fill 0.25s, stroke 0.25s;
 
     &:hover {
-      --active-stroke: var(--secondary);
-      --active-fill: white;
+      --active-stroke: currentColor;
+      --active-fill: rgba(255, 255, 255, 0.12);
     }
   }
 }

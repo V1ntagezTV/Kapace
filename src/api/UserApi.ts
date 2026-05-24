@@ -176,7 +176,7 @@ export type GetCurrentUser = {
     Email: string,
     CreatedAt: number,
     IsMailVerified: boolean,
-    ImageUrl: string
+    ImageUrl: string | null
 }
 
 export type GetCurrentPermission = {

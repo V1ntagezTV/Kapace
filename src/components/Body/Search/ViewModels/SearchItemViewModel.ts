@@ -8,4 +8,5 @@ export type SearchItemViewModel = {
     Genres: string | null
     MinAge: number | null
     SeriesCounter: string | null
+    IsInFavorites?: boolean
 }

@@ -154,13 +154,7 @@ async function logInClick() {
 
   const currentUser = userResponse.data;
 
-  store.LogIn(
-    currentUser.User.Id,
-    currentUser.User.Nickname,
-    currentUser.User.Email,
-    currentUser.User.ImageUrl,
-    currentUser.Roles.map(x => x.Alias)
-  );
+  store.applyCurrentUser(currentUser);
   AuthSession.resetAuthLostFlagForTestsOrLogin();
   await router.push('/');
 }

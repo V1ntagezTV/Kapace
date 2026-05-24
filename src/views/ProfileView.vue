@@ -1,10 +1,13 @@
 <template>
   <div class="col__ profile-view__main">
     <div class="profile-view__avatar-container">
-      <avatar-component
-        style="overflow: hidden;"
-        class="m-radius-16"
-        :src="userImageUrl"
+      <image-zoom
+        class="profile-view__avatar-zoom"
+        :src="avatarDisplaySrc"
+        alt="Аватар профиля"
+        thumbnail-border-radius="16px"
+        :thumbnail-fill="true"
+        :thumbnail-hover-scale="true"
       />
 
       <router-link :to="'/settings'">
@@ -173,7 +176,7 @@ import {UserApi} from "@/api/UserApi";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import {useRouter} from "vue-router";
 import {ErrorDetails} from "@/api/ApiService";
-import AvatarComponent from "@/components/Profile/AvatarComponent.vue";
+import ImageZoom from "@/components/UseReadyComponents/ImageZoom.vue";
 import {FavoriteApi, FavoriteGetList} from "@/api/FavoriteApi";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
@@ -182,6 +185,7 @@ import MaterialDropArrow from "@/components/Icons/MaterialDropArrow.vue";
 import StarIcon from "@/components/Icons/StarIcon.vue";
 import {FavoriteStatus, getFavoritesStatusKeyByValue} from "@/models/FavoriteStatuses";
 import FilterChipsV2 from "@/components/UseReadyComponents/MaterialComponents/FilterChipsV2.vue";
+import { resolveUserAvatarSrc } from "@/helpers/UserAvatarResolver";
 
 const router = useRouter()
 const eventStore = ClientEventStore();
@@ -211,6 +215,9 @@ const userCreatedAt = ref<string>();
 const userRoles = ref<string[]>();
 const userEmail = ref<string>();
 const userImageUrl = ref<string>();
+const avatarDisplaySrc = computed(() =>
+  userImageUrl.value ?? resolveUserAvatarSrc(currentUser.imageUrl)
+);
 const userFavorites = ref<FavoriteGetList[]>([]);
 const formatter = new Intl.DateTimeFormat('ru-RU', {hour: '2-digit', minute: '2-digit'});
 
@@ -267,11 +274,13 @@ async function loadCurrentUser() {
     }
 
     const user = userResponse.data;
+    currentUser.applyCurrentUser(user);
     userId.value = user.User.Id;
     userNickname.value = user.User.Nickname;
     userCreatedAt.value = getDateStr(user.User.CreatedAt);
     userRoles.value = user.Roles.map(x => x.Alias);
     userEmail.value = user.User.Email;
+    userImageUrl.value = resolveUserAvatarSrc(user.User.ImageUrl);
   } catch (e) {
     console.log(e);
   }
@@ -356,6 +365,10 @@ async function loadCurrentUser() {
     flex-direction: column;
     gap: 20px;
     overflow: hidden;
+  }
+
+  &__avatar-zoom {
+    width: 100%;
   }
 
   &__button-unit {

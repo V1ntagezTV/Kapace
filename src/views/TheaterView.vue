@@ -100,7 +100,7 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, onMounted, ref, type Component } from "vue";
+import { inject, onMounted, ref, watch, type Component } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 
 // Components
@@ -138,7 +138,7 @@ const contentService = inject<ContentService>("content-service")!;
 const favoritesApi = inject<FavoriteApi>('favorite-api')!;
 
 // State
-const contentId = ref<string>(String(route.params.id ?? ""));
+const contentId = ref<string>(resolveRouteContentId());
 const DEFAULT_FAVORITE_STATUS = "Добавить в избранное";
 const isDataReady = ref(false);
 const details = ref<V1GetFullContentResponse | null>(null);
@@ -199,6 +199,10 @@ onMounted(async () => {
   }
 });
 
+watch(() => route.params.id, () => {
+  contentId.value = resolveRouteContentId();
+});
+
 // --- Methods ---
 
 function navigateToEpisode() {
@@ -209,6 +213,15 @@ function navigateToEpisode() {
       episode: startWatchEpisodeId.value
     }
   });
+}
+
+function resolveRouteContentId(): string {
+  const routeParam = route.params.id;
+  if (Array.isArray(routeParam)) {
+    return String(routeParam[0] ?? "");
+  }
+
+  return String(routeParam ?? "");
 }
 
 async function heartOnClick() {

@@ -2,6 +2,18 @@
   <BaseBackground class="search-item__box" :type="3">
     <router-link :to="{ name: 'theater', params: { id: content.Id}}">
       <div class="search-item__image-box-1">
+        <button
+          class="search-item__favorite-button"
+          type="button"
+          aria-label="Добавить в избранное"
+          @click.stop.prevent="toggleFavorite"
+        >
+          <HeartSVG
+            class="search-item__favorite-icon"
+            :is-selected="isInFavorites"
+          />
+        </button>
+
         <div
           v-if="content.MinAge || content.SeriesCounter"
           class="search-item__tags-box"
@@ -63,17 +75,26 @@
 </template>
 
 <script lang="ts" setup>
-import {defineProps, PropType, ref, watch} from "vue";
+import {defineProps, inject, PropType, ref, watch} from "vue";
 import FavoriteIcon from "@/components/Icons/FavoriteIcon.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import DetailsIcon from "@/components/Icons/DetailsIcon.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import {OptionsApi} from "@/options/OptionsApi";
 import {SearchItemViewModel} from "@/components/Body/Search/ViewModels/SearchItemViewModel";
+import HeartSVG from "@/components/Icons/HeartSVG.vue";
+import {FavoriteApi} from "@/api/FavoriteApi";
+import {FavoriteStatus} from "@/models/FavoriteStatuses";
+import {userStore} from "@/store/UserStore";
+import {useRouter} from "vue-router";
 
 const props = defineProps({
   content: {type: Object as PropType<SearchItemViewModel>, required: true}
 });
+const user = userStore();
+const router = useRouter();
+const favoritesApi = inject<FavoriteApi | null>("favorite-api", null);
+const isInFavorites = ref(props.content.IsInFavorites ?? false);
 
 const removeDuplicates = (arr: string[]): string[] => {
   return [...new Set(arr)];
@@ -87,6 +108,33 @@ watch(
     image.value = value;
   }
 );
+
+watch(
+  () => [props.content.Id, props.content.IsInFavorites] as const,
+  () => {
+    isInFavorites.value = props.content.IsInFavorites ?? false;
+  }
+);
+
+async function toggleFavorite() {
+  if (!user.loggedIn) {
+    await router.push('/login');
+    return;
+  }
+
+  if (!favoritesApi) {
+    return;
+  }
+
+  if (isInFavorites.value) {
+    await favoritesApi.setStatus(props.content.Id, null);
+    isInFavorites.value = false;
+    return;
+  }
+
+  await favoritesApi.setStatus(props.content.Id, FavoriteStatus.Stash);
+  isInFavorites.value = true;
+}
 </script>
 
 <style lang="scss" scoped>
@@ -115,6 +163,50 @@ watch(
     align-items: end;
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
+  }
+
+  &__favorite-button {
+    grid-row-start: 1;
+    grid-row-end: 2;
+    grid-column-start: 1;
+    grid-column-end: 2;
+    justify-self: end;
+    align-self: start;
+    z-index: 2;
+
+    margin: 12px;
+    padding: 8px;
+
+    border: none;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.55);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.7);
+    }
+  }
+
+  &__favorite-icon {
+    width: 20px;
+    height: 20px;
+    color: white;
+  }
+
+  :deep(.search-item__favorite-icon.not-selected path) {
+    --active-stroke: rgba(255, 255, 255, 0.9) !important;
+    --active-fill: transparent !important;
+  }
+
+  :deep(.search-item__favorite-icon.not-selected:hover path) {
+    --active-stroke: white !important;
+    --active-fill: rgba(255, 255, 255, 0.08) !important;
   }
 
   &__image-box {
@@ -187,9 +279,10 @@ watch(
   &__tag {
     width: fit-content;
     color: white;
-    background: var(--primary40);
+    background: rgba(0, 0, 0, 0.65);
     border-radius: 4px;
     padding: 4px 8px;
+    backdrop-filter: blur(2px);
   }
 
   &__tags-box {

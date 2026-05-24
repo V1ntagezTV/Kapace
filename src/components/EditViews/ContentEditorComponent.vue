@@ -12,26 +12,23 @@
         <label class="body-medium">Выберите изображение для главной страницы содержимого</label>
       </div>
       <div class="content-edit__images-box fit-content row gap-16">
+        <div v-if="mainImageUrl" class="content-edit__main-image-wrapper">
+          <img
+            class="content-edit__main-image m-radius-8 m-border"
+            :src="mainImageUrl"
+            alt="Обложка контента"
+            @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
+          >
+          <BaseImageInput
+            class="content-edit__main-image-input m3-bg-2 column h__center"
+            @on:update="updateImage"
+          />
+        </div>
         <BaseImageInput
+          v-else
           class="m3-bg-2 column h__center"
           @on:update="updateImage"
         />
-        <img
-          v-if="currentImageUrl"
-          class="m-radius-8 m-border"
-          style="height: 300px; width: auto; object-fit: cover;"
-          :src="currentImageUrl"
-          alt="Выбранное изображение"
-        >
-
-        <img
-          v-if="imageUrl"
-          class="m-radius-8 m-border"
-          style="height: 300px; width: auto; object-fit: cover;"
-          :src="imageUrl"
-          alt="Обложка контента"
-          @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
-        >
       </div>
     </div>
 
@@ -327,7 +324,7 @@ const currentUserStore = userStore();
 const clientEventStore = ClientEventStore();
 
 let currentImage: File | undefined;
-let currentImageUrl = ref<string>();
+let currentImageUrl = ref<string | null>(null);
 
 type AdditionalImage = {
   LocalId: number;
@@ -340,6 +337,7 @@ const additionalImagesInputRef = ref<HTMLInputElement | null>(null);
 const additionalImages = ref<AdditionalImage[]>([]);
 
 const imageUrl = ref<string | null>(null);
+const mainImageUrl = computed(() => currentImageUrl.value ?? imageUrl.value);
 const title = ref<string | null>(null);
 const engTitle = ref<string | null>(null);
 const originalTitle = ref<string | null>(null);
@@ -668,6 +666,50 @@ function IsAllRequiredPropertiesValid(request: V1ChangeableFields): boolean {
     height: 300px;
     overflow: scroll;
     scrollbar-width: none;
+  }
+
+  &__main-image-wrapper {
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+  }
+
+  &__main-image {
+    height: 300px;
+    width: auto;
+    object-fit: cover;
+    display: block;
+  }
+
+  &__main-image-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease;
+    background: rgba(0, 0, 0, 0.55);
+    cursor: pointer;
+    color: #fff;
+  }
+
+  &__main-image-wrapper:hover .content-edit__main-image-input {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  &__main-image-input:deep(.image-input__box) {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    border-radius: 8px;
+    background-image: none;
+    color: #fff;
+    font-weight: 600;
+    gap: 8px;
+  }
+
+  &__main-image-input:deep(svg) {
+    filter: brightness(0) invert(1);
   }
 
   &__header {

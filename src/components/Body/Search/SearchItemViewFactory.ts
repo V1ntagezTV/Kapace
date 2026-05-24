@@ -32,7 +32,8 @@ export class SearchContentFactory {
             Translates: [],
             Genres: content.Genres.join(' / '),
             MinAge: content.Content.MinAgeLimit,
-            SeriesCounter: content.Content.OutSeries + '/' + content.Content.PlannedSeries
+            SeriesCounter: content.Content.OutSeries + '/' + content.Content.PlannedSeries,
+            IsInFavorites: content.IsInFavorites
         };
     }
 

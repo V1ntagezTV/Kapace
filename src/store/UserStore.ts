@@ -1,4 +1,7 @@
 import { defineStore } from 'pinia'
+import type { GetCurrentResponse } from '@/api/UserApi';
+
+const defaultImageUrl = '';
 
 interface UserState {
     userId: number;
@@ -18,11 +21,20 @@ export const userStore = defineStore('store', {
             nickname: '',
             roles: [],
             loggedIn: false,
-            imageUrl: '/images/film_test.png',
+            imageUrl: defaultImageUrl,
             email: ''
         };
     },
     actions: {
+        applyCurrentUser(data: GetCurrentResponse) {
+            this.userId = data.User.Id;
+            this.nickname = data.User.Nickname;
+            this.email = data.User.Email;
+            this.imageUrl = data.User.ImageUrl ?? defaultImageUrl;
+            this.roles = data.Roles.map((role) => role.Alias);
+            this.loggedIn = true;
+            localStorage.setItem('userStore', JSON.stringify(this.$state));
+        },
         LogIn(userId: number, nickname: string, email: string, imageUrl: string, roles: string[]) {
             this.userId = userId;
             this.nickname = nickname;
@@ -45,6 +57,10 @@ export const userStore = defineStore('store', {
             this.email = newEmail;
             localStorage.removeItem('userStore');
             localStorage.setItem('userStore', JSON.stringify(this.$state));
-        }
+        },
+        UpdateImageUrl(imageUrl: string) {
+            this.imageUrl = imageUrl;
+            localStorage.setItem('userStore', JSON.stringify(this.$state));
+        },
     }
 })

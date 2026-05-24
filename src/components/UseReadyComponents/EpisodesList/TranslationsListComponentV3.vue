@@ -162,7 +162,7 @@ import { V1GetByEpisodeResponse } from "@/api/Responses/V1GetByEpisodeResponse";
 import {StringExtensions} from "../../../helpers/StringExtensions";
 
 const props = defineProps({
-  contentId: { type: [String, Number] as PropType<string | number>, required: true },
+  contentId: { type: String as PropType<string>, required: true },
   selectedTranslatorId: { type: Number, required: false, default: null },
   limit: { type: Number, default: 10 },
   offset: { type: Number, default: 0 },

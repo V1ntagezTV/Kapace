@@ -1,9 +1,19 @@
 <template>
   <!-- Миниатюра (на которую кликаем) -->
-  <div class="image-trigger" @click="openModal">
+  <div
+    class="image-trigger"
+    :class="{
+      'image-trigger--fill': thumbnailFill,
+      'image-trigger--no-hover-scale': !thumbnailHoverScale,
+    }"
+    :style="triggerStyle"
+    @click="openModal"
+  >
     <img
-      :src="src" :alt="alt"
+      :src="src"
+      :alt="alt"
       class="thumbnail"
+      :class="{ 'thumbnail--fill': thumbnailFill }"
     >
   </div>
 
@@ -33,9 +43,8 @@
 </template>
 
 <script setup>
-import { ref, onUnmounted, watch } from 'vue';
+import { computed, ref, onUnmounted, watch } from 'vue';
 
-// Принимаем пропсы
 const props = defineProps({
   src: {
     type: String,
@@ -44,8 +53,26 @@ const props = defineProps({
   alt: {
     type: String,
     default: 'Image'
+  },
+  thumbnailBorderRadius: {
+    type: String,
+    default: '8px'
+  },
+  thumbnailFill: {
+    type: Boolean,
+    default: false
+  },
+  thumbnailHoverScale: {
+    type: Boolean,
+    default: true
   }
 });
+
+const triggerStyle = computed(() => ({
+  borderRadius: props.thumbnailBorderRadius,
+  overflow: 'hidden'
+}));
+
 
 const isOpen = ref(false);
 
@@ -88,27 +115,35 @@ onUnmounted(() => {
 /* Стили для миниатюры */
 .image-trigger {
   cursor: pointer;
-  /* Используем inline-flex вместо inline-block */
   display: inline-flex;
-  /* Центрируем содержимое по горизонтали и вертикали */
   justify-content: center;
   align-items: center;
-  /* Убираем влияние строчных интервалов */
   line-height: 0;
-
-  transition: transform 0.2s;
-}
-
-.image-trigger:hover {
-  transform: scale(1.02);
+  isolation: isolate;
 }
 
 .thumbnail {
   max-width: 100%;
   height: auto;
-  /* display: block здесь уже есть, это хорошо, но flex у родителя приоритетнее */
   display: block;
-  border-radius: 8px;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+}
+
+.image-trigger:not(.image-trigger--no-hover-scale):hover .thumbnail {
+  transform: scale(1.05);
+}
+
+.thumbnail--fill {
+  width: 100%;
+  max-width: none;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.image-trigger--fill {
+  width: 100%;
+  display: block;
 }
 
 /* Остальные стили без изменений... */

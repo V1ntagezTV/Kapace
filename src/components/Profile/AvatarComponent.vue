@@ -3,22 +3,43 @@
     <div class="profile-avatar__container">
       <img
         class="profile-avatar__avatar"
-        :src="image"
+        :src="displaySrc"
         alt="Аватар профиля"
-        @error="() => { image = require('@/assets/images/DefaultImage.png') }"
+        @error="onImageError"
       >
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import {ref} from "vue";
+import { computed, ref, watch } from 'vue';
+import { resolveUserAvatarSrc } from '@/helpers/UserAvatarResolver';
 
 const props = defineProps({
   src: { type: String, required: true }
-})
+});
 
-const image = ref<string>(props.src ?? '@/assets/images/DefaultImage.png');
+const fallbackSrc = require('@/assets/images/DefaultImage.png') as string;
+const hasError = ref(false);
+
+const displaySrc = computed(() => {
+  if (hasError.value) {
+    return fallbackSrc;
+  }
+
+  return resolveUserAvatarSrc(props.src);
+});
+
+function onImageError() {
+  hasError.value = true;
+}
+
+watch(
+  () => props.src,
+  () => {
+    hasError.value = false;
+  }
+);
 
 </script>
 

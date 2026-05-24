@@ -11,7 +11,8 @@ export class V1GetMainPageContentPair {
 
 export interface V1GetMainPageContentContent {
     Content: QueryContent,
-    Genres: string[]
+    Genres: string[],
+    IsInFavorites: boolean
 }
 
 export class V1GetMainPageContentResponse {
