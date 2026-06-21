@@ -25,24 +25,30 @@
 
     <!-- Menu -->
     <div
-      v-show="isDroppedRef && selectableValues.length > 0"
+      v-show="isDroppedRef && hasMenu"
       class="selector__menu selector__title-bordered"
       :class="getMenuAlignmentClasses()"
       @click="clickOnMenu"
     >
-      <button
-        v-for="value in selectableValues" :key="value"
-        class="selector__menu-button"
-        @click="selectFilter(value)"
+      <slot
+        name="menu" :select="selectFilter"
+        :close="closeMenu"
       >
-        {{ value }}
-      </button>
+        <button
+          v-for="value in selectableValues"
+          :key="value"
+          class="selector__menu-button"
+          @click.stop="selectFilter(value)"
+        >
+          {{ value }}
+        </button>
+      </slot>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import {onMounted, onUnmounted, PropType, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, PropType, ref, useSlots, watch} from "vue";
 import MaterialDropArrow from "@/components/Icons/MaterialDropArrow.vue";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
@@ -71,8 +77,10 @@ const titleRef = ref(((props.modelValue?.length ?? 0) > 0)
   ? props.modelValue
   : props.title ?? "");
 
+const slots = useSlots();
 const isDroppedRef = ref(false);
 const rootRef = ref<HTMLElement | null>(null);
+const hasMenu = computed(() => props.selectableValues.length > 0 || !!slots.menu);
 
 function closeMenu() {
   if (!isDroppedRef.value) {
@@ -125,7 +133,7 @@ function clickOnHeader(isDropped: boolean) {
     return;
   }
 
-  if (props.selectableValues.length > 0) {
+  if (hasMenu.value) {
     isDroppedRef.value = isDropped;
     emits('update:isDropped', isDropped);
     return;

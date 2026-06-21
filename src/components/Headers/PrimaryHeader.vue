@@ -1,22 +1,34 @@
 <template>
   <div class="header row h__space-between v__center">
-    <nav v-show="isMobile" class="row gap-16 v__center">
+    <nav v-show="isMobile" class="header__nav-selector row gap-16 v__center">
       <base-selector
+        v-model:is-dropped="isHeadersMenuDropped"
         :model-value="selectedMenu"
         :selectable-values="menuValues"
         :title="'Меню'"
         :menu-alignment="MenuAlignment.Left"
-        :is-dropped="isHeadersMenuDropped"
-        @update:modelValue="selectMenuHandler"
+        @update:model-value="selectMenuHandler"
       >
-        <template #header>
+        <template #header="{ dropMenu }">
           <base-button
             class="header__mobile-menu-button m-radius-circle gap-8"
-            @click="toggleHeadersMenu"
+            @click="dropMenu(!isHeadersMenuDropped)"
           >
             <menu-grid-icon class="header__icon" />
             <span class="header__mobile-menu-label">Меню</span>
           </base-button>
+        </template>
+        <template #menu="{ select }">
+          <button
+            v-for="item in navItems"
+            :key="item.to"
+            type="button"
+            class="header__mobile-nav-item body-large row gap-8 v__center h__start"
+            @click.stop="select(item.label)"
+          >
+            <component :is="item.icon" class="header__icon" />
+            {{ item.label }}
+          </button>
         </template>
       </base-selector>
     </nav>
@@ -71,13 +83,19 @@
       </div>
 
       <div v-else class="row gap-8">
-        <base-drop-menu class="header__user gap-16">
-          <template #header="{ onClick }">
+        <base-selector
+          v-model:is-dropped="isUserMenuDropped"
+          model-value=""
+          :selectable-values="[]"
+          :menu-alignment="MenuAlignment.Right"
+          class="header__user"
+        >
+          <template #header="{ dropMenu }">
             <button
               type="button"
               class="header__user-trigger header__text-button gap-8 v__center m-radius-circle"
               aria-label="Открыть меню пользователя"
-              @click="onClick"
+              @click="dropMenu(!isUserMenuDropped)"
             >
               <img
                 class="header__user-avatar"
@@ -89,30 +107,33 @@
             </button>
           </template>
 
-          <template #menu="{ onClick }">
-            <base-background
-              class="header__menu m-radius-1 column v__start h__center"
-              @click="onClick"
+          <template #menu="{ close }">
+            <router-link
+              to="/profile"
+              class="header__mobile-nav-item body-large row gap-8 v__center h__start"
+              @click="close"
             >
-              <router-link to="/profile" class="header__menu-button row gap-8 v__center h__start">
-                <user-icon />
-                Профиль
-              </router-link>
-              <router-link to="/settings" class="header__menu-button row gap-8 v__center h__start">
-                <settings-icon />
-                Настройки
-              </router-link>
-              <button
-                type="button"
-                class="header__menu-button row gap-8 v__center h__start"
-                @click="logout"
-              >
-                <log-out-icon />
-                Выйти
-              </button>
-            </base-background>
+              <user-icon class="header__icon" />
+              Профиль
+            </router-link>
+            <router-link
+              to="/settings"
+              class="header__menu-item body-large row gap-8 v__center h__start"
+              @click="close"
+            >
+              <settings-icon class="header__icon" />
+              Настройки
+            </router-link>
+            <button
+              type="button"
+              class="header__menu-item body-large row gap-8 v__center h__start"
+              @click="onLogoutClick(close)"
+            >
+              <log-out-icon class="header__icon" />
+              Выйти
+            </button>
           </template>
-        </base-drop-menu>
+        </base-selector>
       </div>
     </div>
   </div>
@@ -121,12 +142,10 @@
 <script lang="ts" setup>
 import BaseButton from "@/components/Base/BaseButton.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
-import BaseDropMenu from "@/components/Base/BaseDropMenu.vue";
 import UserIcon from "@/components/Icons/UserIcon.vue";
 import LogOutIcon from "@/components/Icons/LogOutIcon.vue";
 import {userStore} from "@/store/UserStore";
 import MaterialDropArrow from "@/components/Icons/MaterialDropArrow.vue";
-import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import {computed, ref, onMounted, onBeforeUnmount, inject, watch, type Component} from 'vue'
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
@@ -146,6 +165,7 @@ const router = useRouter();
 const route = useRoute();
 const userApi = inject<UserApi | null>('user-api', null);
 const isHeadersMenuDropped = ref(false);
+const isUserMenuDropped = ref(false);
 const selectedMenu = ref("");
 const screenWidth = ref(window.innerWidth);
 const isMobile = computed(() => screenWidth.value <= 720);
@@ -182,6 +202,7 @@ watch(
   () => {
     selectedMenu.value = getSelectedMenuLabel();
     isHeadersMenuDropped.value = false;
+    isUserMenuDropped.value = false;
   },
   {immediate: true}
 );
@@ -198,10 +219,6 @@ function getSelectedMenuLabel(): string {
   return activeItem?.label ?? navItems[0].label;
 }
 
-function toggleHeadersMenu() {
-  isHeadersMenuDropped.value = !isHeadersMenuDropped.value;
-}
-
 function selectMenuHandler(value: string) {
   const selectedItem = navItems.find((item) => item.label === value);
 
@@ -210,6 +227,11 @@ function selectMenuHandler(value: string) {
   }
 
   isHeadersMenuDropped.value = false;
+}
+
+async function onLogoutClick(close: () => void) {
+  close();
+  await logout();
 }
 
 async function logout() {
@@ -230,8 +252,23 @@ async function logout() {
 .header {
   height: 60px;
 
+  &__nav-selector,
   &__user {
     position: relative;
+
+    :deep(.selector__box) {
+      width: auto;
+      height: auto;
+    }
+  }
+
+  &__user {
+    :deep(.selector__menu) {
+      min-width: 200px;
+      width: 200px;
+      padding: 0;
+      overflow: hidden;
+    }
   }
 
   &__user-trigger {
@@ -247,28 +284,21 @@ async function logout() {
     flex-shrink: 0;
   }
 
-  &__menu {
-    display: grid;
-    width: 200px;
-    grid-auto-columns: 1fr;
-    grid-auto-flow: row;
-    position: absolute;
-    left: -200px;
+  &__menu-item,
+  &__mobile-nav-item {
+    display: flex;
+    width: 100%;
+    padding: 0 16px;
+    height: 40px;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    appearance: none;
 
-    overflow: hidden;
-
-    &-button {
-      display: flex;
-      width: 100%;
-      padding: 0 16px;
-      height: 40px;
-      color: inherit;
-      text-align: left;
-      cursor: pointer;
-
-      &:hover {
-        background: var(--surface-container-highest90);
-      }
+    &:hover {
+      background: var(--surface-container-highest90);
     }
   }
 

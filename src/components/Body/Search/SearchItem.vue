@@ -38,7 +38,6 @@
               </p>
             </div>
           </div>
-
         </div>
         <div class="search-item__image-box m-radius-16">
           <img

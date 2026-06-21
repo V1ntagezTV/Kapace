@@ -6,11 +6,29 @@
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle cx="6" cy="7" r="1.5" fill="currentColor" />
-    <circle cx="6" cy="12" r="1.5" fill="currentColor" />
-    <circle cx="6" cy="17" r="1.5" fill="currentColor" />
-    <path d="M10 7H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-    <path d="M10 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-    <path d="M10 17H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    <circle
+      cx="6" cy="7"
+      r="1.5" fill="currentColor"
+    />
+    <circle
+      cx="6" cy="12"
+      r="1.5" fill="currentColor"
+    />
+    <circle
+      cx="6" cy="17"
+      r="1.5" fill="currentColor"
+    />
+    <path
+      d="M10 7H19" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round"
+    />
+    <path
+      d="M10 12H19" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round"
+    />
+    <path
+      d="M10 17H19" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round"
+    />
   </svg>
 </template>
