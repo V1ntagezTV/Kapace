@@ -308,6 +308,7 @@ import {ContentService} from "@/api/ContentService";
 import {StringExtensions} from "@/helpers/StringExtensions";
 import {userStore} from "@/store/UserStore";
 import {resolveBackendImageLink } from "@/helpers/ImageLinkResolver";
+import {generateBigIntId} from "@/helpers/generateId";
 
 const props = defineProps<{
   contentId: string | null
@@ -336,6 +337,7 @@ type AdditionalImage = {
 const additionalImagesInputRef = ref<HTMLInputElement | null>(null);
 const additionalImages = ref<AdditionalImage[]>([]);
 
+const avatarImageName = ref<string | null>(null);
 const imageUrl = ref<string | null>(null);
 const mainImageUrl = computed(() => currentImageUrl.value ?? imageUrl.value);
 const title = ref<string | null>(null);
@@ -357,6 +359,7 @@ onMounted(async() => {
   if (existingContentId !== null) {
     const content = await contentService.V1GetById(existingContentId);
     const contentAvatarLink = resolveBackendImageLink(content.Content.AvatarImageLink);
+    avatarImageName.value = content.Content.AvatarImageName;
     imageUrl.value = contentAvatarLink;
     title.value = content.Content.Title;
     contentType.value = content.Content.Type;
@@ -469,6 +472,11 @@ function normalizeGenre(genreName: string): string {
   return lowerValue.charAt(0).toUpperCase() + lowerValue.slice(1);
 }
 
+function removeAdditionalImage(localId: number) {
+  additionalImages.value = additionalImages.value.filter(i => i.LocalId != localId);
+
+}
+
 function addGenre(genreName: string) {
   const normalizedGenre = normalizeGenre(genreName);
   if (!normalizedGenre) {
@@ -504,21 +512,8 @@ const durationInMinutes = (duration: string): number | null => {
   return (hours * 60) + minutes;
 };
 
-function getRandomBigInt() {
-  const maxPostgresBigInt = BigInt("9223372036854775807");
-  const randomValues = crypto.getRandomValues(new Uint32Array(2));
-
-  const firstPart = BigInt(randomValues[0]);
-  const secondPart = BigInt(randomValues[1]) & BigInt("2147483647");
-  const candidate = (firstPart << BigInt(31)) | secondPart;
-
-  // ID не должен быть 0 и должен попадать в диапазон signed BIGINT.
-  return (candidate % maxPostgresBigInt) + BigInt(1);
-}
-let randomBigInt = getRandomBigInt();
-
 async function onClickInsertContent() {
-  randomBigInt = getRandomBigInt();
+
   const normalizedGenres = genres.value
     .map(normalizeGenre)
     .filter((genreName, index, allGenres) =>
@@ -526,10 +521,11 @@ async function onClickInsertContent() {
       genreName.length <= maxGenreLength &&
       allGenres.findIndex(genre => genre.toLowerCase() === genreName.toLowerCase()) === index)
     .slice(0, maxGenresCount);
+
   genres.value = normalizedGenres;
 
   const request: V1ChangeableFields = {
-    PortraitImageName: null,
+    AvatarImageName: avatarImageName.value,
     AdditionalImageNames: [],
     Channel: channel.value,
     ContentStatus: contentStatus.value,
@@ -540,8 +536,8 @@ async function onClickInsertContent() {
     EngTitle: engTitle.value,
     Genres: normalizedGenres,
     MinAge: minAge.value,
-    OriginalTitle: originalTitle.value,
     PlannedSeries: plannedSeries.value,
+    OriginalTitle: originalTitle.value,
     ReleasedAt: releasedAt.value,
     Title: title.value
   }
@@ -552,31 +548,31 @@ async function onClickInsertContent() {
   }
 
   try {
+    const generatedId = generateBigIntId();
     const existingContentId = getExistingContentId();
     const hasExistingContentId = existingContentId !== null;
-    const generatedId = hasExistingContentId ? null : randomBigInt;
-    const contentOrFakeId = hasExistingContentId ? existingContentId : generatedId;
+    const contentIdForImages = hasExistingContentId ? existingContentId : generatedId;
 
-    if (contentOrFakeId === null || contentOrFakeId === undefined || contentOrFakeId <= 0n) {
+    if (contentIdForImages <= 0) {
       clientEventStore.push('Ошибка! Не удалось получить идентификатор контента.', EventTypes.Error);
       return;
     }
 
-    if (currentImage != null) {
-      const image = await imageService.insertImage(contentOrFakeId, currentImage);
-      request.PortraitImageName = image.ImageName;
+    if (currentImageUrl.value) {
+      const image = await imageService.insertImage(contentIdForImages, currentImage);
+      request.AvatarImageName = image.ImageName;
     }
 
     const pendingUploads = additionalImages.value.filter(image => !image.IsUploaded && image.File != null);
     for (const image of pendingUploads) {
-      const imageData = await imageService.insertImage(contentOrFakeId, image.File as File);
+      const imageData = await imageService.insertImage(contentIdForImages, image.File as File);
       request.AdditionalImageNames.push(imageData.ImageName);
     }
 
     await changesHistoryService.createContentChange({
       ChangeableFields: request,
       GeneratedId: generatedId,
-      ContentId: hasExistingContentId ? existingContentId : 0n,
+      ContentId: hasExistingContentId ? existingContentId : null,
       CreatedBy: currentUserStore.loggedIn ? currentUserStore.userId : 0
     });
 

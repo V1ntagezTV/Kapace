@@ -8,7 +8,8 @@ import { Language } from "./Enums/Language";
 import {TranslationType} from "@/api/Enums/TranslationType";
 
 export type V1CreateEpisodeChangeRequest = {
-    ContentId: string | number,
+    GeneratedId: bigint,
+    ContentId: string | number | bigint,
     ChangeableFields: ChangeableEpisodeFields,
     CreatedBy: number
 }
@@ -27,8 +28,7 @@ export type ChangeableEpisodeFields = {
 export class ChangesHistoryService extends ApiService {
     constructor() { super("v1/changes/"); }
 
-    public async createContentChange(request: { CreatedBy: number; ContentId: bigint; ChangeableFields: V1ChangeableFields; GeneratedId: bigint | null })
-        : Promise<V1CreateContentResponse>  {
+    public async createContentChange(request: V1CreateContentRequest): Promise<V1CreateContentResponse> {
         return await this.CallHandlerAsync<V1CreateContentResponse, V1CreateContentRequest>(
             request,
             'create-content'

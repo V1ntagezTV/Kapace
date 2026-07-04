@@ -21,5 +21,6 @@ export type QueryContent = {
     MinAgeLimit: number,
     Duration: number | null,
     AvatarImageLink: string,
+    AvatarImageName: string,
     Images: string[],
 }

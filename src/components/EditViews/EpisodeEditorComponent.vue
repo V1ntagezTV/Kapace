@@ -156,6 +156,7 @@ import AsyncSearchSelector from "@/components/Base/Selector/AsyncSearchSelector.
 import {EpisodeService, V1EpisodeQueryRequest} from "@/api/EpisodeService";
 import {TranslatorService, V1TranslatorQueryResponseUnit} from "@/api/TranslatorService";
 import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
+import {generateBigIntId} from "@/helpers/generateId";
 
 type UnitOfSelection = {
   ContentId: string | number,
@@ -310,6 +311,7 @@ async function onClickUpsertEpisode() {
 
     // TODO: Если передали iframe а не ссылку на видео из src то нужно вытащить из него ссылку
     const response = await changesHistoryApi.createEpisodeChange({
+      GeneratedId: generateBigIntId(),
       ChangeableFields: {
         Number: episode,
         VideoScript: videoLink.value,

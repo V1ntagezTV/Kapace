@@ -9,15 +9,30 @@ export class ApiService {
 
     private stringifyRequestBody<TRequest>(requestBody: TRequest): string {
         const body = requestBody === undefined ? {} : requestBody;
-        return JSON.stringify(body, (_, value) => typeof value === 'bigint' ? value.toString() : value);
+        return JSON.stringify(body, (_, value) => {
+            if (typeof value === 'bigint') {
+                return value.toString();
+            }
+
+            if (typeof value === 'number' && Number.isInteger(value) && !Number.isSafeInteger(value)) {
+                return value.toString();
+            }
+
+            return value;
+        });
     }
 
     private parseJsonWithSafeIds<TResponse>(jsonText: string): TResponse {
-        // JS number cannot precisely represent int64 values, so coerce large *Id fields to strings before parsing.
-        const normalizedJsonText = jsonText.replace(
-            /"([A-Za-z0-9_]*Ids?)"\s*:\s*(-?\d{16,})/g,
-            (_, key: string, idValue: string) => `"${key}":"${idValue}"`
-        );
+        // JS number cannot precisely represent int64 values, so coerce large numeric *Id fields to strings before parsing.
+        const normalizedJsonText = jsonText
+            .replace(
+                /"([A-Za-z0-9_]*Ids?)"\s*:\s*(-?\d{16,})/g,
+                (_, key: string, idValue: string) => `"${key}":"${idValue}"`
+            )
+            .replace(
+                /"GeneratedId"\s*:\s*(-?\d+)/g,
+                (_, idValue: string) => `"GeneratedId":"${idValue}"`
+            );
 
         return JSON.parse(normalizedJsonText) as TResponse;
     }

@@ -64,57 +64,50 @@
 
     <div class="splitter" />
 
-    <div class="profile__favorites-list">
+    <div
+      class="profile__favorites-table"
+      :class="{ 'profile__favorites-table--with-category': showCategoryColumn }"
+    >
+      <div class="profile__favorites-head label-small">
+        <span class="profile__favorites-cell profile__favorites-cell--name">Имя</span>
+        <span class="profile__favorites-cell profile__favorites-cell--rating">Оценка</span>
+        <span
+          v-if="showCategoryColumn"
+          class="profile__favorites-cell profile__favorites-cell--category"
+        >
+          Категория
+        </span>
+        <span class="profile__favorites-cell profile__favorites-cell--date">Дата</span>
+      </div>
+
       <router-link
         v-for="favorite in favorites"
         :key="favorite.Id"
-        class="profile__favorites-unit gap-8 dynamic row h__space-between v__center v__padding-8"
+        class="profile__favorites-row body-medium"
         :to="{ name: 'theater', params: { id: favorite.ContentId } }"
       >
-        <div class="profile__favorite-title body-large">
+        <span class="profile__favorites-cell profile__favorites-cell--name text__one-line">
           {{ favorite.Title }}
-        </div>
-        <div class="gap-8 row v__center">
-          <filter-chips-v2
-            v-show="favorite.Stars"
-            class="profile__favorite-tag"
-            :enable-text-icon="true"
+        </span>
+        <span class="profile__favorites-cell profile__favorites-cell--rating">
+          <span
+            v-if="favorite.Stars"
+            class="profile__favorite-tag profile__favorites-rating row v__center gap-8"
           >
-            <template #text>
-              <p class="profile__favorite-tag-title body-small row h__padding-8">
-                {{ favorite.Stars }}
-              </p>
-            </template>
-            <template #text-icon>
-              <star-icon style="color: var(--on-primary-container-light)" />
-            </template>
-          </filter-chips-v2>
-
-          <filter-chips-v2
-            v-show="favorite.Status && selectedStatus === null"
-            class="profile__favorite-tag"
-          >
-            <template #text>
-              <p
-                class="profile__favorite-tag-title body-small text__one-line h__padding-8"
-                style="color: var(--on-primary-container-light)"
-              >
-                {{ FavoriteStatuses[favorite.Status] }}
-              </p>
-            </template>
-          </filter-chips-v2>
-
-          <filter-chips-v2 class="profile__favorite-tag">
-            <template #text>
-              <p
-                class="profile__favorite-tag-title body-small text__one-line h__padding-8"
-                style="color: var(--on-primary-container-light)"
-              >
-                {{ formatDate(favorite.CreatedAt) }}
-              </p>
-            </template>
-          </filter-chips-v2>
-        </div>
+            <star-icon class="profile__favorites-star" />
+            <span class="body-small">{{ favorite.Stars }}</span>
+          </span>
+        </span>
+        <span
+          v-if="showCategoryColumn"
+          class="profile__favorites-cell profile__favorites-cell--category text__one-line"
+        >
+          {{ getFavoriteStatusLabel(favorite.Status) }}
+        </span>
+        <span class="profile__favorites-cell profile__favorites-cell--date text__one-line label-small">
+          <span class="profile__favorites-date--full">{{ formatDate(favorite.CreatedAt) }}</span>
+          <span class="profile__favorites-date--short">{{ formatDateOnly(favorite.CreatedAt) }}</span>
+        </span>
       </router-link>
     </div>
   </base-background>
@@ -128,10 +121,10 @@ import MaterialDropArrow from '@/components/Icons/MaterialDropArrow.vue';
 import StarIcon from '@/components/Icons/StarIcon.vue';
 import FilterChips from '@/components/UseReadyComponents/MaterialComponents/FilterChips.vue';
 import FilterChipsV2 from '@/components/UseReadyComponents/MaterialComponents/FilterChipsV2.vue';
-import type { FavoriteStatus } from '@/models/FavoriteStatuses';
-import { FavoriteStatuses } from '@/models/FavoriteStatuses';
+import { FavoriteStatus, FavoriteStatuses, getFavoriteStatusLabel } from '@/models/FavoriteStatuses';
+import { computed } from 'vue';
 
-defineProps<{
+const props = defineProps<{
   favorites: FavoriteGetList[];
   favoriteSelectedCategory: string;
   isMenuDropped: boolean;
@@ -140,6 +133,7 @@ defineProps<{
   selectedStatus: FavoriteStatus | null;
   defaultCategoryLabel: string;
   formatDate: (dateNum: number) => string;
+  formatDateOnly: (dateNum: number) => string;
 }>();
 
 const emit = defineEmits<{
@@ -148,6 +142,13 @@ const emit = defineEmits<{
   (e: 'update:category', value: string): void;
   (e: 'toggle-menu'): void;
 }>();
+
+const showCategoryColumn = computed(() => {
+  if (props.selectedStatus !== null) {
+    return false;
+  }
+  return props.favorites.some((favorite) => getFavoriteStatusLabel(favorite.Status) !== '');
+});
 </script>
 
 <style lang="scss" scoped>
@@ -169,38 +170,127 @@ const emit = defineEmits<{
     color: var(--on-primary-light);
   }
 
-  &__favorites-list {
-    padding-top: 8px;
-    padding-bottom: 16px;
-    overflow: hidden;
+  &__favorites-table {
+    display: grid;
+    padding: 8px 0 12px;
+    overflow-x: auto;
+    min-width: 0;
+
+    &--with-category {
+      grid-template-columns: minmax(120px, 1fr) max-content max-content max-content;
+    }
+
+    &:not(.profile__favorites-table--with-category) {
+      grid-template-columns: minmax(120px, 1fr) max-content max-content;
+    }
   }
 
-  &__favorite-title {
+  &__favorites-head,
+  &__favorites-row {
+    display: contents;
+  }
+
+  &__favorites-head &__favorites-cell {
+    min-height: 32px;
+    color: var(--primary40);
+  }
+
+  &__favorites-row &__favorites-cell {
+    min-height: 48px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  &__favorites-row:hover &__favorites-cell {
+    background: var(--primary-container-light);
+    color: var(--on-primary-container-light);
+
+    .profile__favorite-tag {
+      background: var(--primary80);
+    }
+  }
+
+  &__favorites-cell {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 12px;
+  }
+
+  &__favorites-cell--name {
+    grid-column: 1;
+    justify-content: flex-start;
     text-align: start;
-    width: fit-content;
+    padding-left: 16px;
+  }
+
+  &__favorites-cell--rating {
+    grid-column: 2;
+    justify-content: flex-start;
+    border-left: 1px solid var(--primary90);
+    padding-left: 12px;
+  }
+
+  &__favorites-table--with-category &__favorites-cell--category {
+    grid-column: 3;
+    justify-content: flex-start;
+    border-left: 1px solid var(--primary90);
+    padding-left: 12px;
+  }
+
+  &__favorites-table--with-category &__favorites-cell--date {
+    grid-column: 4;
+    justify-content: flex-end;
+    text-align: end;
+    padding-right: 16px;
+    border-left: 1px solid var(--primary90);
+    padding-left: 12px;
+  }
+
+  &__favorites-table:not(.profile__favorites-table--with-category) &__favorites-cell--date {
+    grid-column: 3;
+    justify-content: flex-end;
+    text-align: end;
+    padding-right: 16px;
+    border-left: 1px solid var(--primary80);
+    padding-left: 12px;
   }
 
   &__favorite-tag {
     background: var(--primary-container-light);
+    border-radius: 8px;
+    padding: 4px 8px;
+    width: fit-content;
+    max-width: 100%;
+    overflow: hidden;
+    gap: 8px;
   }
 
-  &__favorite-tag-title {
+  &__favorites-rating {
+    width: fit-content;
+  }
+
+  &__favorites-star {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
     color: var(--on-primary-container-light);
   }
 
-  &__favorites-unit {
-    display: flex;
-    min-height: 48px;
-    min-width: 0;
-    padding-left: 16px;
-    padding-right: 16px;
+  &__favorites-date--short {
+    display: none;
+  }
 
-    &:hover {
-      color: var(--on-primary-container-light);
-      background: var(--primary-container-light);
+  @media (max-width: 719px) {
+    &__favorites-date--full {
+      display: none;
     }
-    &:hover .profile__favorite-tag {
-      background: var(--primary80);
+
+    &__favorites-date--short {
+      display: inline;
     }
   }
 }

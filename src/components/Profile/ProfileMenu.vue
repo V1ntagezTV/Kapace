@@ -1,8 +1,8 @@
 <template>
   <BaseBackground :type="3" class="profile-menu__main h__start gap-8">
     <div class="profile__nickname">
-      <span class="profile-menu__nickname headline-medium">{{ nickname }}</span>
-      <b class="headline-medium profile-menu__nickname profile-menu__nickname-tag">#{{ tag }}</b>
+      <span class="profile-menu__nickname title-large">{{ nickname }}</span>
+      <b class="profile-menu__nickname profile-menu__nickname-tag title-large ">#{{ tag }}</b>
     </div>
     <div class="column fit-content gap-8">
       <div class="row gap-8">

@@ -25,3 +25,17 @@ export function getFavoritesStatusKeyByValue(value: string): HeaderKey | undefin
         (key) => FavoriteStatuses[key] === value
     );
 }
+
+export function getFavoriteStatusLabel(status: FavoriteStatus | string | null | undefined): string {
+    if (status === null || status === undefined) {
+        return '';
+    }
+    if (typeof status === 'string' && status in FavoriteStatuses) {
+        return FavoriteStatuses[status as HeaderKey];
+    }
+    const statusKey = FavoriteStatus[status as FavoriteStatus];
+    if (typeof statusKey === 'string') {
+        return FavoriteStatuses[statusKey as HeaderKey] ?? '';
+    }
+    return '';
+}

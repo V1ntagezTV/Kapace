@@ -1,8 +1,7 @@
 <template>
   <div class="col__ profile-view__main">
-    <profile-avatar-section :avatar-src="avatarDisplaySrc" />
-
-    <div class="profile-middle__main">
+    <div class="column gap-8">
+      <profile-avatar-section :avatar-src="avatarDisplaySrc" />
       <profile-menu
         :nickname="userNickname"
         :created-at="userCreatedAt"
@@ -10,7 +9,9 @@
         :roles="userRoles"
         :email="userEmail"
       />
+    </div>
 
+    <div class="profile-middle__main">
       <profile-favorites-section
         :favorites="userFavorites"
         :favorite-selected-category="favoriteSelectedCategory"
@@ -20,6 +21,7 @@
         :selected-status="selectedFavoritesStatus"
         :default-category-label="defaultFavoriteStatus"
         :format-date="getDateStr"
+        :format-date-only="getDateOnlyStr"
         @toggle-all="selectAllCategory"
         @toggle-watching="selectWatchingCategory"
         @update:category="onFavoriteCategoryChange"
@@ -50,6 +52,7 @@ const {
   selectedFavoritesStatus,
   defaultFavoriteStatus,
   getDateStr,
+  getDateOnlyStr,
   selectAllCategory,
   selectWatchingCategory,
   onFavoriteCategoryChange,

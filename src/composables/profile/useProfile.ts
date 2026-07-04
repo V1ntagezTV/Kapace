@@ -72,6 +72,10 @@ export function useProfile() {
         return formatter.format(date) + ' ' + date.toLocaleDateString();
     }
 
+    function getDateOnlyStr(dateNum: number): string {
+        return new Date(dateNum).toLocaleDateString('ru-RU');
+    }
+
     async function loadFavorites() {
         const favorites = await favoritesApi.getList(
             selectedFavoritesStatus.value as FavoriteStatus,
@@ -151,6 +155,7 @@ export function useProfile() {
         FavoriteStatuses,
         defaultFavoriteStatus,
         getDateStr,
+        getDateOnlyStr,
         selectAllCategory,
         selectWatchingCategory,
         onFavoriteCategoryChange,
