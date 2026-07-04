@@ -60,6 +60,7 @@ const routes = [
     name: "edit",
     path: "/edit",
     component: EditsView,
+    redirect: { name: "edit-list" },
     children: [
       {
         name: "edit-list",
@@ -82,7 +83,7 @@ const routes = [
         component: EditsView,
       },
       {
-        name: "edit-episode",
+        name: "edit-episode-prefill",
         path: "/edit/episode/:content(\\d+)",
         component: EditsView,
       },

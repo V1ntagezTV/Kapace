@@ -50,7 +50,7 @@
       <base-button
         class="m-border-primary m-radius-circle"
         variant="outline"
-        @click="router.push({name: 'edit-episode', params: {content: contentId}})"
+        @click="router.push({name: 'edit-episode-prefill', params: {content: contentId}})"
       >
         Добавить серию
       </base-button>

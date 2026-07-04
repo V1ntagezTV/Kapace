@@ -154,169 +154,37 @@
 </template>
 
 <script lang="ts" setup>
-import {inject, onMounted, ref} from "vue";
-import {ChangesHistoryService} from "@/api/ChangesHistoryService";
-import {ChangeUnit} from "@/api/Responses/V1GetChangesComparisonsResponse";
+import {HistoryType} from "@/api/Enums/HistoryType";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
-import {HistoryChangesOrderType, HistoryType} from "@/api/Enums/HistoryType";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 import AsyncSearchSelector from "@/components/Base/Selector/AsyncSearchSelector.vue";
-import {ContentService, V1SearchByResponseUnit} from "@/api/ContentService";
 import MarkIcon from "@/components/Icons/MaterialIcons/MarkIcon.vue";
 import UserIconOutlined from "@/components/Icons/MaterialIcons/UserIconOutlined.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import NavLeftArrowIcon from "@/components/Icons/MaterialIcons/NavLeftArrowIcon.vue";
 import NavRightArrowIcon from "@/components/Icons/MaterialIcons/NavRightArrowIcon.vue";
-import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 import {StringExtensions} from "@/helpers/StringExtensions";
-import {userStore} from "@/store/UserStore";
-import {useRouter} from "vue-router";
 import { resolveBackendImageLink } from "@/helpers/ImageLinkResolver";
+import { useChangesList } from "@/composables/edits/useChangesList";
 
-const changesHistoryService = inject<ChangesHistoryService>('changes-history-service');
-const contentService = inject<ContentService>('content-service');
-const clientEventStore = ClientEventStore();
-const router = useRouter();
-const currentUserStore = userStore();
-
-const searchSelectableValueModels = ref<V1SearchByResponseUnit[]>([]);
-const filters = {
-  contentIds: ref<number[]>([]),
-  search: ref<string | null>(null),
-  orderBy: ref<string | null>('По умолчанию'),
-  historyType: ref<string | null>(''),
-  status: ref<string | null>(''),
-  isMy: ref<boolean | null>(null)
-};
-
-const dataIsReady = ref(false);
-const changes = ref<ChangeUnit[]>();
-const isSearchMenuDropped = ref(false);
-const limit = 5;
-let offset = 0;
-
-onMounted(async () => {
-  dataIsReady.value = false;
-  await updatePage(0);
-  dataIsReady.value = true;
-});
-
-async function updatePage(addOffset: number = 0) {
-  dataIsReady.value = false;
-
-  if (addOffset < 0 && (offset + addOffset) <= 0) {
-    offset = 0;
-  } else {
-    offset += addOffset;
-  }
-
-  const response = await changesHistoryService.getChangesComparisons({
-    Approved: getApprovedStatus(filters.status.value),
-    CreatedByIds: filters.isMy.value && currentUserStore.loggedIn ? [currentUserStore.userId] : [],
-    HistoryTypes: getHistoryTypes(filters.historyType.value),
-    OrderBy: getOrderByType(filters.orderBy.value),
-    Ids: [],
-    Limit: limit,
-    Offset: offset,
-    TargetIds: filters.contentIds?.value ?? [],
-  });
-
-  changes.value = response.data.Changes;
-
-  dataIsReady.value = true;
-}
-
-function getApprovedStatus(filterStatus: string) : boolean | null {
-  if (filterStatus === 'По умолчанию') {
-    return null;
-  } else if (filterStatus === 'Не одобрено') {
-    return false;
-  } else if (filterStatus === 'Одобрено') {
-    return true;
-  }
-}
-
-function getHistoryTypes(value: string) : typeof HistoryType[]{
-  if (value === 'Серия') {
-    return [HistoryType.Episode as typeof HistoryType];
-  } else if (value === 'Дорама') {
-    return [HistoryType.Content as typeof HistoryType];
-  }
-  return [];
-}
-
-function getOrderByType(selectedOrder: string) : typeof HistoryChangesOrderType {
-  if (selectedOrder === 'Сначала старые') {
-    return HistoryChangesOrderType.ByCreated as typeof HistoryChangesOrderType;
-  } else if (selectedOrder === 'По названию') {
-    return HistoryChangesOrderType.ByName as typeof HistoryChangesOrderType;
-  } else if (selectedOrder === 'По идентификатору') {
-    return HistoryChangesOrderType.ById as typeof HistoryChangesOrderType;
-  } else if (selectedOrder === 'Сначала новые') {
-    return HistoryChangesOrderType.ByCreatedDescending as typeof HistoryChangesOrderType;
-  }
-  return HistoryChangesOrderType.Unspecified as typeof HistoryChangesOrderType;
-}
-
-async function clickOnMineFilter() {
-  if (currentUserStore.loggedIn) {
-    filters.isMy.value = !filters.isMy.value
-    await updatePage(0);
-    return;
-  }
-
-  clientEventStore.push("Сначала необходимо авторизоваться!", EventTypes.Error);
-}
-
-async function approveClick(historyId: string) {
-  if (!currentUserStore.loggedIn) {
-    clientEventStore.push('Для начала необходимо авторизоваться!', EventTypes.Error);
-    await router.push('/login');
-    return;
-  }
-
-  const userId = currentUserStore.userId;
-  const unit = changes.value.find(change => change.HistoryId === historyId);
-
-  const response = (await changesHistoryService.approve(historyId, userId))
-    .onException(() => clientEventStore.push("Ошибка сервера! Заявка не одобрена.", EventTypes.Error))
-    .onBusinessError((error) => clientEventStore.push(error.Message, EventTypes.Error));
-
-  if (response.data) {
-    unit.ApprovedAt = Date.now();
-    unit.ApprovedBy = userId;
-    clientEventStore.push("Успех! Одобрено!", EventTypes.Success)
-  }
-}
-
-function getVideoLinkByChangesComparisons(units: ChangeUnit): string {
-  return units.FieldsComparisons.find(unit => unit.Name === 'Видео').NewValue;
-}
-
-async function pressEnterSearch(input: string) {
-  // Скрываем выпадающий список.
-  searchSelectableValueModels.value = [];
-
-  const foundedContents = await contentService.searchBy(input);
-  filters.contentIds.value = foundedContents.Units.map(c => c.ContentId);
-  await updatePage()
-}
-
-async function searchByInput(input: string, isSelected: boolean) {
-  const response = await contentService.searchBy(input);
-  searchSelectableValueModels.value = response.Units;
-
-  // IsSelected равен true, когда был выбран элемент из выпадающего списка
-  if (isSelected) {
-    filters.contentIds.value = [searchSelectableValueModels.value.find(content => content.Title === input).ContentId];
-    await updatePage();
-  }
-
-  isSearchMenuDropped.value = searchSelectableValueModels.value.length > 0;
-}
+const {
+  currentUserStore,
+  searchSelectableValueModels,
+  filters,
+  dataIsReady,
+  changes,
+  isSearchMenuDropped,
+  offset,
+  updatePage,
+  clickOnMineFilter,
+  approveClick,
+  getVideoLinkByChangesComparisons,
+  pressEnterSearch,
+  searchByInput,
+} = useChangesList();
 </script>
 
 <style lang="scss" scoped>

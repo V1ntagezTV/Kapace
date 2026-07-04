@@ -3,11 +3,11 @@
     <SettingsNavigation class="col" :current="selectedPage" />
     <EditListComponent v-if="selectedPage === SettingsPageTypes.Edits" />
     <ContentEditorComponent
-      v-if="selectedPage === SettingsPageTypes.CreateContent"
+      v-if="selectedPage === SettingsPageTypes.CreateContent || selectedPage === SettingsPageTypes.EditContent"
       :content-id="contentId"
     />
     <EpisodeEditorComponent
-      v-if="selectedPage === SettingsPageTypes.CreateEpisode"
+      v-if="selectedPage === SettingsPageTypes.CreateEpisode || selectedPage === SettingsPageTypes.EditEpisode"
       :content-id="contentId"
       :episode-id="episodeId"
     />
@@ -15,157 +15,23 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
-import SettingsNavigation from "@/components/Settings/SettingsNavigation.vue";
-import ContentEditorComponent from "@/components/EditViews/ContentEditorComponent.vue";
-import {SettingsPageTypes} from "@/models/SettingsPageTypes";
-import EpisodeEditorComponent from "@/components/EditViews/EpisodeEditorComponent.vue";
-import EditListComponent from "@/components/EditViews/EditListComponent.vue";
-import {useRoute} from "vue-router";
+import ContentEditorComponent from '@/components/EditViews/ContentEditorComponent.vue';
+import EditListComponent from '@/components/EditViews/EditListComponent.vue';
+import EpisodeEditorComponent from '@/components/EditViews/EpisodeEditorComponent.vue';
+import SettingsNavigation from '@/components/Settings/SettingsNavigation.vue';
+import { useEditNavigation } from '@/composables/edits/useEditNavigation';
+import { SettingsPageTypes } from '@/models/SettingsPageTypes';
 
-const route = useRoute();
-
-const contentId = ref<string | null>(null);
-const episodeId = ref<number | null>(null);
-
-
-updateRouteIds();
-const selectedPage = ref<typeof SettingsPageTypes>(choosePage());
-
-watch(() => route.fullPath, () => {
-  updateRouteIds();
-  selectedPage.value = choosePage();
-});
-
-function updateRouteIds() {
-  contentId.value = getStringRouteParam(route.params.content);
-
-  const episodeParam = getStringRouteParam(route.params.episode);
-  episodeId.value = episodeParam ? Number(episodeParam) : null;
-}
-
-function getStringRouteParam(routeParam: string | string[] | undefined): string | null {
-  if (routeParam === undefined) {
-    return null;
-  }
-
-  return Array.isArray(routeParam) ? routeParam[0] : routeParam;
-}
-
-function choosePage() : SettingsPageTypes {
-  if (route.fullPath.includes("content")) {
-    return SettingsPageTypes.CreateContent;
-  } else if (route.fullPath.includes("episode")) {
-    return SettingsPageTypes.CreateEpisode;
-  } else if (route.fullPath.includes("list")){
-    return SettingsPageTypes.Edits;
-  } else {
-    return SettingsPageTypes.Edits;
-  }
-}
+const { selectedPage, contentId, episodeId } = useEditNavigation();
 </script>
 
 <style lang="scss" scoped>
 .edit {
-  &__buttons-box {
-    display: grid;
-    grid-template-rows: 1fr;
-    grid-template-columns: min-content;
-    grid-auto-flow: column;
-    grid-gap: 20px;
-    justify-content: end;
-
-    & button {
-      width: fit-content;
-      padding-left: 26px;
-      padding-right: 26px;
-    }
-  }
-
-  &__selector {
-    width: 100%;
-  }
-
-  &__box-activities {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-gap: 10px;
-    grid-auto-columns: 1fr;
-    grid-auto-flow: row;
-  }
-
-  &__box-activities-column {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: fit-content(100%);
-    grid-gap: 20px;
-    grid-auto-columns: 1fr;
-    grid-auto-flow: row;
-  }
-
-  &__text-button {
-    color: #6686B3;
-  }
-
-  &__splitter {
-    width: 100%;
-    background: var(--font-gray-v2);
-    height: 100%;
-  }
-
   &__box {
     display: flex;
     flex-direction: column;
     height: fit-content;
-    gap: 20px
-  }
-  
-  &__right-box {
-    display: grid;
-    grid-template-rows: min-content;
-    grid-auto-rows: min-content;
     gap: 20px;
-    padding: 0 26px 26px 20px;
-  }
-
-  &__unit-box {
-    display: grid;
-    height: fit-content;
-    grid-template-columns: repeat(2, 2fr);
-    grid-column: 1;
-    grid-gap: 10px;
-    column-gap: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--font-gray-v1);;
-  }
-
-  &__details {
-    display: grid;
-    justify-items: start;
-    grid-auto-rows: min-content;
-    gap: 6px;
-
-    & * {
-      padding: 0;
-      margin: 0;
-    }
-
-    & h4 {
-      color: var(--dark-primary);
-      height: fit-content;
-    }
-
-    & label {
-      color: var(--dark-primary);
-      height: fit-content;
-      text-align: start;
-    }
-  }
-
-  &__description-input {
-    resize: vertical;
-    width: 100%;
   }
 }
-
 </style>

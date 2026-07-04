@@ -52,7 +52,6 @@
           v-model="translationType"
           class="edit-episode__bg m-radius-1 m-border m-border-hover m-border-active"
           :title="'Выберите тип перевода'"
-          :is-disabled="translatorSelectableValues === undefined"
           :mark-as-invalid-input="translationTypeIsInvalid"
           :selectable-values="translationTypeSelectableValues"
         />
@@ -147,256 +146,41 @@ import BaseInput from "@/components/Base/BaseInput.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import BaseTextArea from "@/components/Base/BaseTextArea.vue";
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
-import {inject, onMounted, ref} from "vue";
-import {TranslationType} from "@/api/Enums/TranslationType";
-import {Language, VideoQuality} from "@/api/Enums/Language";
-import {ChangesHistoryService} from "@/api/ChangesHistoryService";
-import {ContentService} from "@/api/ContentService";
 import AsyncSearchSelector from "@/components/Base/Selector/AsyncSearchSelector.vue";
-import {EpisodeService, V1EpisodeQueryRequest} from "@/api/EpisodeService";
-import {TranslatorService, V1TranslatorQueryResponseUnit} from "@/api/TranslatorService";
-import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
-import {generateBigIntId} from "@/helpers/generateId";
+import { useEpisodeEditor } from "@/composables/edits/useEpisodeEditor";
+import { toRef } from "vue";
 
-type UnitOfSelection = {
-  ContentId: string | number,
-  Title: string
-};
+const props = defineProps<{
+  contentId: string | null;
+  episodeId: number | null;
+}>();
 
-const props = defineProps({
-  contentId: {type: [String, Number], required: true, default: null},
-  episodeId: {type: Number, required: true, default: null}
-});
-
-const changesHistoryApi = inject<ChangesHistoryService>('changes-history-service');
-const contentApi = inject<ContentService>("content-service");
-const episodesApi = inject<EpisodeService>('episode-service');
-const translatorApi = inject<TranslatorService>('translator-service');
-const clientEventStore = ClientEventStore();
-
-onMounted(async () => {
-  const contentId = getContentIdOrNull();
-  if (contentId !== null) {
-    const contentInfo = await contentApi.V1GetById(contentId);
-    searchContentListV2.value = [{ContentId: contentInfo.Content.Id, Title: contentInfo.Content.Title}];
-    contentSelectedTitle.value = contentInfo.Content.Title;
-    contentInput.value = contentInfo.Content.Title;
-  }
-
-  if (props.episodeId && contentId !== null) {
-    const request = new V1EpisodeQueryRequest();
-    request.EpisodeIds = [props.episodeId];
-    request.ContentIds = [contentId];
-    request.Limit = 1;
-
-    const episodesQuery = await episodesApi.query(request);
-    if (episodesQuery?.length > 0) {
-      const episode = episodesQuery[0];
-      episodeSelectedTitle.value = episode.Title;
-      episodeSelectableValues.value = [episode.Title];
-    }
-  }
-});
-
-/* Дорама */
-let searchContentListV2 = ref<UnitOfSelection[]>([]);
-const contentIsInvalid = ref<boolean>(false);
-const contentInput = ref<string>("");
-const contentSelectedTitle = ref<string>("");
-const isContentsMenuDropped = ref<boolean>(false);
-
-/* Серия */
-const episodeSelectableValues = ref<string[]>([]);
-const episodeIsInvalid = ref<boolean>(false);
-const episodeSelectedTitle = ref<string>('');
-
-/* Переводчик */
-let translatorsList: V1TranslatorQueryResponseUnit[] = [];
-const translatorSelectableValues = ref<string[]>([]);
-const translatorInput = ref<string>("");
-const translatorSelectedTitle = ref<string>("");
-const isTranslatorsMenuDropped = ref<boolean>(false);
-
-/* Тип перевода */
-const translationType = ref<string>("");
-const translationTypeIsInvalid = ref<boolean>(false);
-const translationTypeSelectableValues = [
-  TranslationType.Subtitles,
-  TranslationType.AutoSubtitles,
-  TranslationType.Original,
-  TranslationType.VoiceActing
-];
-
-/* Качество */
-const quality = ref<string | null>();
-
-/* Язык */
-const language = ref<string>();
-const languageIsInvalid = ref<boolean>(false);
-const languageSelectableValues = [Language.Russian, Language.English, Language.Korean, Language.Chinese, Language.Japanese];
-
-//#region Видео
-const videoLink = ref<string>();
-const userInputVideo = ref<string>("");
-const videoScriptIsInvalid = ref<boolean>(false);
-
-function getVideoLink() {
-  videoLink.value = getVideoLinkFromUserInput(userInputVideo.value);
-  if (videoLink.value) {
-    return;
-  }
-
-  videoScriptIsInvalid.value = true;
-  clientEventStore.push("Ошибка! Не удалось вывести видео.", EventTypes.Error)
-}
-
-function getVideoLinkFromUserInput(userInputVideo: string) {
-  if (userInputVideo.startsWith("<iframe") && userInputVideo.endsWith("</iframe>")) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(userInputVideo, 'text/html');
-
-    if (doc.documentElement.querySelector('parsererror')) {
-      return tryGetFirstLink(userInputVideo);
-    } else {
-      return doc.getElementsByTagName('iframe')[0].src;
-    }
-  } else {
-    console.log('link');
-    return tryGetFirstLink(userInputVideo);
-  }
-}
-
-function tryGetFirstLink(userInput) {
-  const res = userInput.match(/(http(s)?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
-  if (res !== null && res.length > 0) {
-    return res[0];
-  }
-
-  return null;
-}
-//endregion
-async function onClickUpsertEpisode() {
-  const isValidString = (value: string) => value != null && value.trim() != "";
-
-  contentIsInvalid.value = !isValidString(contentSelectedTitle.value);
-  /* Эпизод валидный только если выбран контент и эпизод */
-  episodeIsInvalid.value = !isValidString(episodeSelectedTitle.value) || contentIsInvalid.value;
-  languageIsInvalid.value = !isValidString(language.value);
-  translationTypeIsInvalid.value = !isValidString(translationType.value);
-  videoScriptIsInvalid.value = !isValidString(videoLink.value);
-  if (!contentIsInvalid.value &&
-    !episodeIsInvalid.value &&
-    !translationTypeIsInvalid.value &&
-    !languageIsInvalid.value &&
-    !videoScriptIsInvalid.value) {
-
-    console.log(quality.value as VideoQuality as number);
-    const content = searchContentListV2.value.find(content => content.Title === contentSelectedTitle.value);
-    if (!content) {
-      clientEventStore.push("Ошибка! Не удалось определить выбранный контент.", EventTypes.Error);
-      return;
-    }
-    const episode = episodeSelectedTitle.value as number;
-    const languageType = language.value as typeof Language;
-    const translationTypeValue = translationType.value as typeof TranslationType;
-    const qualityNumber = quality.value ? (quality.value as VideoQuality) as number : null;
-
-    let translatorId: number | null = null;
-    if (translatorSelectedTitle.value) {
-      translatorId = translatorsList
-          .find(translator => translator.Name === translatorSelectedTitle.value)
-          ?.TranslatorId
-        ?? null;
-    }
-
-    // TODO: Если передали iframe а не ссылку на видео из src то нужно вытащить из него ссылку
-    const response = await changesHistoryApi.createEpisodeChange({
-      GeneratedId: generateBigIntId(),
-      ChangeableFields: {
-        Number: episode,
-        VideoScript: videoLink.value,
-        Language: languageType,
-        TranslationType: translationTypeValue,
-        EpisodeId: null,
-        TranslatorId: translatorId,
-        TranslatorName: translatorInput.value,
-        Quality: qualityNumber,
-      },
-      ContentId: content.ContentId,
-      CreatedBy: 0
-    });
-
-    if (response.ok) {
-      clientEventStore.push("Успех! Данные отправлены. За их статусом можно следить на странице с обновлениями.", EventTypes.Success)
-    } else {
-      clientEventStore.push("Ошибка! Что-то пошло не так в момент отправки данных, попробуйте еще раз через некоторое время.", EventTypes.Error)
-    }
-    return;
-  } else {
-    clientEventStore.push("Ошибка! Заполните обязательные поля.", EventTypes.Error)
-  }
-}
-
-function getContentIdOrNull(): string | number | null {
-  if (props.contentId === null || props.contentId === undefined || props.contentId === "") {
-    return null;
-  }
-
-  return props.contentId as string | number;
-}
-
-/* Вызывается при изменении input дорамы */
-async function onChangeContentInput(newInput: string, isSelected: boolean) {
-  isTranslatorsMenuDropped.value = false;
-  contentSelectedTitle.value = isSelected ? newInput : undefined;
-  if (newInput.length === 0) {
-    searchContentListV2.value = [];
-    isContentsMenuDropped.value = false;
-    return;
-  }
-
-  if (isSelected) {
-    const selectedContent = searchContentListV2.value.find(content => content.Title === newInput);
-    const episodesRequest = new V1EpisodeQueryRequest();
-    episodesRequest.ContentIds = [selectedContent.ContentId];
-    const episodes = await episodesApi.query(episodesRequest);
-
-    episodeSelectableValues.value = episodes.map(ep => ep.Number.toString());
-    return;
-  } else {
-    episodeSelectableValues.value = [];
-  }
-
-  const foundContents = (await contentApi.searchBy(newInput)).Units;
-  searchContentListV2.value = foundContents.map(content => ({Title: content.Title, ContentId: content.ContentId}));
-  if (searchContentListV2.value.length > 0) {
-    isContentsMenuDropped.value = true;
-  }
-}
-
-async function onChangeTranslatorInput(newInput: string, isSelected: boolean) {
-  translatorInput.value = newInput;
-  translatorSelectedTitle.value = isSelected ? newInput : undefined;
-
-  if (newInput.length === 0) {
-    translatorsList = [];
-    isTranslatorsMenuDropped.value = false;
-    return;
-  }
-
-  const translatorsResponse = await translatorApi.query({
-    Limit: 7,
-    Offset: null,
-    Search: newInput,
-    TranslatorIds: null
-  });
-  translatorSelectableValues.value = translatorsResponse.Translators.map(x => x.Name);
-  translatorsList = translatorsResponse.Translators;
-
-  if (translatorSelectableValues.value.length > 0) {
-    isTranslatorsMenuDropped.value = true;
-  }
-}
+const {
+  VideoQuality,
+  searchContentListV2,
+  contentIsInvalid,
+  contentInput,
+  episodeSelectedTitle,
+  episodeIsInvalid,
+  isContentsMenuDropped,
+  language,
+  languageIsInvalid,
+  languageSelectableValues,
+  translationType,
+  translationTypeIsInvalid,
+  translationTypeSelectableValues,
+  translatorSelectedTitle,
+  translatorsList,
+  isTranslatorsMenuDropped,
+  quality,
+  userInputVideo,
+  videoLink,
+  videoScriptIsInvalid,
+  getVideoLink,
+  onClickUpsertEpisode,
+  onChangeContentInput,
+  onChangeTranslatorInput,
+} = useEpisodeEditor(toRef(props, 'contentId'), toRef(props, 'episodeId'));
 </script>
 
 <style lang="scss" scoped>
