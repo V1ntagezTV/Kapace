@@ -9,6 +9,7 @@ import RestorePasswordView from "@/views/RestorePasswordView.vue";
 import EpisodeView from "@/views/EpisodeView.vue";
 import EditsView from "@/views/EditsView.vue";
 import SettingsView from "@/views/SettingsView.vue";
+import ContentHistoryView from "@/views/ContentHistoryView.vue";
 
 const routes = [
   {
@@ -50,6 +51,11 @@ const routes = [
     name: 'theater',
     path: '/theater/:id',
     component: TheaterView,
+  },
+  {
+    name: 'content-history',
+    path: '/theater/:id/history',
+    component: ContentHistoryView,
   },
   {
     name: "episode",

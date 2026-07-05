@@ -2,17 +2,17 @@ import { ChangesHistoryService } from '@/api/ChangesHistoryService';
 import { ContentService } from '@/api/ContentService';
 import { Language, VideoQuality } from '@/api/Enums/Language';
 import { TranslationType } from '@/api/Enums/TranslationType';
-import { EpisodeService, V1EpisodeQueryRequest } from '@/api/EpisodeService';
+import { EpisodeService } from '@/api/EpisodeService';
 import { TranslatorService, V1TranslatorQueryResponseUnit } from '@/api/TranslatorService';
+import { useEpisodeContentSearch } from '@/composables/edits/useEpisodeContentSearch';
+import { episodeEditorDirty } from '@/composables/edits/editsFormDirty';
+import { useFormDirtyState } from '@/composables/edits/useFormDirtyState';
+import { useVideoScriptParser } from '@/composables/edits/useVideoScriptParser';
 import { generateBigIntId } from '@/helpers/generateId';
 import { ClientEventStore, EventTypes } from '@/store/ClientEventStore';
 import { userStore } from '@/store/UserStore';
-import { inject, onMounted, ref, type Ref } from 'vue';
-
-type UnitOfSelection = {
-    ContentId: string | number;
-    Title: string;
-};
+import { inject, onMounted, ref, watch, type Ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 export function useEpisodeEditor(
     contentId: Ref<string | null>,
@@ -32,18 +32,24 @@ export function useEpisodeEditor(
 
     const clientEventStore = ClientEventStore();
     const currentUserStore = userStore();
+    const router = useRouter();
 
-    const searchContentListV2 = ref<UnitOfSelection[]>([]);
-    const contentIsInvalid = ref(false);
-    const contentInput = ref('');
-    const contentSelectedTitle = ref('');
-    const isContentsMenuDropped = ref(false);
+    const {
+        searchContentList: searchContentListV2,
+        contentIsInvalid,
+        contentInput,
+        contentSelectedTitle,
+        isContentsMenuDropped,
+        episodeSelectableValues,
+        episodeIsInvalid,
+        episodeSelectedTitle,
+        loadPrefillContent,
+        clearContentSearch,
+        onChangeContentInput,
+        findSelectedContent,
+    } = useEpisodeContentSearch(contentId, episodeId, contentApi, episodesApi);
 
-    const episodeSelectableValues = ref<string[]>([]);
-    const episodeIsInvalid = ref(false);
-    const episodeSelectedTitle = ref('');
-
-    let translatorsList: V1TranslatorQueryResponseUnit[] = [];
+    const translatorsList = ref<V1TranslatorQueryResponseUnit[]>([]);
     const translatorSelectableValues = ref<string[]>([]);
     const translatorInput = ref('');
     const translatorSelectedTitle = ref('');
@@ -70,69 +76,79 @@ export function useEpisodeEditor(
         Language.Japanese,
     ];
 
-    const videoLink = ref<string>();
-    const userInputVideo = ref('');
-    const videoScriptIsInvalid = ref(false);
+    const {
+        videoLink,
+        userInputVideo,
+        videoScriptIsInvalid,
+        getVideoLink,
+        resetVideoScript,
+    } = useVideoScriptParser();
 
-    onMounted(async () => {
-        const resolvedContentId = getContentIdOrNull();
-        if (resolvedContentId !== null) {
-            const contentInfo = await contentApi.V1GetById(
-                typeof resolvedContentId === 'number' ? String(resolvedContentId) : resolvedContentId
-            );
-            searchContentListV2.value = [{ ContentId: contentInfo.Content.Id, Title: contentInfo.Content.Title }];
-            contentSelectedTitle.value = contentInfo.Content.Title;
-            contentInput.value = contentInfo.Content.Title;
-        }
+    const { isDirty, pauseTracking, resumeTracking, clearDirty } = useFormDirtyState([
+        contentInput,
+        contentSelectedTitle,
+        episodeSelectedTitle,
+        translationType,
+        quality,
+        language,
+        userInputVideo,
+        translatorSelectedTitle,
+        translatorInput,
+        videoLink,
+    ]);
 
-        if (episodeId.value && resolvedContentId !== null) {
-            const request = new V1EpisodeQueryRequest();
-            request.EpisodeIds = [episodeId.value];
-            request.ContentIds = [resolvedContentId];
-            request.Limit = 1;
-
-            const episodesQuery = await episodesApi.query(request);
-            if (episodesQuery?.length > 0) {
-                const episode = episodesQuery[0];
-                episodeSelectedTitle.value = episode.Title;
-                episodeSelectableValues.value = [episode.Title];
-            }
-        }
+    watch(isDirty, (value) => {
+        episodeEditorDirty.value = value;
     });
 
-    function getVideoLink() {
-        const link = getVideoLinkFromUserInput(userInputVideo.value);
-        videoLink.value = link ?? undefined;
-        if (link) {
-            return;
+    onMounted(async () => {
+        pauseTracking();
+        if (contentId.value !== null || episodeId.value) {
+            await loadPrefillData();
         }
+        resumeTracking();
+    });
 
-        videoScriptIsInvalid.value = true;
-        clientEventStore.push('Ошибка! Не удалось вывести видео.', EventTypes.Error);
+    function clearValidationFlags() {
+        contentIsInvalid.value = false;
+        episodeIsInvalid.value = false;
+        languageIsInvalid.value = false;
+        translationTypeIsInvalid.value = false;
+        videoScriptIsInvalid.value = false;
     }
 
-    function getVideoLinkFromUserInput(input: string) {
-        if (input.startsWith('<iframe') && input.endsWith('</iframe>')) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(input, 'text/html');
-
-            if (doc.documentElement.querySelector('parsererror')) {
-                return tryGetFirstLink(input);
-            }
-
-            return doc.getElementsByTagName('iframe')[0].src;
-        }
-
-        return tryGetFirstLink(input);
+    function clearTranslatorFields() {
+        translatorsList.value = [];
+        translatorSelectableValues.value = [];
+        translatorInput.value = '';
+        translatorSelectedTitle.value = '';
+        isTranslatorsMenuDropped.value = false;
     }
 
-    function tryGetFirstLink(userInput: string): string | null {
-        const res = userInput.match(/(http(s)?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
-        if (res !== null && res.length > 0) {
-            return res[0];
-        }
+    function clearCreateForm() {
+        clearContentSearch();
+        clearTranslatorFields();
+        translationType.value = '';
+        quality.value = null;
+        language.value = undefined;
+        resetVideoScript();
+        clearValidationFlags();
+    }
 
-        return null;
+    async function loadPrefillData() {
+        await loadPrefillContent();
+        clearValidationFlags();
+    }
+
+    async function resetForm() {
+        pauseTracking();
+        if (contentId.value !== null || episodeId.value) {
+            clearCreateForm();
+            await loadPrefillData();
+        } else {
+            clearCreateForm();
+        }
+        resumeTracking();
     }
 
     async function onClickUpsertEpisode() {
@@ -155,7 +171,7 @@ export function useEpisodeEditor(
             return;
         }
 
-        const content = searchContentListV2.value.find(item => item.Title === contentSelectedTitle.value);
+        const content = findSelectedContent();
         if (!content) {
             clientEventStore.push('Ошибка! Не удалось определить выбранный контент.', EventTypes.Error);
             return;
@@ -168,7 +184,7 @@ export function useEpisodeEditor(
 
         let translatorId: number | null = null;
         if (translatorSelectedTitle.value) {
-            translatorId = translatorsList
+            translatorId = translatorsList.value
                 .find(translator => translator.Name === translatorSelectedTitle.value)
                 ?.TranslatorId
                 ?? null;
@@ -185,56 +201,23 @@ export function useEpisodeEditor(
                 TranslatorId: translatorId,
                 TranslatorName: translatorInput.value,
                 Quality: qualityNumber,
-            } as never,
+            },
             ContentId: content.ContentId,
             CreatedBy: currentUserStore.loggedIn ? currentUserStore.userId : 0,
         });
 
         if (response.ok) {
             clientEventStore.push('Успех! Данные отправлены. За их статусом можно следить на странице с обновлениями.', EventTypes.Success);
+            clearDirty();
+            await router.push({ name: 'edit-list' });
         } else {
             clientEventStore.push('Ошибка! Что-то пошло не так в момент отправки данных, попробуйте еще раз через некоторое время.', EventTypes.Error);
         }
     }
 
-    function getContentIdOrNull(): string | number | null {
-        if (contentId.value === null || contentId.value === undefined || contentId.value === '') {
-            return null;
-        }
-
-        return contentId.value;
-    }
-
-    async function onChangeContentInput(newInput: string, isSelected: boolean) {
+    async function onChangeContentInputWithReset(newInput: string, isSelected: boolean) {
         isTranslatorsMenuDropped.value = false;
-        contentSelectedTitle.value = isSelected ? newInput : '';
-        if (newInput.length === 0) {
-            searchContentListV2.value = [];
-            isContentsMenuDropped.value = false;
-            return;
-        }
-
-        if (isSelected) {
-            const selectedContent = searchContentListV2.value.find(item => item.Title === newInput);
-            if (!selectedContent) {
-                return;
-            }
-
-            const episodesRequest = new V1EpisodeQueryRequest();
-            episodesRequest.ContentIds = [selectedContent.ContentId];
-            const episodes = await episodesApi.query(episodesRequest);
-
-            episodeSelectableValues.value = episodes.map(ep => ep.Number.toString());
-            return;
-        }
-
-        episodeSelectableValues.value = [];
-
-        const foundContents = (await contentApi.searchBy(newInput)).Units;
-        searchContentListV2.value = foundContents.map(item => ({ Title: item.Title, ContentId: item.ContentId }));
-        if (searchContentListV2.value.length > 0) {
-            isContentsMenuDropped.value = true;
-        }
+        await onChangeContentInput(newInput, isSelected);
     }
 
     async function onChangeTranslatorInput(newInput: string, isSelected: boolean) {
@@ -242,8 +225,7 @@ export function useEpisodeEditor(
         translatorSelectedTitle.value = isSelected ? newInput : '';
 
         if (newInput.length === 0) {
-            translatorsList = [];
-            isTranslatorsMenuDropped.value = false;
+            clearTranslatorFields();
             return;
         }
 
@@ -254,7 +236,7 @@ export function useEpisodeEditor(
             TranslatorIds: null,
         });
         translatorSelectableValues.value = translatorsResponse.Translators.map(x => x.Name);
-        translatorsList = translatorsResponse.Translators;
+        translatorsList.value = translatorsResponse.Translators;
 
         if (translatorSelectableValues.value.length > 0) {
             isTranslatorsMenuDropped.value = true;
@@ -284,7 +266,8 @@ export function useEpisodeEditor(
         videoScriptIsInvalid,
         getVideoLink,
         onClickUpsertEpisode,
-        onChangeContentInput,
+        resetForm,
+        onChangeContentInput: onChangeContentInputWithReset,
         onChangeTranslatorInput,
     };
 }

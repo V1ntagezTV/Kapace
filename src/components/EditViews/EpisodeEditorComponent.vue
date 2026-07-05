@@ -1,7 +1,7 @@
 <template>
   <div class="edit-episode__right-box m-radius-16">
     <h3 class="title-large edit-episode__page-header">
-      Основная информация
+      {{ pageTitle }}
     </h3>
 
     <div class="edit-episode__unit-box">
@@ -134,6 +134,7 @@
       <base-button
         :variant="'outline'"
         class="m-border m-border-hover m-radius-circle"
+        @click="resetForm"
       >
         Сбросить
       </base-button>
@@ -153,6 +154,7 @@ import { toRef } from "vue";
 const props = defineProps<{
   contentId: string | null;
   episodeId: number | null;
+  pageTitle: string;
 }>();
 
 const {
@@ -178,6 +180,7 @@ const {
   videoScriptIsInvalid,
   getVideoLink,
   onClickUpsertEpisode,
+  resetForm,
   onChangeContentInput,
   onChangeTranslatorInput,
 } = useEpisodeEditor(toRef(props, 'contentId'), toRef(props, 'episodeId'));

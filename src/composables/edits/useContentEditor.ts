@@ -3,16 +3,17 @@ import { ContentService } from '@/api/ContentService';
 import { ContentStatus } from '@/api/Enums/ContentStatus';
 import { ContentType } from '@/api/Enums/ContentType';
 import { Country } from '@/api/Enums/Country';
-import { GenreService } from '@/api/GenreService';
 import { ImageService } from '@/api/ImageService';
 import { V1ChangeableFields } from '@/api/Requests/V1CreateContentRequest';
-import { GenreQueryResponseGenre } from '@/api/Responses/GenreQueryResponse';
+import { useGenrePicker } from '@/composables/edits/useGenrePicker';
+import { contentEditorDirty } from '@/composables/edits/editsFormDirty';
+import { useFormDirtyState } from '@/composables/edits/useFormDirtyState';
 import { generateBigIntId } from '@/helpers/generateId';
 import { resolveBackendImageLink } from '@/helpers/ImageLinkResolver';
-import { StringExtensions } from '@/helpers/StringExtensions';
 import { ClientEventStore, EventTypes } from '@/store/ClientEventStore';
 import { userStore } from '@/store/UserStore';
-import { computed, inject, onMounted, ref, type Ref } from 'vue';
+import { computed, inject, onMounted, ref, watch, type Ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 export type AdditionalImage = {
     LocalId: number;
@@ -25,17 +26,16 @@ export function useContentEditor(contentId: Ref<string | null>) {
     const injectedContentService = inject<ContentService>('content-service');
     const injectedImageService = inject<ImageService>('image-service');
     const injectedChangesHistoryService = inject<ChangesHistoryService>('changes-history-service');
-    const injectedGenreService = inject<GenreService>('genre-service');
-    if (!injectedContentService || !injectedImageService || !injectedChangesHistoryService || !injectedGenreService) {
-        throw new Error('Edits: провайдеры content-service, image-service, changes-history-service или genre-service не найдены');
+    if (!injectedContentService || !injectedImageService || !injectedChangesHistoryService) {
+        throw new Error('Edits: провайдеры content-service, image-service или changes-history-service не найдены');
     }
     const contentService = injectedContentService;
     const imageService = injectedImageService;
     const changesHistoryService = injectedChangesHistoryService;
-    const genreService = injectedGenreService;
 
     const currentUserStore = userStore();
     const clientEventStore = ClientEventStore();
+    const router = useRouter();
 
     const showEngTitleInputField = ref(false);
     const showOriginTitleInputField = ref(false);
@@ -71,16 +71,87 @@ export function useContentEditor(contentId: Ref<string | null>) {
         ContentStatus: false,
     });
 
-    const genreInput = ref('');
-    const genresQuery = ref<GenreQueryResponseGenre[]>([]);
-    const genreSelectableValues = computed(() => genresQuery.value.map(g => g.Name));
-    const isGenresMenuDropped = ref(false);
-    const maxGenresCount = 20;
-    const maxGenreLength = 64;
+    const {
+        genreInput,
+        genreSelectableValues,
+        isGenresMenuDropped,
+        onChangeGenreInput,
+        onEnterGenreInput,
+        deleteSelectedGenre,
+        normalizeGenresList,
+        resetGenrePicker,
+    } = useGenrePicker(genres);
 
     let localImageIdSequence = 0;
 
+    const { isDirty, pauseTracking, resumeTracking, clearDirty } = useFormDirtyState([
+        title,
+        engTitle,
+        originalTitle,
+        description,
+        country,
+        contentType,
+        contentStatus,
+        genres,
+        duration,
+        releasedAt,
+        plannedSeries,
+        minAge,
+        channel,
+        currentImageUrl,
+        additionalImages,
+        showEngTitleInputField,
+        showOriginTitleInputField,
+    ]);
+
+    watch(isDirty, (value) => {
+        contentEditorDirty.value = value;
+    });
+
     onMounted(async () => {
+        pauseTracking();
+        if (getExistingContentId() !== null) {
+            await loadExistingContent();
+        }
+        resumeTracking();
+    });
+
+    function clearValidationFlags() {
+        isMarkAsInvalidRequiredProperties.value = {
+            Title: false,
+            Description: false,
+            Country: false,
+            ContentType: false,
+            ContentStatus: false,
+        };
+    }
+
+    function clearCreateForm() {
+        currentImage = undefined;
+        currentImageUrl.value = null;
+        additionalImages.value = [];
+        avatarImageName.value = null;
+        imageUrl.value = null;
+        title.value = null;
+        engTitle.value = null;
+        originalTitle.value = null;
+        description.value = null;
+        country.value = null;
+        contentType.value = null;
+        contentStatus.value = null;
+        genres.value = [];
+        duration.value = null;
+        releasedAt.value = null;
+        plannedSeries.value = null;
+        minAge.value = null;
+        channel.value = null;
+        showEngTitleInputField.value = false;
+        showOriginTitleInputField.value = false;
+        resetGenrePicker();
+        clearValidationFlags();
+    }
+
+    async function loadExistingContent() {
         const existingContentId = getExistingContentId();
         if (existingContentId === null) {
             return;
@@ -90,6 +161,8 @@ export function useContentEditor(contentId: Ref<string | null>) {
         const contentAvatarLink = resolveBackendImageLink(content.Content.AvatarImageLink);
         avatarImageName.value = content.Content.AvatarImageName;
         imageUrl.value = contentAvatarLink;
+        currentImage = undefined;
+        currentImageUrl.value = null;
         title.value = content.Content.Title;
         contentType.value = content.Content.Type;
         contentStatus.value = content.Content.Status;
@@ -119,7 +192,19 @@ export function useContentEditor(contentId: Ref<string | null>) {
 
         showEngTitleInputField.value = (engTitle.value?.length ?? 0) > 0;
         showOriginTitleInputField.value = (originalTitle.value?.length ?? 0) > 0;
-    });
+        resetGenrePicker();
+        clearValidationFlags();
+    }
+
+    async function resetForm() {
+        pauseTracking();
+        if (getExistingContentId() !== null) {
+            await loadExistingContent();
+        } else {
+            clearCreateForm();
+        }
+        resumeTracking();
+    }
 
     function formatDate(date: string | number | Date): string {
         const d = new Date(date);
@@ -137,85 +222,8 @@ export function useContentEditor(contentId: Ref<string | null>) {
         return (value < 10 ? '0' : '') + value;
     }
 
-    async function onChangeGenreInput(input: string, isSelected: boolean) {
-        if (!isSelected) {
-            if (StringExtensions.isNullOrEmpty(input)) {
-                isGenresMenuDropped.value = false;
-                return;
-            }
-
-            const genresResponse = await genreService.Query({
-                Search: input,
-                GenreIds: null,
-                Names: null,
-                Limit: 5,
-                Offset: null,
-            });
-
-            genreInput.value = input;
-            genresQuery.value = genresResponse.Genres ?? [];
-            if (genresQuery.value.length > 0) {
-                isGenresMenuDropped.value = true;
-            }
-        } else {
-            addGenre(input);
-
-            genreInput.value = '';
-            genresQuery.value = [];
-            isGenresMenuDropped.value = false;
-        }
-    }
-
-    function onEnterGenreInput(input: string) {
-        addGenre(input);
-        genreInput.value = '';
-        genresQuery.value = [];
-        isGenresMenuDropped.value = false;
-    }
-
-    function deleteSelectedGenre(genreName: string) {
-        genres.value = genres.value.filter(genre => genre !== genreName);
-    }
-
-    function normalizeGenre(genreName: string): string {
-        const trimmedName = genreName
-            .trim()
-            .split(/\s+/)
-            .join(' ');
-
-        if (!trimmedName) {
-            return '';
-        }
-
-        const lowerValue = trimmedName.toLowerCase();
-        return lowerValue.charAt(0).toUpperCase() + lowerValue.slice(1);
-    }
-
     function removeAdditionalImage(localId: number) {
         additionalImages.value = additionalImages.value.filter(i => i.LocalId !== localId);
-    }
-
-    function addGenre(genreName: string) {
-        const normalizedGenre = normalizeGenre(genreName);
-        if (!normalizedGenre) {
-            return;
-        }
-
-        if (normalizedGenre.length > maxGenreLength) {
-            clientEventStore.push(`Жанр не может быть длиннее ${maxGenreLength} символов.`, EventTypes.Error);
-            return;
-        }
-
-        if (genres.value.length >= maxGenresCount) {
-            clientEventStore.push(`Можно добавить не более ${maxGenresCount} жанров.`, EventTypes.Error);
-            return;
-        }
-
-        const isAlreadySelected = genres.value
-            .some(selectedGenre => selectedGenre.toLowerCase() === normalizedGenre.toLowerCase());
-        if (!isAlreadySelected) {
-            genres.value.push(normalizedGenre);
-        }
     }
 
     const durationInMinutes = (durationValue: string): number | null => {
@@ -231,14 +239,7 @@ export function useContentEditor(contentId: Ref<string | null>) {
     };
 
     async function onClickInsertContent() {
-        const normalizedGenres = genres.value
-            .map(normalizeGenre)
-            .filter((genreName, index, allGenres) =>
-                genreName.length > 0 &&
-                genreName.length <= maxGenreLength &&
-                allGenres.findIndex(genre => genre.toLowerCase() === genreName.toLowerCase()) === index)
-            .slice(0, maxGenresCount);
-
+        const normalizedGenres = normalizeGenresList(genres.value);
         genres.value = normalizedGenres;
 
         const request: V1ChangeableFields = {
@@ -296,9 +297,10 @@ export function useContentEditor(contentId: Ref<string | null>) {
             });
 
             clientEventStore.push('Успех! Заявка на добавление изменений создано.', EventTypes.Success);
-        } catch (exception) {
+            clearDirty();
+            await router.push({ name: 'edit-list' });
+        } catch {
             clientEventStore.push('Ошибка! Неизвестная ошибка сервера.', EventTypes.Error);
-            console.log('exception: ' + exception);
         }
     }
 
@@ -402,6 +404,7 @@ export function useContentEditor(contentId: Ref<string | null>) {
         deleteSelectedGenre,
         removeAdditionalImage,
         onClickInsertContent,
+        resetForm,
         updateImage,
         openAdditionalImagesDialog,
         onAdditionalImagesSelected,

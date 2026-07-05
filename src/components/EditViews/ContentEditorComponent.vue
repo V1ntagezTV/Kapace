@@ -1,7 +1,7 @@
 <template>
   <div class="content-edit__right-box m-radius-16">
     <h3 class="title-large content-edit__header">
-      Основная информация
+      {{ pageTitle }}
     </h3>
 
     <div class="content-edit__unit-box">
@@ -231,7 +231,6 @@
         <YearPicker
           v-model="releasedAt"
           class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
-          @update:model-value="(date) => console.log(date)"
         />
       </div>
     </div>
@@ -274,6 +273,7 @@
       <base-button
         :variant="'outline'"
         class="material m-border m-radius-circle"
+        @click="resetForm"
       >
         Сбросить
       </base-button>
@@ -298,7 +298,8 @@ import { useContentEditor } from "@/composables/edits/useContentEditor";
 import { toRef } from "vue";
 
 const props = defineProps<{
-  contentId: string | null
+  contentId: string | null;
+  pageTitle: string;
 }>();
 
 const {
@@ -331,6 +332,7 @@ const {
   deleteSelectedGenre,
   removeAdditionalImage,
   onClickInsertContent,
+  resetForm,
   updateImage,
   openAdditionalImagesDialog,
   onAdditionalImagesSelected,

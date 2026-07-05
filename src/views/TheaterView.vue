@@ -62,6 +62,14 @@
       >
         Редактировать
       </base-button>
+
+      <base-button
+        class="m-border-primary m-radius-circle"
+        variant="outline"
+        @click="router.push({ name: 'content-history', params: { id: contentId } })"
+      >
+        История
+      </base-button>
     </div>
 
     <!-- Правая колонка (Контент) -->

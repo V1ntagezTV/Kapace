@@ -22,30 +22,41 @@
         class="edit-list__filters-unit m3-bg-1 m-radius-8 m-border"
         :title="'Сортировать по'"
         :menu-alignment="MenuAlignment.Left"
-        :selectable-values="['По идентификатору', 'По названию', 'Сначала новые', 'Сначала старые']"
-        @update:modelValue="() => {updatePage(0)}"
+        :selectable-values="[...CHANGES_ORDER_BY_OPTIONS]"
+        @update:modelValue="resetAndLoad"
       />
       <base-selector
         v-model="filters.historyType.value"
         class="edit-list__filters-unit m3-bg-1 m-radius-8 m-border"
         :title="'Тип'"
         :menu-alignment="MenuAlignment.Left"
-        :selectable-values="['Все', 'Дорама', 'Серия']"
-        @update:modelValue="() => {updatePage(0)}"
+        :selectable-values="[...CHANGES_HISTORY_TYPE_OPTIONS]"
+        @update:modelValue="resetAndLoad"
       />
       <base-selector
         v-model="filters.status.value"
         class="edit-list__filters-unit m3-bg-1 m-radius-8 m-border"
         :title="'Статус'"
         :menu-alignment="MenuAlignment.Left"
-        :selectable-values="['Все', 'Не одобрено', 'Одобрено']"
-        @update:modelValue="() => {updatePage(0)}"
+        :selectable-values="[...CHANGES_STATUS_OPTIONS]"
+        @update:modelValue="resetAndLoad"
       />
     </div>
 
+    <div v-if="!dataIsReady" class="edit-list__status body-large">
+      Загрузка...
+    </div>
+
+    <template v-else-if="changes.length === 0">
+      <p class="edit-list__empty body-large">
+        Заявок не найдено
+      </p>
+    </template>
+
+    <template v-else>
     <base-background
       v-for="unit in changes"
-      v-show="dataIsReady" :key="unit"
+      :key="unit"
       :type="2"
       class="edit-list__history m-radius-28 m3-bg-1"
     >
@@ -133,18 +144,21 @@
         </a>
       </div>
     </base-background>
-    <div class="row gap-16" style="width: 100%">
+    </template>
+
+    <div v-if="dataIsReady && changes.length > 0" class="row gap-16" style="width: 100%">
       <base-text-button
         v-if="offset !== 0"
         class="edit-list__paging-button title-medium m3-bg-1 m-radius-28 gap-8"
-        @click="updatePage(-10)"
+        @click="changePage(-pageSize)"
       >
         <nav-left-arrow-icon />
         Предыдущая страница
       </base-text-button>
       <base-text-button
+        v-if="hasNextPage"
         class="edit-list__paging-button title-medium m3-bg-1 m-radius-28 gap-8"
-        @click="updatePage(5)"
+        @click="changePage(pageSize)"
       >
         Следующая страница
         <nav-right-arrow-icon />
@@ -168,6 +182,11 @@ import NavLeftArrowIcon from "@/components/Icons/MaterialIcons/NavLeftArrowIcon.
 import NavRightArrowIcon from "@/components/Icons/MaterialIcons/NavRightArrowIcon.vue";
 import {StringExtensions} from "@/helpers/StringExtensions";
 import { resolveBackendImageLink } from "@/helpers/ImageLinkResolver";
+import {
+  CHANGES_HISTORY_TYPE_OPTIONS,
+  CHANGES_ORDER_BY_OPTIONS,
+  CHANGES_STATUS_OPTIONS,
+} from '@/models/edits/ChangesListFilters';
 import { useChangesList } from "@/composables/edits/useChangesList";
 
 const {
@@ -178,7 +197,10 @@ const {
   changes,
   isSearchMenuDropped,
   offset,
-  updatePage,
+  hasNextPage,
+  pageSize,
+  resetAndLoad,
+  changePage,
   clickOnMineFilter,
   approveClick,
   getVideoLinkByChangesComparisons,
@@ -189,6 +211,18 @@ const {
 
 <style lang="scss" scoped>
 .edit-list {
+  &__status,
+  &__empty {
+    width: 100%;
+    padding: 32px 24px;
+    text-align: center;
+    color: var(--font-gray);
+  }
+
+  &__empty {
+    color: var(--on-surface-variant-light);
+  }
+
   &__paging-button {
     display: flex;
     padding: 24px;

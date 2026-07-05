@@ -10,3 +10,6 @@ export const HistoryChangesOrderType = {
     ByCreated: "ByCreated",
     ByCreatedDescending: "ByCreatedDescending"
 } as const;
+
+export type HistoryTypeValue = (typeof HistoryType)[keyof typeof HistoryType];
+export type HistoryChangesOrderTypeValue = (typeof HistoryChangesOrderType)[keyof typeof HistoryChangesOrderType];

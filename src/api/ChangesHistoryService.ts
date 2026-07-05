@@ -17,8 +17,8 @@ export type V1CreateEpisodeChangeRequest = {
 export type ChangeableEpisodeFields = {
     Number: number,
     VideoScript: string,
-    Language: typeof Language,
-    TranslationType: typeof TranslationType,
+    Language: (typeof Language)[keyof typeof Language],
+    TranslationType: (typeof TranslationType)[keyof typeof TranslationType],
     EpisodeId: number | null,
     TranslatorId: number | null,
     TranslatorName: string | null,

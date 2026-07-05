@@ -33,5 +33,55 @@ export function useEditNavigation() {
         return episodeParam ? Number(episodeParam) : null;
     });
 
-    return { selectedPage, contentId, episodeId };
+    const isListPage = computed(() => selectedPage.value === SettingsPageTypes.Edits);
+
+    const isContentEditorPage = computed(
+        () =>
+            selectedPage.value === SettingsPageTypes.CreateContent ||
+            selectedPage.value === SettingsPageTypes.EditContent
+    );
+
+    const isEpisodeEditorPage = computed(
+        () =>
+            selectedPage.value === SettingsPageTypes.CreateEpisode ||
+            selectedPage.value === SettingsPageTypes.EditEpisode
+    );
+
+    const isEditingContent = computed(
+        () => selectedPage.value === SettingsPageTypes.EditContent
+    );
+
+    const isEditingEpisode = computed(
+        () => selectedPage.value === SettingsPageTypes.EditEpisode
+    );
+
+    const contentPageTitle = computed(() => {
+        if (isEditingContent.value && contentId.value) {
+            return `Редактирование контента #${contentId.value}`;
+        }
+        return 'Новый контент';
+    });
+
+    const episodePageTitle = computed(() => {
+        if (isEditingEpisode.value && episodeId.value && contentId.value) {
+            return `Редактирование эпизода #${episodeId.value}`;
+        }
+        if (isEditingEpisode.value && contentId.value) {
+            return `Новый эпизод для контента #${contentId.value}`;
+        }
+        return 'Новый эпизод';
+    });
+
+    return {
+        selectedPage,
+        contentId,
+        episodeId,
+        isListPage,
+        isContentEditorPage,
+        isEpisodeEditorPage,
+        isEditingContent,
+        isEditingEpisode,
+        contentPageTitle,
+        episodePageTitle,
+    };
 }

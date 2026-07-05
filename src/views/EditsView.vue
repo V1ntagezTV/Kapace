@@ -1,16 +1,22 @@
 <template>
   <div class="edit__box">
     <SettingsNavigation class="col" :current="selectedPage" />
-    <EditListComponent v-if="selectedPage === SettingsPageTypes.Edits" />
-    <ContentEditorComponent
-      v-if="selectedPage === SettingsPageTypes.CreateContent || selectedPage === SettingsPageTypes.EditContent"
-      :content-id="contentId"
-    />
-    <EpisodeEditorComponent
-      v-if="selectedPage === SettingsPageTypes.CreateEpisode || selectedPage === SettingsPageTypes.EditEpisode"
-      :content-id="contentId"
-      :episode-id="episodeId"
-    />
+    <EditListComponent v-if="isListPage" />
+    <KeepAlive>
+      <ContentEditorComponent
+        v-if="isContentEditorPage"
+        :key="contentId ?? 'new-content'"
+        :content-id="contentId"
+        :page-title="contentPageTitle"
+      />
+      <EpisodeEditorComponent
+        v-else-if="isEpisodeEditorPage"
+        :key="`${contentId ?? 'new'}-${episodeId ?? 'new'}`"
+        :content-id="contentId"
+        :episode-id="episodeId"
+        :page-title="episodePageTitle"
+      />
+    </KeepAlive>
   </div>
 </template>
 
@@ -19,10 +25,23 @@ import ContentEditorComponent from '@/components/EditViews/ContentEditorComponen
 import EditListComponent from '@/components/EditViews/EditListComponent.vue';
 import EpisodeEditorComponent from '@/components/EditViews/EpisodeEditorComponent.vue';
 import SettingsNavigation from '@/components/Settings/SettingsNavigation.vue';
+import { useEditsAccess } from '@/composables/edits/useEditsAccess';
 import { useEditNavigation } from '@/composables/edits/useEditNavigation';
-import { SettingsPageTypes } from '@/models/SettingsPageTypes';
+import { useEditsNavigationGuard } from '@/composables/edits/useEditsNavigationGuard';
 
-const { selectedPage, contentId, episodeId } = useEditNavigation();
+useEditsAccess();
+useEditsNavigationGuard();
+
+const {
+  selectedPage,
+  contentId,
+  episodeId,
+  isListPage,
+  isContentEditorPage,
+  isEpisodeEditorPage,
+  contentPageTitle,
+  episodePageTitle,
+} = useEditNavigation();
 </script>
 
 <style lang="scss" scoped>
