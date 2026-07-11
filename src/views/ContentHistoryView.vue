@@ -12,12 +12,30 @@
       </h1>
     </div>
 
+    <div class="content-history__settings">
+      <span class="content-history__settings-title label-medium">
+        Настройки отображения
+      </span>
+      <label class="content-history__setting">
+        <input
+          v-model="hideUnapproved"
+          class="content-history__setting-input"
+          type="checkbox"
+          @change="resetAndLoad"
+        >
+        <span class="content-history__setting-switch" aria-hidden="true" />
+        <span class="content-history__setting-label body-medium">
+          Скрыть неодобренные изменения
+        </span>
+      </label>
+    </div>
+
     <div v-if="!dataIsReady" class="content-history__status body-large">
       Загрузка...
     </div>
 
     <p v-else-if="changes.length === 0" class="content-history__empty body-large">
-      История изменений пуста
+      {{ hideUnapproved ? 'Одобренных изменений нет' : 'История изменений пуста' }}
     </p>
 
     <template v-else>
@@ -200,8 +218,10 @@ const {
   changes,
   contentTitle,
   offset,
+  hideUnapproved,
   hasNextPage,
   pageSize,
+  resetAndLoad,
   changePage,
   formatHistoryDate,
   getChangeApprovalStatus,
@@ -274,6 +294,83 @@ function toIsoDateTime(timestamp: number): string {
 
   &__title {
     margin: 0;
+    color: var(--on-surface-light);
+  }
+
+  &__settings {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    width: 100%;
+    margin: 4px 0 8px;
+    padding: 10px 14px;
+    border: 1px solid var(--outline-variant-light);
+    border-radius: 12px;
+    background: var(--surface-container-lowest100);
+  }
+
+  &__settings-title {
+    color: var(--on-surface-variant-light);
+  }
+
+  &__setting {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  &__setting-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+
+    &:focus-visible + .content-history__setting-switch {
+      outline: 2px solid var(--primary40);
+      outline-offset: 2px;
+    }
+
+    &:checked + .content-history__setting-switch {
+      background: var(--primary40);
+      border-color: var(--primary40);
+
+      &::after {
+        transform: translateX(16px);
+      }
+    }
+  }
+
+  &__setting-switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+    border: 1px solid var(--outline-light);
+    border-radius: 999px;
+    background: var(--surface-variant-light);
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--surface-container-lowest100);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+      transition: transform 0.15s ease;
+    }
+  }
+
+  &__setting-label {
     color: var(--on-surface-light);
   }
 

@@ -59,6 +59,7 @@ export function useContentHistory(contentId: Ref<string>) {
     const changes = ref<ChangeUnit[]>([]);
     const contentTitle = ref<string>('');
     const offset = ref(0);
+    const hideUnapproved = ref(false);
 
     const hasNextPage = computed(
         () => dataIsReady.value && changes.value.length >= CONTENT_HISTORY_PAGE_SIZE
@@ -84,7 +85,7 @@ export function useContentHistory(contentId: Ref<string>) {
         }
 
         const response = await changesHistoryService.getChangesComparisons({
-            Approved: null,
+            Approved: hideUnapproved.value ? true : null,
             CreatedByIds: [],
             HistoryTypes: [HistoryType.Content],
             OrderBy: HistoryChangesOrderType.ByCreatedDescending,
@@ -125,6 +126,7 @@ export function useContentHistory(contentId: Ref<string>) {
         changes,
         contentTitle,
         offset,
+        hideUnapproved,
         hasNextPage,
         pageSize: CONTENT_HISTORY_PAGE_SIZE,
         resetAndLoad,
