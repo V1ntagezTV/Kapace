@@ -93,14 +93,14 @@ function closePreview() {
   display: flex;
   flex-direction: column;
   gap: 0;
-  width: calc(100% + 32px);
-  margin: 0 -16px;
+  width: 100%;
+  margin: 0;
 
   &__row {
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    padding: 8px 28px;
+    padding: 8px 22px;
     border-radius: 0;
 
     &--removed {

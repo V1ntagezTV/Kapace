@@ -70,8 +70,8 @@ function prefixFor(type: DiffLineType): string {
 
   &__lines {
     overflow: hidden;
-    width: calc(100% + 32px);
-    margin: 0 -16px;
+    width: 100%;
+    margin: 0;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 12px;
     line-height: 1.35;

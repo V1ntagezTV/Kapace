@@ -6,6 +6,20 @@ import { computed, inject, onMounted, ref, type Ref } from 'vue';
 
 export const CONTENT_HISTORY_PAGE_SIZE = 10;
 
+export type ChangeApprovalStatus = 'approved' | 'pending' | 'rejected';
+
+export function getChangeApprovalStatus(unit: ChangeUnit): ChangeApprovalStatus {
+    if (unit.ApprovedBy === null) {
+        return 'pending';
+    }
+
+    if (unit.ApprovedBy < 0) {
+        return 'rejected';
+    }
+
+    return 'approved';
+}
+
 function normalizeTimestampToMs(value: number): number {
     return value < 1_000_000_000_000 ? value * 1000 : value;
 }
@@ -116,5 +130,6 @@ export function useContentHistory(contentId: Ref<string>) {
         resetAndLoad,
         changePage,
         formatHistoryDate,
+        getChangeApprovalStatus,
     };
 }

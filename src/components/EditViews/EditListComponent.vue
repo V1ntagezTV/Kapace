@@ -54,99 +54,102 @@
     </template>
 
     <template v-else>
-    <base-background
-      v-for="unit in changes"
-      :key="unit"
-      :type="2"
-      class="edit-list__history m-radius-28 m3-bg-1"
-    >
-      <div class="edit-list__header dynamic">
-        <div>
-          <p class="title-large">
-            {{ unit.Title }}#{{ unit.HistoryId }}
-          </p>
-          <p>{{ StringExtensions.getDateStr(unit.CreatedAt) }}</p>
-        </div>
-
-        <div class="row gap-26">
-          <filter-chips
-            class="edit-list__author m-border m-radius-1"
-            :text="unit.CreatedBy ? 'Автор#'+unit.CreatedBy : 'Система'"
-            :enable-text-icon="true"
-          >
-            <template #text-icon>
-              <user-icon-outlined />
-            </template>
-          </filter-chips>
-          <filter-chips
-            v-if="unit.ApprovedBy != null"
-            class="edit-list__approver m-border m-radius-1"
-            :text="(unit.ApprovedBy ? 'Пользователь#' + unit.ApprovedBy : 'Система')"
-            :enable-text-icon="true"
-          >
-            <template #text-icon>
-              <mark-icon />
-            </template>
-          </filter-chips>
-        </div>
-      </div>
-
-      <template v-if="unit.HistoryType === HistoryType.Content">
-        <div class="edit-list__image-box">
-          <img
-            class="edit-list__content-image m-radius-2"
-            :src="resolveBackendImageLink(unit.AvatarImageLink)"
-            alt="Изображение контента"
-            @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
-          >
-        </div>
-      </template>
-      <template v-else-if="unit.HistoryType === HistoryType.Episode">
-        <iframe
-          class="edit-list__image-box"
-          :src="getVideoLinkByChangesComparisons(unit)"
-          frameborder="0"
-          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-          allowfullscreen
-        />
-      </template>
-      <div class="edit-list__body">
-        <div
-          v-for="fieldComparison in unit.FieldsComparisons"
-          :key="fieldComparison"
-          class="edit-list__field-comparison"
-        >
-          <div class="edit-list__field-name body-large">
-            {{ fieldComparison.Name }}
-          </div>
-          <div class="row gap-8">
-            <span v-if="fieldComparison.OldValue" class="body-medium edit-list__field-comparison--old">
-              {{ fieldComparison.OldValue }}
-            </span>
-            <span class="body-medium edit-list__field-comparison--new">
-              {{ fieldComparison.NewValue }}
-            </span>
-          </div>
-        </div>
-      </div>
-      <div
-        v-if="unit.ApprovedBy === null"
-        class="edit-list__footer h__space-between v__center"
+      <base-background
+        v-for="unit in changes"
+        :key="unit"
+        :type="2"
+        class="edit-list__history m-radius-28 m3-bg-1"
       >
-        <a>
-          <base-button
-            :variant="'filled'"
-            class="material m-radius-circle body-large edit-list__icon"
-            @click="approveClick(unit.HistoryId)"
+        <div class="edit-list__header dynamic">
+          <div>
+            <p class="title-large">
+              {{ unit.Title }}#{{ unit.HistoryId }}
+            </p>
+            <p>{{ StringExtensions.getDateStr(unit.CreatedAt) }}</p>
+          </div>
+
+          <div class="row gap-26">
+            <filter-chips
+              class="edit-list__author m-border m-radius-1"
+              :text="unit.CreatedBy ? 'Автор#'+unit.CreatedBy : 'Система'"
+              :enable-text-icon="true"
+            >
+              <template #text-icon>
+                <user-icon-outlined />
+              </template>
+            </filter-chips>
+            <filter-chips
+              v-if="unit.ApprovedBy != null"
+              class="edit-list__approver m-border m-radius-1"
+              :text="(unit.ApprovedBy ? 'Пользователь#' + unit.ApprovedBy : 'Система')"
+              :enable-text-icon="true"
+            >
+              <template #text-icon>
+                <mark-icon />
+              </template>
+            </filter-chips>
+          </div>
+        </div>
+
+        <template v-if="unit.HistoryType === HistoryType.Content">
+          <div class="edit-list__image-box">
+            <img
+              class="edit-list__content-image m-radius-2"
+              :src="resolveBackendImageLink(unit.AvatarImageLink)"
+              alt="Изображение контента"
+              @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
+            >
+          </div>
+        </template>
+        <template v-else-if="unit.HistoryType === HistoryType.Episode">
+          <iframe
+            class="edit-list__image-box"
+            :src="getVideoLinkByChangesComparisons(unit)"
+            frameborder="0"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            allowfullscreen
+          />
+        </template>
+        <div class="edit-list__body">
+          <div
+            v-for="fieldComparison in unit.FieldsComparisons"
+            :key="fieldComparison"
+            class="edit-list__field-comparison"
           >
-            Одобрить
-          </base-button>
-        </a>
-      </div>
-    </base-background>
+            <div class="edit-list__field-name body-large">
+              {{ fieldComparison.Name }}
+            </div>
+            <div class="row gap-8">
+              <span v-if="fieldComparison.OldValue" class="body-medium edit-list__field-comparison--old">
+                {{ fieldComparison.OldValue }}
+              </span>
+              <span class="body-medium edit-list__field-comparison--new">
+                {{ fieldComparison.NewValue }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          v-if="unit.ApprovedBy === null"
+          class="edit-list__footer h__space-between v__center"
+        >
+          <a>
+            <base-button
+              :variant="'filled'"
+              class="material m-radius-circle body-large edit-list__icon"
+              @click="approveClick(unit.HistoryId)"
+            >
+              Одобрить
+            </base-button>
+          </a>
+        </div>
+      </base-background>
     </template>
 
-    <div v-if="dataIsReady && changes.length > 0" class="row gap-16" style="width: 100%">
+    <div
+      v-if="dataIsReady && changes.length > 0" class="row gap-16"
+      style="width: 100%"
+    >
       <base-text-button
         v-if="offset !== 0"
         class="edit-list__paging-button title-medium m3-bg-1 m-radius-28 gap-8"
