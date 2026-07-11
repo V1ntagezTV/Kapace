@@ -14,9 +14,13 @@
           'selector__button-bordered': props.buttonBorder,
           'selector__disabled': props.isDisabled }"
         :text="titleRef"
+        :enable-text-icon="!!slots['text-icon']"
         :enable-menu-icon="true"
         @click="clickOnHeader(!isDroppedRef)"
       >
+        <template #text-icon>
+          <slot name="text-icon" />
+        </template>
         <template #menu-icon>
           <material-drop-arrow :class="{'selector__disabled': props.isDisabled }" />
         </template>

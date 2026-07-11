@@ -26,7 +26,30 @@
         class="m3-bg-1 m-border m-border-hover m-border-active m-radius-circle theater__favorite-selector"
         :class="{'theater__favorite-selector--active': userFavoriteStatus !== DEFAULT_FAVORITE_STATUS}"
         @update:model-value="addToFavorites"
-      />
+      >
+        <template v-if="selectedFavoriteItem" #text-icon>
+          <component
+            :is="selectedFavoriteItem.icon"
+            class="theater__favorite-menu-icon"
+            :class="selectedFavoriteItem.colorClass"
+          />
+        </template>
+        <template #menu="{ select }">
+          <button
+            v-for="item in favoriteMenuItems"
+            :key="item.label"
+            class="theater__favorite-menu-item"
+            @click="select(item.label)"
+          >
+            <component
+              :is="item.icon"
+              class="theater__favorite-menu-icon"
+              :class="item.colorClass"
+            />
+            <span>{{ item.label }}</span>
+          </button>
+        </template>
+      </base-selector>
 
       <base-background class="theater__meta" :type="2">
         <div
@@ -48,26 +71,29 @@
       </base-background>
 
       <base-button
-        class="m-border-primary m-radius-circle"
+        class="m-border-primary m-radius-circle theater__action-button"
         variant="outline"
         @click="router.push({name: 'edit-episode-prefill', params: {content: contentId}})"
       >
+        <AddLibraryIcon class="theater__action-icon" />
         Добавить серию
       </base-button>
 
       <base-button
-        class="m-border-primary m-radius-circle"
+        class="m-border-primary m-radius-circle theater__action-button"
         variant="outline"
         @click="router.push({name: 'edit-content', params: {content: contentId}})"
       >
+        <AddNote class="theater__action-icon" />
         Редактировать
       </base-button>
 
       <base-button
-        class="m-border-primary m-radius-circle"
+        class="m-border-primary m-radius-circle theater__action-button"
         variant="outline"
         @click="router.push({ name: 'content-history', params: { id: contentId } })"
       >
+        <CalendarIcon class="theater__action-icon" />
         История
       </base-button>
     </div>
@@ -108,7 +134,7 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, onMounted, ref, watch, type Component } from "vue";
+import { computed, inject, onMounted, ref, watch, type Component } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 
 // Components
@@ -121,9 +147,14 @@ import StarsRateComponent from "@/components/UseReadyComponents/StarsRateCompone
 import AlbumImages from "@/components/UseReadyComponents/AlbumImages.vue";
 import TranslationsListComponentV3 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV3.vue";
 import AddLibraryIcon from "@/components/Icons/AddLibraryIcon.vue";
+import AddNote from "@/components/Icons/AddNote.vue";
 import EyeIcon from "@/components/Icons/MaterialIcons/Eye.vue";
 import LoopIcon from "@/components/Icons/LoopIcon.vue";
 import CalendarIcon from "@/components/Icons/Calendar.vue";
+import HeartIcon from "@/components/Icons/HeartIcon.vue";
+import PauseIcon from "@/components/Icons/PauseIcon.vue";
+import CheckCircleFilledIcon from "@/components/Icons/CheckCircleFilledIcon.vue";
+import XIcon from "@/components/Icons/xIcon.vue";
 
 // APIs & Services
 import { ContentService } from "@/api/ContentService";
@@ -159,14 +190,24 @@ const isInFavorites = ref<boolean>(false);
 const userFavoriteStatus = ref<string>(DEFAULT_FAVORITE_STATUS);
 const userStars = ref<number>(0);
 
-const favoriteValues = [
-  FavoriteStatuses.Loved,
-  FavoriteStatuses.Planned,
-  FavoriteStatuses.Watching,
-  FavoriteStatuses.Paused,
-  FavoriteStatuses.Finished,
-  FavoriteStatuses.Dropped,
+const favoriteMenuItems: FavoriteMenuItem[] = [
+  { label: FavoriteStatuses.Loved, icon: HeartIcon, colorClass: "theater__favorite-menu-icon--loved" },
+  { label: FavoriteStatuses.Planned, icon: CalendarIcon, colorClass: "theater__favorite-menu-icon--planned" },
+  { label: FavoriteStatuses.Watching, icon: EyeIcon, colorClass: "theater__favorite-menu-icon--watching" },
+  { label: FavoriteStatuses.Paused, icon: PauseIcon, colorClass: "theater__favorite-menu-icon--paused" },
+  { label: FavoriteStatuses.Finished, icon: CheckCircleFilledIcon, colorClass: "theater__favorite-menu-icon--finished" },
+  { label: FavoriteStatuses.Dropped, icon: XIcon, colorClass: "theater__favorite-menu-icon--dropped" },
 ];
+const favoriteValues = favoriteMenuItems.map(({ label }) => label);
+const selectedFavoriteItem = computed(() =>
+  favoriteMenuItems.find(({ label }) => label === userFavoriteStatus.value)
+);
+
+type FavoriteMenuItem = {
+  label: string;
+  icon: Component;
+  colorClass: string;
+};
 
 // --- Lifecycle ---
 onMounted(async () => {
@@ -401,6 +442,76 @@ function normalizeTimestampToMs(value: number): number {
     &--active {
       border: 1px solid var(--primary40);
     }
+  }
+
+  &__favorite-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    height: 44px;
+    padding: 0 16px;
+    color: var(--on-surface);
+    font-size: 16px;
+    line-height: 24px;
+    text-align: left;
+
+    &:hover {
+      background: var(--surface-container-highest90);
+    }
+  }
+
+  &__favorite-menu-icon {
+    display: flex;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    align-items: center;
+    justify-content: center;
+
+    :deep(svg) {
+      width: 20px;
+      height: 20px;
+    }
+
+    &--loved {
+      color: #E5484D;
+    }
+
+    &--planned {
+      color: #8E63CE;
+    }
+
+    &--watching {
+      color: #2F80ED;
+    }
+
+    &--paused {
+      color: #F5A524;
+    }
+
+    &--finished {
+      color: #30A46C;
+    }
+
+    &--dropped {
+      color: #8B8D98;
+    }
+  }
+
+  &__action-button {
+    gap: 8px;
+  }
+
+  &__action-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  &__action-icon :deep(svg) {
+    width: 18px;
+    height: 18px;
   }
 
   &__meta {
