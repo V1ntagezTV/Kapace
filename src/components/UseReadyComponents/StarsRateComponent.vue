@@ -39,22 +39,22 @@
       </div>
     </base-background>
 
-    <base-background :type="2" class="fill column padding-20">
+    <base-background :type="2" class="fill padding-20 stars-table">
       <template v-for="(value, index) in rates" :key="index">
-        <div class="stars-box h__fill h__center v__center gap-8">
-          <p class="stars-num row v__center fit-content">
-            {{ Math.abs(index - 5) }}
-          </p>
-          <heart-filled-icon class="orange" />
+        <div class="stars-box">
+          <span class="stars-tag stars-rating row v__center gap-8">
+            <star-icon class="stars-star" />
+            <span class="body-small">{{ Math.abs(index - 5) }}</span>
+          </span>
           <div class="stars-progress m-radius-16">
             <div
               :style="{width: (calculatePercentage(value)) + '%'}"
               class="line-filled m-radius-16"
             />
           </div>
-          <p class="stars-value">
-            {{ formatRateCount(value) }}
-          </p>
+          <span class="stars-tag stars-value row v__center">
+            <span class="body-small">{{ formatRateCount(value) }}</span>
+          </span>
         </div>
       </template>
     </base-background>
@@ -66,6 +66,7 @@ import {computed, ref} from "vue";
 import HeartEmptyIcon from "@/components/Icons/HeartEmptyIcon.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import HeartFilledIcon from "@/components/Icons/HeartFilledIcon.vue";
+import StarIcon from "@/components/Icons/StarIcon.vue";
 import IconButton from "@/components/Base/Buttons/IconButton.vue";
 
 const props = defineProps({
@@ -106,32 +107,53 @@ function formatRateCount(value: number): string {
 </script>
 
 <style scoped lang="scss">
+.stars-table {
+  display: grid;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+  grid-template-columns: min-content minmax(0, 1fr) max-content;
+  grid-auto-flow: row;
+}
+
 .stars {
   &-box {
-    display: grid;
-    width: 100%;
-    align-items: center;
-    grid-template-columns: min-content 20px minmax(0, 1fr) 36px;
-    grid-auto-flow: row;
+    display: contents;
   }
 
-  &-num {
-    padding-top: 2px;
-    justify-content: flex-end;
+  &-tag {
+    background: var(--primary-container-light);
+    border-radius: 8px;
+    padding: 4px 8px;
+    width: 100%;
+    justify-content: right;
+    overflow: hidden;
+    gap: 8px;
+  }
+
+  &-rating {
+    width: fit-content;
+  }
+
+  &-star {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: var(--on-primary-container-light);
   }
 
   &-value {
-    text-align: right;
+    justify-self: end;
     white-space: nowrap;
   }
 }
 
 .stars-progress {
   width: 100%;
-  height: 4px;
+  height: 6px;
   min-width: 0;
   overflow: hidden;
-  background-color: var(--primary80);
+  background-color: var(--primary90);
 }
 
 .line-filled {
