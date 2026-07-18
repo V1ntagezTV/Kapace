@@ -9,8 +9,8 @@ export class EpisodeService extends ApiService {
         return await this.CallHandlerAsync<V1EpisodeQueryResponse[], V1EpisodeQueryRequest>(request, 'query');
     }
 
-    public async incrementViews(episodeId: number) {
-        return this.CallPostHandlerAsync<{EpisodeId: number}>(
+    public async incrementViews(episodeId: string | number) {
+        return this.CallPostHandlerAsync<{EpisodeId: string | number}>(
             {EpisodeId: episodeId},
             "increment-views");
     }

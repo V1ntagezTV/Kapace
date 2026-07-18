@@ -21,13 +21,13 @@
           >
           <BaseImageInput
             class="content-edit__main-image-input m3-bg-2 column h__center"
-            @on:update="updateImage"
+            @on:update="openImageCropper"
           />
         </div>
         <BaseImageInput
           v-else
           class="m3-bg-2 column h__center"
-          @on:update="updateImage"
+          @on:update="openImageCropper"
         />
       </div>
     </div>
@@ -278,6 +278,14 @@
         Сбросить
       </base-button>
     </div>
+
+    <ImageCropModal
+      :is-visible="isImageCropperVisible"
+      :image="imageToCrop"
+      :image-url="imageToCropUrl"
+      @close="closeImageCropper"
+      @crop="applyCroppedImage"
+    />
   </div>
 </template>
 
@@ -294,8 +302,9 @@ import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import AsyncSearchSelector from "@/components/Base/Selector/AsyncSearchSelector.vue";
 import XIcon from "@/components/Icons/xIcon.vue";
+import ImageCropModal from "@/components/Modal/ImageCropModal.vue";
 import { useContentEditor } from "@/composables/edits/useContentEditor";
-import { toRef } from "vue";
+import { onUnmounted, ref, toRef } from "vue";
 
 const props = defineProps<{
   contentId: string | null;
@@ -337,6 +346,33 @@ const {
   openAdditionalImagesDialog,
   onAdditionalImagesSelected,
 } = useContentEditor(toRef(props, 'contentId'));
+
+const isImageCropperVisible = ref(false);
+const imageToCrop = ref<File | null>(null);
+const imageToCropUrl = ref('');
+
+function openImageCropper(image: File, imageUrl: string) {
+  closeImageCropper();
+  imageToCrop.value = image;
+  imageToCropUrl.value = imageUrl;
+  isImageCropperVisible.value = true;
+}
+
+function closeImageCropper() {
+  isImageCropperVisible.value = false;
+  imageToCrop.value = null;
+  if (imageToCropUrl.value) {
+    URL.revokeObjectURL(imageToCropUrl.value);
+    imageToCropUrl.value = '';
+  }
+}
+
+function applyCroppedImage(image: File) {
+  updateImage(image, URL.createObjectURL(image));
+  closeImageCropper();
+}
+
+onUnmounted(closeImageCropper);
 </script>
 
 <style lang="scss" scoped>

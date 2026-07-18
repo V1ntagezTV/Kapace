@@ -117,7 +117,7 @@
               :enable-text-icon="true"
             >
               <template #text-icon>
-                <Eye class="episode-card__icon" />
+                <Eye class="episode-card__icon episode-card__icon--eye" />
               </template>
               <template #text>
                 <p class="episode-card__tag-text body-small text__one-line h__padding-8">
@@ -374,6 +374,11 @@ $color-bg-tag-hover: var(--primary80);
   &__tag {
     color: $color-text-dimmed;
     background: $color-bg-hover;
+  }
+
+  &__icon--eye {
+    width: 20px;
+    height: 20px;
   }
 
   &:hover & {

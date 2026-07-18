@@ -110,6 +110,7 @@
       <album-images
         v-if="myImages.length > 0"
         :images="myImages"
+        :max-rows="2"
       />
 
       <stars-rate-component
@@ -295,7 +296,10 @@ async function clickOnStar(starIndex: number) {
   if (!details.value) return;
 
   await favoritesApi.setStars(contentId.value, starIndex);
-  userStars.value = starIndex;
+  const refreshedDetails = await contentService.V1GetById(contentId.value);
+
+  details.value.StarsAggregates = refreshedDetails.StarsAggregates;
+  userStars.value = refreshedDetails.UserInfo?.Stars ?? starIndex;
 }
 
 async function addToFavorites(favoriteStatusStr: string) {

@@ -209,9 +209,11 @@ export class ApiService {
     protected async CallHandlerAsync<TResponse, TRequest>(
         requestBody: TRequest,
         handlerPath: string): Promise<TResponse> {
-        const response = await this.CallHandler<TResponse, TRequest>(requestBody, handlerPath);
-        console.log({ path: this.servicePath + handlerPath, request: requestBody, response: response });
-        return response;
+        const response = await this.baseFetch(requestBody, handlerPath);
+        const responseText = await response.text();
+        const parsedResponse = this.parseJsonWithSafeIds<TResponse>(responseText);
+        console.log({ path: this.servicePath + handlerPath, request: requestBody, response: parsedResponse });
+        return parsedResponse;
     }
 
     protected async fetchV2<TResponse, TRequest>(

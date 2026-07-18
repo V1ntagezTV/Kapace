@@ -39,22 +39,24 @@
       </div>
     </base-background>
 
-    <base-background :type="2" class="fill padding-20 stars-table">
+    <base-background :type="2" class="fill padding-16 stars-table">
       <template v-for="(value, index) in rates" :key="index">
-        <div class="stars-box">
-          <span class="stars-tag stars-rating row v__center gap-8">
+        <div class="stars-box row v__center">
+          <span class="stars-rating row v__center gap-8">
             <star-icon class="stars-star" />
             <span class="body-small">{{ Math.abs(index - 5) }}</span>
           </span>
-          <div class="stars-progress m-radius-16">
+          <div class="stars-track">
             <div
-              :style="{width: (calculatePercentage(value)) + '%'}"
-              class="line-filled m-radius-16"
-            />
+              class="stars-fill row v__center"
+              :class="{ 'stars-fill--full': calculatePercentage(value) >= 100 }"
+              :style="{ width: calculatePercentage(value) + '%' }"
+            >
+              <span class="stars-value body-small">
+                {{ formatRateCount(value) }}
+              </span>
+            </div>
           </div>
-          <span class="stars-tag stars-value row v__center">
-            <span class="body-small">{{ formatRateCount(value) }}</span>
-          </span>
         </div>
       </template>
     </base-background>
@@ -82,11 +84,14 @@ const props = defineProps({
 const emits = defineEmits<{(emitName: 'on:click-star', starIndex: number) : void}>();
 const hoverIndex = ref<number>(props.userRate);
 const allCounters = computed(() => props.one + props.two + props.three + props.four + props.five);
-const onePercent = computed(() => 100 / allCounters.value);
 const rates = computed(() => [props.five, props.four, props.three, props.two, props.one]);
 
 function calculatePercentage(value: number) : number {
-  return allCounters.value === 0 ? 0 : onePercent.value * value;
+  if (allCounters.value === 0) {
+    return 0;
+  }
+
+  return (value / allCounters.value) * 100;
 }
 
 function clickOnStar(starIndex: number) {
@@ -108,57 +113,61 @@ function formatRateCount(value: number): string {
 
 <style scoped lang="scss">
 .stars-table {
-  display: grid;
-  align-items: center;
-  column-gap: 8px;
-  row-gap: 4px;
-  grid-template-columns: min-content minmax(0, 1fr) max-content;
-  grid-auto-flow: row;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .stars {
   &-box {
-    display: contents;
-  }
-
-  &-tag {
-    background: var(--primary-container-light);
+    min-width: 0;
     border-radius: 8px;
-    padding: 4px 8px;
-    width: 100%;
-    justify-content: right;
     overflow: hidden;
-    gap: 8px;
+    background: var(--primary90);
   }
 
   &-rating {
-    width: fit-content;
+    flex-shrink: 0;
+    align-self: stretch;
+    padding: 4px 8px;
+    background: var(--primary40);
+    color: var(--on-primary-light);
+  }
+
+  &-track {
+    flex: 1;
+    min-width: 0;
+    align-self: stretch;
+    overflow: hidden;
+    background: var(--primary90);
+  }
+
+  &-fill {
+    box-sizing: border-box;
+    justify-content: flex-end;
+    min-width: max-content;
+    height: 100%;
+    padding: 4px 8px;
+    background: var(--primary50);
+    border-radius: 0 8px 8px 0;
+
+    &--full {
+      border-radius: 0;
+    }
   }
 
   &-star {
     flex-shrink: 0;
     width: 16px;
     height: 16px;
-    color: var(--on-primary-container-light);
+    color: var(--on-primary-light);
   }
 
   &-value {
-    justify-self: end;
+    flex-shrink: 0;
+    color: #fff;
     white-space: nowrap;
   }
-}
-
-.stars-progress {
-  width: 100%;
-  height: 6px;
-  min-width: 0;
-  overflow: hidden;
-  background-color: var(--primary90);
-}
-
-.line-filled {
-  background-color: var(--primary40);
-  height: 100%;
 }
 
 .orange {

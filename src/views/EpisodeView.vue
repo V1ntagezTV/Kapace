@@ -2,14 +2,13 @@
   <div class="episode gap-16">
     <!-- Основной блок с плеером и информацией -->
     <BaseBackground
-      v-if="dataIsReady"
+      v-if="dataIsReady && content"
       :type="2"
       class="episode__card"
     >
       <!-- Заголовок и мета-информация -->
       <div class="episode__header">
         <router-link
-          v-if="content"
           :to="{ name: 'theater', params: { id: contentId }}"
           class="episode__back-link"
         >
@@ -76,6 +75,12 @@
       </div>
     </BaseBackground>
 
+    <base-background v-else-if="dataIsReady && loadError" class="episode__error">
+      <p class="title-large">
+        {{ loadError }}
+      </p>
+    </base-background>
+
     <!-- Кнопки навигации -->
     <div v-show="previousEpisode || nextEpisode" class="episode__nav row gap-16">
       <router-link
@@ -117,7 +122,7 @@
       </router-link>
     </div>
 
-    <base-background v-if="selectedTranslation !== null" class="column gap-8 ">
+    <base-background v-if="selectedTranslation !== null && translations" class="column gap-8 ">
       <div>
         Переводычи:
       </div>
@@ -130,7 +135,7 @@
 
     <!-- Список эпизодов (компонент) -->
     <translations-list-component-v3
-      v-if="dataIsReady"
+      v-if="dataIsReady && content"
       :content-id="contentId"
       :selected-translator-id="translationId"
     />
@@ -178,6 +183,7 @@ const episodeService = inject<EpisodeService>('episode-service')!;
 
 // State
 const dataIsReady = ref<boolean>(false);
+const loadError = ref<string | null>(null);
 const content = ref<V1GetByQueryResponseContent | null>(null);
 const translations = ref<V1GetByEpisodeResponse | null>(null);
 
@@ -189,23 +195,37 @@ const selectedTranslation = ref<V1GetByEpisodeResponseTranslation | null>(null);
 const isSelectedVideoLinkValid = ref<boolean>(false);
 
 // Computed params for cleaner access
-const contentId = computed(() => Number(route.params.content));
-const episodeId = computed(() => Number(route.params.episode));
+const contentId = computed(() => getRouteParam(route.params.content));
+const episodeId = computed(() => getRouteParam(route.params.episode));
 const translationId = computed(() => Number(route.params.translation) > 0 ? Number(route.params.translation) : 0);
 
 onMounted(async () => {
   await setContents();
 });
 
-watch(() => route.params.episode, async (newVal) => {
-  if (newVal) await setContents();
-});
+watch(
+  () => [route.params.content, route.params.episode, route.params.translation],
+  async () => {
+    await setContents();
+  }
+);
 
 async function setContents() {
   dataIsReady.value = false;
+  loadError.value = null;
+  content.value = null;
+  translations.value = null;
+  currentEpisode.value = null;
+  selectedTranslation.value = null;
   isSelectedVideoLinkValid.value = false;
   previousEpisode.value = null;
   nextEpisode.value = null;
+
+  if (!isValidId(contentId.value) || !isValidId(episodeId.value)) {
+    loadError.value = "Некорректная ссылка на эпизод";
+    dataIsReady.value = true;
+    return;
+  }
 
   try {
     // 1. Get Content Info
@@ -216,40 +236,55 @@ async function setContents() {
     request.Filters = filters;
 
     const contentsResponse = await contentService.V1GetByQuery(request);
-    if (contentsResponse.Content.length !== 1) {
-      throw new Error("Content not found exception");
+    const foundContent = contentsResponse.Content.find(
+      item => String(item.Content.Id) === contentId.value
+    );
+    if (!foundContent) {
+      throw new Error("Content not found");
     }
-    content.value = contentsResponse.Content.find(x => x.Content.Id == contentId.value)!;
+    content.value = foundContent;
+
     // 2. Determine Current, Prev, Next
-    currentEpisode.value = content.value.Episodes.find(value => value.Id == episodeId.value) || null;
+    currentEpisode.value = foundContent.Episodes.find(
+      episode => String(episode.Id) === episodeId.value
+    ) || null;
+    if (!currentEpisode.value) {
+      throw new Error("Episode not found");
+    }
 
     // 3. Get Translations/Episodes for Player logic
-    const translationsRequest = new V1GetByEpisodeRequest(contentId.value, currentEpisode.value.Id, null, EpisodeOrderType.ByNumber);
+    const translationsRequest = new V1GetByEpisodeRequest(
+      contentId.value,
+      currentEpisode.value.Id,
+      null,
+      EpisodeOrderType.ByNumber
+    );
     translations.value = await translationService.V1GetByEpisodeAsync(translationsRequest);
 
+    // Ищем эпизод в списке переводов, чтобы достать ссылку на видео
+    if (translations.value?.Episodes) {
+      selectedTranslation.value = getCurrentEpisodeTranslation(translationId.value, translations.value.Episodes);
 
-    if (currentEpisode.value) {
-      // Ищем эпизод в списке переводов, чтобы достать ссылку на видео
-      if (translations.value?.Episodes) {
-        selectedTranslation.value = getCurrentEpisodeTranslation(translationId.value, translations.value.Episodes);
+      // Сортируем и ищем соседей
+      const orderedEpisodes = [...translations.value.Episodes].sort((a, b) => a.Number - b.Number);
+      const currentIndex = orderedEpisodes.findIndex(ep => ep.Number === currentEpisode.value!.Number);
 
-        // Сортируем и ищем соседей
-        const orderedEpisodes = [...translations.value.Episodes].sort((a, b) => a.Number - b.Number);
-        const currentIndex = orderedEpisodes.findIndex(ep => ep.Number === currentEpisode.value!.Number);
-
-        if (currentIndex !== -1) {
-          if (currentIndex > 0) previousEpisode.value = orderedEpisodes[currentIndex - 1];
-          if (currentIndex < orderedEpisodes.length - 1) nextEpisode.value = orderedEpisodes[currentIndex + 1];
-        }
+      if (currentIndex !== -1) {
+        if (currentIndex > 0) previousEpisode.value = orderedEpisodes[currentIndex - 1];
+        if (currentIndex < orderedEpisodes.length - 1) nextEpisode.value = orderedEpisodes[currentIndex + 1];
       }
     }
 
     // 4. Post-actions
     await validateVideoLink();
     await episodeService.incrementViews(episodeId.value);
-
   } catch (e) {
     console.error("Error loading episode:", e);
+    loadError.value = e instanceof Error && e.message === "Content not found"
+      ? "Контент не найден"
+      : e instanceof Error && e.message === "Episode not found"
+        ? "Эпизод не найден"
+        : "Не удалось загрузить эпизод";
   } finally {
     dataIsReady.value = true;
   }
@@ -262,7 +297,7 @@ function getCurrentEpisodeTranslation(
 
   if (!episodesWithTranslations || episodesWithTranslations.length === 0) return null;
 
-  const episode = episodesWithTranslations.find(ep => ep.Id == episodeId.value);
+  const episode = episodesWithTranslations.find(ep => String(ep.Id) === episodeId.value);
   if (!episode || !episode.Translations || episode.Translations.length === 0) return null;
 
   if (pathTranslationId > 0) {
@@ -272,6 +307,14 @@ function getCurrentEpisodeTranslation(
 
   // default
   return episode.Translations[0];
+}
+
+function getRouteParam(param: string | string[]): string {
+  return String(Array.isArray(param) ? (param[0] ?? "") : (param ?? ""));
+}
+
+function isValidId(value: string): boolean {
+  return /^\d+$/.test(value) && BigInt(value) > 0n;
 }
 
 async function validateVideoLink() {
@@ -366,6 +409,10 @@ async function validateVideoLink() {
     margin: 16px;
     width: 100%;
     min-height: 200px;
+  }
+
+  &__error {
+    padding: 24px;
   }
 
   &__nav {

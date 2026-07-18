@@ -2,6 +2,11 @@ import {ContentType} from "@/api/Enums/ContentType";
 import {ContentStatus} from "@/api/Enums/ContentStatus";
 import {Country as CountryEnum} from "@/api/Enums/Country";
 
+export type QueryContentAdditionalImage = {
+    ImageName: string,
+    ImageLink: string,
+}
+
 export type QueryContent = {
     Id: number,
     Title: string,
@@ -23,4 +28,5 @@ export type QueryContent = {
     AvatarImageLink: string,
     AvatarImageName: string,
     Images: string[],
+    AdditionalImages: QueryContentAdditionalImage[],
 }

@@ -87,6 +87,10 @@ const props = defineProps({
   initialRows: {
     type: Number,
     default: 2
+  },
+  maxRows: {
+    type: Number,
+    default: null
   }
 });
 
@@ -121,8 +125,9 @@ const visibleImages = computed(() => {
 
   let limit;
 
-  if (props.enableExpand && !isExpanded.value) {
-    limit = cols * props.initialRows;
+  if (!isExpanded.value && (props.enableExpand || props.maxRows !== null)) {
+    const rows = props.maxRows ?? props.initialRows;
+    limit = cols * rows;
   } else {
     // Формула "ровной сетки": убираем остаток
     const remainder = total % cols;

@@ -52,10 +52,22 @@
       </div>
     </div>
     <div class="content-details__splitter" />
-    <div>
-      <p class="content-details__description">
+    <div class="content-details__description-wrapper">
+      <p
+        ref="descriptionRef"
+        class="content-details__description"
+        :class="{ 'content-details__description--collapsed': !isDescriptionExpanded }"
+      >
         {{ details.Content.Description }}
       </p>
+      <button
+        v-if="isDescriptionOverflowing"
+        class="content-details__description-toggle"
+        type="button"
+        @click="isDescriptionExpanded = !isDescriptionExpanded"
+      >
+        {{ isDescriptionExpanded ? 'Свернуть' : 'Показать полностью' }}
+      </button>
     </div>
     <div
       v-show="details.Genres?.length > 0"
@@ -76,7 +88,7 @@
 import moment from 'moment'
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import HeartSVG from "@/components/Icons/HeartSVG.vue";
-import {defineEmits, inject, onMounted, PropType, ref, watch} from 'vue';
+import {defineEmits, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch} from 'vue';
 import {V1GetFullContentResponse} from "@/api/Responses/V1GetFullContentResponse";
 import FilterChips from "@/components/UseReadyComponents/MaterialComponents/FilterChips.vue";
 import {mapContentStatusToRuStr} from "@/api/Enums/ContentStatus";
@@ -101,6 +113,38 @@ const emits = defineEmits<{
 let isInFavorite = ref<boolean>(props.isFavorite);
 watch(() => props.isFavorite, (newValue) => isInFavorite.value = newValue);
 
+const descriptionRef = ref<HTMLElement | null>(null);
+const isDescriptionExpanded = ref(false);
+const isDescriptionOverflowing = ref(false);
+let descriptionResizeObserver: ResizeObserver | null = null;
+
+const updateDescriptionOverflow = () => {
+  const description = descriptionRef.value;
+  if (!description) return;
+
+  isDescriptionOverflowing.value = description.scrollHeight > 200;
+};
+
+onMounted(async () => {
+  await nextTick();
+  updateDescriptionOverflow();
+
+  if (descriptionRef.value) {
+    descriptionResizeObserver = new ResizeObserver(updateDescriptionOverflow);
+    descriptionResizeObserver.observe(descriptionRef.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  descriptionResizeObserver?.disconnect();
+});
+
+watch(() => props.details.Content.Description, async () => {
+  isDescriptionExpanded.value = false;
+  await nextTick();
+  updateDescriptionOverflow();
+});
+
 const otherTitles = (details: V1GetFullContentResponse) : string => {
   let otherTitleStr = "";
   if (details.Content.EngTitle) {
@@ -122,6 +166,12 @@ const otherTitles = (details: V1GetFullContentResponse) : string => {
 
 <style lang="scss" scoped>
 .content-details {
+  &__description-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   &__description {
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -132,6 +182,24 @@ const otherTitles = (details: V1GetFullContentResponse) : string => {
     text-align: justify;
     letter-spacing: 0.04em;
     margin: 0;
+  }
+
+  &__description--collapsed {
+    max-height: 200px;
+    overflow: hidden;
+  }
+
+  &__description-toggle {
+    margin-top: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--primary40);
+    font: inherit;
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
   }
 
   &__title {

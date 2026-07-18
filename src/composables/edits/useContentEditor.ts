@@ -18,6 +18,7 @@ import { useRouter } from 'vue-router';
 export type AdditionalImage = {
     LocalId: number;
     Url: string;
+    ImageName: string | null;
     File: File | null;
     IsUploaded: boolean;
 };
@@ -167,15 +168,15 @@ export function useContentEditor(contentId: Ref<string | null>) {
         contentType.value = content.Content.Type;
         contentStatus.value = content.Content.Status;
         genres.value = content.Genres.map(x => x.Name);
-        additionalImages.value = (content.Content.Images ?? [])
-            .map(link => resolveBackendImageLink(link))
-            .filter(link => !!link && link !== contentAvatarLink)
-            .map(link => ({
+        additionalImages.value = (content.Content.AdditionalImages ?? [])
+            .map(image => ({
                 LocalId: generateLocalId(),
-                Url: link,
+                Url: resolveBackendImageLink(image.ImageLink) ?? image.ImageLink,
+                ImageName: image.ImageName,
                 File: null,
                 IsUploaded: true,
-            }));
+            }))
+            .filter(image => !!image.Url && image.Url !== contentAvatarLink);
         country.value = content.Content.Country;
         description.value = content.Content.Description;
         duration.value = content.Content.Duration != null
@@ -281,9 +282,17 @@ export function useContentEditor(contentId: Ref<string | null>) {
                 request.AvatarImageName = image.ImageName;
             }
 
+            for (const image of additionalImages.value) {
+                if (image.IsUploaded && image.ImageName) {
+                    request.AdditionalImageNames?.push(image.ImageName);
+                }
+            }
+
             const pendingUploads = additionalImages.value.filter(image => !image.IsUploaded && image.File != null);
             for (const image of pendingUploads) {
                 const imageData = await imageService.insertImage(contentIdForImages, image.File as File);
+                image.ImageName = imageData.ImageName;
+                image.IsUploaded = true;
                 if (request.AdditionalImageNames) {
                     request.AdditionalImageNames.push(imageData.ImageName);
                 }
@@ -337,6 +346,7 @@ export function useContentEditor(contentId: Ref<string | null>) {
             additionalImages.value.push({
                 LocalId: generateLocalId(),
                 Url: localImageUrl,
+                ImageName: null,
                 File: file,
                 IsUploaded: false,
             });
