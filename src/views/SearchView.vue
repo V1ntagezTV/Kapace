@@ -11,10 +11,15 @@
         @change:input="(newInput, isSelected) => searchByInput(newInput, isSelected)"
         @keyup.enter="PressSearchEnter"
       />
-      <div class="row gap-8">
+      <div class="search-page__filters gap-8">
+        <year-range-filter
+          :year-from="yearFrom"
+          :year-to="yearTo"
+          @apply="applyYearRange"
+        />
         <base-selector
           v-for="filter in filtersV2"
-          :key="filter"
+          :key="filter.key"
           v-model="filter.selectedValue"
           :menu-alignment="MenuAlignment.Left"
           :selectable-values="getFilterSelectableValues(filter.key)"
@@ -42,7 +47,7 @@
       >
         <SearchItem
           v-for="content in initPageContent.Content"
-          :key="content"
+          :key="content.Content.Id"
           :content="SearchContentFactory.getContentViewModel(content)"
         />
       </div>
@@ -68,9 +73,13 @@ import {ContentService} from "@/api/ContentService";
 import {V1GetByQueryRequest, V1GetByQuerySearchFilters} from "@/api/Requests/V1GetByQueryRequest";
 import {V1GetByQueryResponse, V1GetByQueryResponseContent} from "@/api/Requests/V1GetByQueryResponse";
 import {ContentSelectedInfo} from "@/api/Enums/ContentSelectedInfo";
+import {ContentSortBy} from "@/api/Enums/ContentSortBy";
 import {ContentType} from "@/api/Enums/ContentType";
 import {ContentStatus} from "@/api/Enums/ContentStatus";
 import {Country} from "@/api/Enums/Country";
+import {Language} from "@/api/Enums/Language";
+import {SortDirection} from "@/api/Enums/SortDirection";
+import {TranslatorService} from "@/api/TranslatorService";
 import {FilterTypes} from "@/components/Search/Models/FilterTypes";
 import FilterUnitModel from "@/components/Search/Models/FilterUnitModel";
 import AsyncSearchSelector from "@/components/Base/Selector/AsyncSearchSelector.vue";
@@ -79,10 +88,12 @@ import FilterChips from "@/components/UseReadyComponents/MaterialComponents/Filt
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import MaterialDropArrow from "@/components/Icons/MaterialDropArrow.vue";
 import {MenuAlignment} from "@/components/Base/Selector/Internal/MenuAlignment";
-import {useRoute, useRouter} from "vue-router";
+import {useRouter} from "vue-router";
 import {SearchContentFactory} from "@/components/Body/Search/SearchItemViewFactory";
+import YearRangeFilter from "@/components/Search/Filter/YearRangeFilter.vue";
 
 const contentService: ContentService = inject("content-service")
+const translatorService: TranslatorService = inject("translator-service")
 
 const filterByDefault = 'По умолчанию'
 const typeFilters = new Map<ContentType, boolean>([
@@ -105,14 +116,38 @@ const countryFilters = new Map<Country, boolean>([
 	[Country.Japan, false]
 ]);
 
-//TODO:
-// Добавить фильтр по году выпуска (от-до)
-// Добавить фильтр по жанрам
-// Добавить фильтр по статусу
+const sortLabelToContentSortBy = new Map<string, ContentSortBy>([
+  ['Просмотры', ContentSortBy.Views],
+  ['Рейтинг', ContentSortBy.Rating],
+  ['Дата выхода', ContentSortBy.ReleasedAt],
+  ['Последнее обновление', ContentSortBy.LastUpdateAt],
+  ['Создано', ContentSortBy.CreatedAt],
+]);
+
+const sortFilters = new Map<string, boolean>([[filterByDefault, false]]);
+for (const label of sortLabelToContentSortBy.keys()) {
+  sortFilters.set(label, false);
+}
+
+const languageFilters = new Map<string, boolean>([
+  [filterByDefault, false],
+  [Language.Russian, false],
+  [Language.English, false],
+  [Language.Korean, false],
+  [Language.Chinese, false],
+  [Language.Japanese, false],
+]);
+
+const translatorFilters = new Map<string, boolean>([[filterByDefault, false]]);
+const translatorNameToId = new Map<string, number>();
+
 const filtersV2 = ref<FilterUnitModel[]>([
 	new FilterUnitModel('Тип', 'Тип', FilterTypes.ContentType as typeof FilterTypes, typeFilters, false),
 	new FilterUnitModel('Статус', 'Статус', FilterTypes.ContentStatus as typeof FilterTypes, statusFilters, false),
-	new FilterUnitModel('Страна', 'Страна', FilterTypes.Country as typeof FilterTypes, countryFilters, false)
+	new FilterUnitModel('Страна', 'Страна', FilterTypes.Country as typeof FilterTypes, countryFilters, false),
+	new FilterUnitModel('Сортировка', 'Сортировка', FilterTypes.SortBy as typeof FilterTypes, sortFilters, false),
+	new FilterUnitModel('Язык', 'Язык', FilterTypes.Language as typeof FilterTypes, languageFilters, false),
+	new FilterUnitModel('Переводчик', 'Переводчик', FilterTypes.Translator as typeof FilterTypes, translatorFilters, false),
 ]);
 
 const router = useRouter()
@@ -124,12 +159,39 @@ let isSearchMenuDropped = ref<boolean>(false);
 const initPageContent = ref<V1GetByQueryResponse>(null);
 const isDataReady = ref(false);
 const watchableShowFilters = ref(false);
+const yearFrom = ref<number | null>(null);
+const yearTo = ref<number | null>(null);
 
 onMounted(async () => {
   isDataReady.value = false;
+  await loadTranslators();
   initPageContent.value = await search();
   isDataReady.value = true;
 })
+
+async function loadTranslators() {
+  const response = await translatorService.query({
+    Limit: 100,
+    Search: null,
+    Offset: 0,
+    TranslatorIds: null,
+  });
+
+  const nameCounts = new Map<string, number>();
+
+  for (const translator of response.Translators) {
+    let label = translator.Name;
+    const count = (nameCounts.get(translator.Name) ?? 0) + 1;
+    nameCounts.set(translator.Name, count);
+
+    if (count > 1) {
+      label = `${translator.Name} (#${translator.TranslatorId})`;
+    }
+
+    translatorFilters.set(label, false);
+    translatorNameToId.set(label, translator.TranslatorId);
+  }
+}
 
 async function searchByInput(newInput: string, isSelected: boolean) {
   isSearchMenuDropped.value = false;
@@ -156,9 +218,45 @@ async function search(addFilters: boolean = true) : Promise<V1GetByQueryResponse
     request.Filters.ContentStatuses = GetArrayByFilterType<typeof ContentStatus>(FilterTypes.ContentStatus);
     request.Filters.ContentTypes = GetArrayByFilterType<typeof ContentType>(FilterTypes.ContentType);
     request.Filters.Countries = GetArrayByFilterType<typeof Country>(FilterTypes.Country);
+    request.Filters.Languages = GetArrayByFilterType<typeof Language>(FilterTypes.Language);
+    request.Filters.TranslatorIds = GetSelectedTranslatorIds();
+    request.Filters.YearFrom = yearFrom.value;
+    request.Filters.YearTo = yearTo.value;
+
+    const sortLabel = GetSelectedFilterKey<string>(FilterTypes.SortBy);
+    request.SortBy = sortLabel ? sortLabelToContentSortBy.get(sortLabel) ?? null : null;
+    request.SortDirection = SortDirection.Desc;
   }
 
 	return await contentService.V1GetByQuery(request);
+}
+
+function GetSelectedFilterKey<T>(filterType: typeof FilterTypes[keyof typeof FilterTypes]): T | null {
+  for (const filter of filtersV2.value) {
+    if (filter.type !== filterType) {
+      continue;
+    }
+
+    for (const [key, isEnabled] of filter.selectableValues) {
+      if (key === filterByDefault || !isEnabled) {
+        continue;
+      }
+
+      return key as T;
+    }
+  }
+
+  return null;
+}
+
+function GetSelectedTranslatorIds(): number[] {
+  const translatorLabel = GetSelectedFilterKey<string>(FilterTypes.Translator);
+  if (!translatorLabel) {
+    return [];
+  }
+
+  const translatorId = translatorNameToId.get(translatorLabel);
+  return translatorId != null ? [translatorId] : [];
 }
 
 function GetArrayByFilterType<T>(filterType: FilterTypes) {
@@ -197,6 +295,12 @@ async function selectFilter(filterKey: string, selectedFilter: string) {
   initPageContent.value = await search(true);
 }
 
+async function applyYearRange(value: {yearFrom: number | null, yearTo: number | null}) {
+  yearFrom.value = value.yearFrom;
+  yearTo.value = value.yearTo;
+  initPageContent.value = await search(true);
+}
+
 function clickFilterDropMenu(filter: FilterUnitModel, dropMenu: (boolean) => any) {
   filter.isMenuDropped = !filter.isMenuDropped;
   dropMenu(filter.isMenuDropped);
@@ -226,6 +330,8 @@ function EmitCleanFilters() {
 	}
 
   searchInput.value = "";
+  yearFrom.value = null;
+  yearTo.value = null;
 	watchableShowFilters.value = !watchableShowFilters.value;
 }
 
@@ -238,7 +344,17 @@ async function PressSearchEnter() {
 .search-page {
   &__filter {
     display: flex;
+    flex: 0 0 auto;
+    width: fit-content !important;
     height: fit-content;
+  }
+
+  &__filters {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    width: 100%;
   }
 
   &__box {

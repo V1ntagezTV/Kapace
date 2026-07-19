@@ -150,6 +150,7 @@ function formatRateCount(value: number): string {
     padding: 4px 8px;
     background: var(--primary50);
     border-radius: 0 8px 8px 0;
+    transition: width 2s cubic-bezier(0.22, 1, 0.36, 1);
 
     &--full {
       border-radius: 0;

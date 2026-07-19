@@ -431,7 +431,8 @@ function normalizeTimestampToMs(value: number): number {
   }
 
   &__sidebar {
-    /* column и gap-16 из глобальных утилит */
+    min-width: 0;
+    width: 100%;
   }
 
   &__content {

@@ -4,6 +4,7 @@
     class="image-trigger"
     :class="{
       'image-trigger--fill': thumbnailFill,
+      'image-trigger--fluid': thumbnailFluid,
       'image-trigger--no-hover-scale': !thumbnailHoverScale,
     }"
     :style="triggerStyle"
@@ -13,7 +14,10 @@
       :src="src"
       :alt="alt"
       class="thumbnail"
-      :class="{ 'thumbnail--fill': thumbnailFill }"
+      :class="{
+        'thumbnail--fill': thumbnailFill,
+        'thumbnail--fluid': thumbnailFluid,
+      }"
     >
   </div>
 
@@ -59,6 +63,11 @@ const props = defineProps({
     default: '8px'
   },
   thumbnailFill: {
+    type: Boolean,
+    default: false
+  },
+  // Растянуть превью на 100% ширины контейнера, сохранив пропорции
+  thumbnailFluid: {
     type: Boolean,
     default: false
   },
@@ -144,6 +153,17 @@ onUnmounted(() => {
 .image-trigger--fill {
   width: 100%;
   display: block;
+}
+
+.image-trigger--fluid {
+  width: 100%;
+  display: block;
+}
+
+.thumbnail--fluid {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
 }
 
 /* Остальные стили без изменений... */

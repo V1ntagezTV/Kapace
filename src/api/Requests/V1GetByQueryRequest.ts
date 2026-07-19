@@ -1,7 +1,10 @@
 import {ContentSelectedInfo} from "@/api/Enums/ContentSelectedInfo";
+import {ContentSortBy} from "@/api/Enums/ContentSortBy";
 import {ContentStatus} from "@/api/Enums/ContentStatus";
 import {ContentType} from "@/api/Enums/ContentType";
 import {Country} from "@/api/Enums/Country";
+import {Language} from "@/api/Enums/Language";
+import {SortDirection} from "@/api/Enums/SortDirection";
 import {QueryPaging} from "@/api/Models/QueryPaging";
 
 export class V1GetByQueryRequest {
@@ -9,6 +12,8 @@ export class V1GetByQueryRequest {
     public Filters: V1GetByQuerySearchFilters = new V1GetByQuerySearchFilters();
     public QueryPaging: QueryPaging = { Limit: 20, Offset: 0 };
     public SelectedInfo: ContentSelectedInfo = ContentSelectedInfo.None;
+    public SortBy: ContentSortBy | null = null;
+    public SortDirection: SortDirection = SortDirection.Desc;
 }
 
 export class V1GetByQuerySearchFilters {
@@ -17,4 +22,8 @@ export class V1GetByQuerySearchFilters {
     public ContentTypes: Array<typeof ContentType> = [];
     public ContentStatuses: Array<typeof ContentStatus> = [];
     public GenreIds: Array<number> = [];
+    public YearFrom: number | null = null;
+    public YearTo: number | null = null;
+    public TranslatorIds: number[] = [];
+    public Languages: Array<typeof Language> = [];
 }
