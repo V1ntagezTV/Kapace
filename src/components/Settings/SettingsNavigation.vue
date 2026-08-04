@@ -39,6 +39,18 @@
           Добавить эпизод
         </div>
       </router-link>
+      <router-link
+        :class="{'settings-nav__button-selected':
+          refCurrent === SettingsPageTypes.EditPerson ||
+          refCurrent === SettingsPageTypes.CreatePerson}"
+        class="settings-nav__button m-radius-circle"
+        :to="{name: 'create-person'}"
+      >
+        <account-plus-circle-icon />
+        <div v-show="!isMobile">
+          Добавить персону
+        </div>
+      </router-link>
     </div>
   </div>
 </template>
@@ -50,6 +62,7 @@ import MenuIcon from "@/components/Icons/MenuIcon.vue";
 import FolderIcon from "@/components/Icons/FolderIcon.vue";
 import AddNote from "@/components/Icons/AddNote.vue";
 import AddLibraryIcon from "@/components/Icons/AddLibraryIcon.vue";
+import AccountPlusCircleIcon from "@/components/Icons/AccountPlusCircleIcon.vue";
 import IconButton from "@/components/Base/Buttons/IconButton.vue";
 
 const props = defineProps({

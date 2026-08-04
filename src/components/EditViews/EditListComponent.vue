@@ -110,6 +110,16 @@
             allowfullscreen
           />
         </template>
+        <template v-else-if="unit.HistoryType === HistoryType.Person">
+          <div class="edit-list__image-box">
+            <img
+              class="edit-list__content-image m-radius-2"
+              :src="resolveBackendImageLink(unit.AvatarImageLink)"
+              alt="Фото персоны"
+              @error="$event.target.src = require('@/assets/images/DefaultImage.png')"
+            >
+          </div>
+        </template>
         <div class="edit-list__body">
           <div
             v-for="fieldComparison in unit.FieldsComparisons"

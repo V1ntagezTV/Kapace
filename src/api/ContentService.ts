@@ -16,7 +16,7 @@ export class ContentService extends ApiService {
     async V1GetMainPageContentAsync(): Promise<ApiResponse<V1GetMainPageContentResponse>> {
         const request = {
             mainPageTypes: [MainPageType.LastCreated, MainPageType.PopularForTwoWeeks, MainPageType.LastUpdated],
-            limit: 20,
+            limit: 5,
             offset: 0,
         };
 
@@ -30,6 +30,7 @@ export class ContentService extends ApiService {
         const request = new V1GetFullContentRequest(
             typeof contentId === "string" ? BigInt(contentId) : contentId,
             ContentSelectedInfo.ContentGenres |
+            ContentSelectedInfo.ContentPersons |
             ContentSelectedInfo.UserInfo |
             ContentSelectedInfo.Episodes |
             ContentSelectedInfo.StarsAggregates

@@ -5,8 +5,42 @@
       <TheaterAvatar
         v-if="isDataReady && details"
         :image-link="resolveBackendImageLink(details.Content.AvatarImageLink)"
-        :user-info="details.UserInfo"
+        :series="`${details.Content.OutSeries}/${details.Content.PlannedSeries}`"
+        :views="details.Content.Views"
+        :duration="formatDuration(details.Content.Duration)"
       />
+
+
+      <div class="theater__icons-box">
+        <div
+          class="theater__icon-button"
+          aria-label="Пожаловаться"
+          @click="openReportModal"
+        >
+          <report-icon />
+        </div>
+
+        <div
+          class="theater__icon-button"
+          @click="router.push({ name: 'content-history', params: { id: contentId } })"
+        >
+          <history-icon />
+        </div>
+
+        <div
+          class="theater__icon-button"
+          @click="router.push({name: 'edit-content', params: {content: contentId}})"
+        >
+          <edit-icon class="theater__action-icon" />
+        </div>
+
+        <div
+          class="theater__icon-button"
+          @click="router.push({name: 'edit-episode-prefill', params: {content: contentId}})"
+        >
+          <plus-icon class="theater__action-icon" />
+        </div>
+      </div>
 
       <base-button
         v-if="isDataReady && details"
@@ -51,7 +85,24 @@
         </template>
       </base-selector>
 
-      <base-background class="theater__meta" :type="2">
+      <stars-rate-component
+        v-if="isDataReady"
+        class="h__center"
+        :stars="details.StarsAggregates.Stars"
+        :one="details.StarsAggregates.One"
+        :two="details.StarsAggregates.Two"
+        :three="details.StarsAggregates.Three"
+        :four="details.StarsAggregates.Four"
+        :five="details.StarsAggregates.Five"
+        :user-rate="userStars"
+        @on:click-star="clickOnStar"
+      />
+
+      <base-background
+        v-if="metaItems.length"
+        class="theater__meta"
+        :type="2"
+      >
         <div
           v-for="item in metaItems"
           :key="item.id"
@@ -69,33 +120,6 @@
           </p>
         </div>
       </base-background>
-
-      <base-button
-        class="m-border-primary m-radius-circle theater__action-button"
-        variant="outline"
-        @click="router.push({name: 'edit-episode-prefill', params: {content: contentId}})"
-      >
-        <AddLibraryIcon class="theater__action-icon" />
-        Добавить серию
-      </base-button>
-
-      <base-button
-        class="m-border-primary m-radius-circle theater__action-button"
-        variant="outline"
-        @click="router.push({name: 'edit-content', params: {content: contentId}})"
-      >
-        <AddNote class="theater__action-icon" />
-        Редактировать
-      </base-button>
-
-      <base-button
-        class="m-border-primary m-radius-circle theater__action-button"
-        variant="outline"
-        @click="router.push({ name: 'content-history', params: { id: contentId } })"
-      >
-        <CalendarIcon class="theater__action-icon" />
-        История
-      </base-button>
     </div>
 
     <!-- Правая колонка (Контент) -->
@@ -107,23 +131,15 @@
         @on:click-heart="heartOnClick"
       />
 
+      <theater-persons
+        v-if="isDataReady && contentPersons.length > 0"
+        :persons="contentPersons"
+      />
+
       <album-images
         v-if="myImages.length > 0"
         :images="myImages"
         :max-rows="2"
-      />
-
-      <stars-rate-component
-        v-if="isDataReady"
-        class="h__center"
-        :stars="details.StarsAggregates.Stars"
-        :one="details.StarsAggregates.One"
-        :two="details.StarsAggregates.Two"
-        :three="details.StarsAggregates.Three"
-        :four="details.StarsAggregates.Four"
-        :five="details.StarsAggregates.Five"
-        :user-rate="userStars"
-        @on:click-star="clickOnStar"
       />
 
       <translations-list-component-v3
@@ -131,6 +147,13 @@
         :content-id="contentId"
       />
     </div>
+
+    <report-modal
+      :is-visible="isReportModalOpen"
+      target-type="Content"
+      :target-id="contentId"
+      @on:close="closeReportModal"
+    />
   </div>
 </template>
 
@@ -140,6 +163,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 // Components
 import TheaterDetails from "@/components/Theater/TheaterDetails.vue";
+import TheaterPersons from "@/components/Theater/TheaterPersons.vue";
 import TheaterAvatar from "@/components/Theater/TheaterAvatar.vue";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
@@ -147,10 +171,8 @@ import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import StarsRateComponent from "@/components/UseReadyComponents/StarsRateComponent.vue";
 import AlbumImages from "@/components/UseReadyComponents/AlbumImages.vue";
 import TranslationsListComponentV3 from "@/components/UseReadyComponents/EpisodesList/TranslationsListComponentV3.vue";
-import AddLibraryIcon from "@/components/Icons/AddLibraryIcon.vue";
 import AddNote from "@/components/Icons/AddNote.vue";
 import EyeIcon from "@/components/Icons/MaterialIcons/Eye.vue";
-import LoopIcon from "@/components/Icons/LoopIcon.vue";
 import CalendarIcon from "@/components/Icons/Calendar.vue";
 import HeartIcon from "@/components/Icons/HeartIcon.vue";
 import PauseIcon from "@/components/Icons/PauseIcon.vue";
@@ -167,11 +189,21 @@ import { V1GetFullContentEpisode, V1GetFullContentResponse } from "@/api/Respons
 import { MenuAlignment } from "@/components/Base/Selector/Internal/MenuAlignment";
 import { FavoriteStatus, FavoriteStatuses, getFavoritesStatusKeyByValue } from "@/models/FavoriteStatuses";
 import { resolveBackendImageLink, resolveBackendImageLinks } from "@/helpers/ImageLinkResolver";
+import IconButton from "@/components/Base/Buttons/IconButton.vue";
+import HistoryIcon from "@/components/Icons/MaterialIcons/HistoryIcon.vue";
+import EditIcon from "@/components/Icons/MaterialIcons/EditIcon.vue";
+import PlusIcon from "@/components/Icons/PlusIcon.vue";
+import WarningIcon from "@/components/Icons/WarningIcon.vue";
+import WarningOutlineIcon from "@/components/Icons/WarningOutlineIcon.vue";
+import ReportIcon from "@/components/Icons/ReportIcon.vue";
+import ReportModal from "@/components/Modal/ReportModal.vue";
+import { ClientEventStore, EventTypes } from "@/store/ClientEventStore";
 
 // --- Setup ---
 const user = userStore();
 const router = useRouter();
 const route = useRoute();
+const eventStore = ClientEventStore();
 
 // Services
 const contentService = inject<ContentService>("content-service")!;
@@ -185,6 +217,7 @@ const details = ref<V1GetFullContentResponse | null>(null);
 const metaItems = ref<TheaterMetaItem[]>([]);
 const startWatchEpisodeId = ref<number>(-1);
 const myImages = ref<{ src: string; alt: string }[]>([]);
+const isReportModalOpen = ref(false);
 
 // Favorites & Rating State
 const isInFavorites = ref<boolean>(false);
@@ -203,6 +236,8 @@ const favoriteValues = favoriteMenuItems.map(({ label }) => label);
 const selectedFavoriteItem = computed(() =>
   favoriteMenuItems.find(({ label }) => label === userFavoriteStatus.value)
 );
+
+const contentPersons = computed(() => details.value?.Persons ?? []);
 
 type FavoriteMenuItem = {
   label: string;
@@ -302,6 +337,19 @@ async function clickOnStar(starIndex: number) {
   userStars.value = refreshedDetails.UserInfo?.Stars ?? starIndex;
 }
 
+function openReportModal() {
+  if (!user.loggedIn) {
+    eventStore.push('Сначала необходимо авторизоваться!', EventTypes.Error);
+    return;
+  }
+
+  isReportModalOpen.value = true;
+}
+
+function closeReportModal() {
+  isReportModalOpen.value = false;
+}
+
 async function addToFavorites(favoriteStatusStr: string) {
   const favoriteStatus = getFavoritesStatusKeyByValue(favoriteStatusStr) as FavoriteStatus;
   await favoritesApi.setStatus(contentId.value, favoriteStatus);
@@ -313,7 +361,7 @@ function getFirstEpisodeIdOrDefault(episodes: V1GetFullContentEpisode[] | null):
 }
 
 type TheaterMetaItem = {
-  id: "episodes" | "views" | "duration" | "updated" | "created";
+  id: "updated" | "created";
   label: string;
   value: string;
   icon: Component;
@@ -323,32 +371,6 @@ function getMetaItemsFromDetails(data: V1GetFullContentResponse | null): Theater
   const items: TheaterMetaItem[] = [];
   if (!data) return items;
   const { Content } = data;
-
-  items.push({
-    id: "episodes",
-    label: "Серий",
-    value: `${Content.OutSeries}/${Content.PlannedSeries}`,
-    icon: AddLibraryIcon
-  });
-
-  if (Content.Views > 0) {
-    items.push({
-      id: "views",
-      label: "Просмотров",
-      value: String(Content.Views),
-      icon: EyeIcon
-    });
-  }
-
-  const durationStr = formatDuration(Content.Duration);
-  if (durationStr) {
-    items.push({
-      id: "duration",
-      label: "Длительность",
-      value: durationStr,
-      icon: LoopIcon
-    });
-  }
 
   const updateDate = formatDate(Content.LastUpdateAt);
   if (updateDate) {
@@ -380,12 +402,8 @@ function formatDuration(durationInMinutes: number | null): string | null {
 
   const hours = Math.floor(durationInMinutes / 60);
   const minutes = durationInMinutes % 60;
-  const parts = [
-    hours > 0 ? `${hours} ч` : "",
-    minutes > 0 ? `${minutes} мин` : "",
-  ].filter(Boolean);
 
-  return parts.length > 0 ? parts.join(" ") : null;
+  return `${hours}:${String(minutes).padStart(2, "0")}`;
 }
 
 function formatDate(value: number | null | undefined): string | null {
@@ -428,6 +446,35 @@ function normalizeTimestampToMs(value: number): number {
   /* Desktop: 2 колонки */
   @media (min-width: 720px) {
     grid-template-columns: 255px 1fr;
+  }
+
+  &__icons-box {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__icon-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: 56px;
+    min-width: 56px;
+    width: 100%;
+    gap: 12px;
+    padding: 16px;
+
+    border-radius: 16px;
+
+    color: var(--primary20);
+    background: white;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--primary90);
+      color: var(--primary10)
+    }
   }
 
   &__sidebar {
@@ -502,10 +549,6 @@ function normalizeTimestampToMs(value: number): number {
     &--dropped {
       color: #8B8D98;
     }
-  }
-
-  &__action-button {
-    gap: 8px;
   }
 
   &__action-icon {

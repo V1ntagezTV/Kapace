@@ -4,5 +4,6 @@ export enum ContentSelectedInfo {
     ContentGenres = 2,
     UserInfo = 4,
     Translations = 8,
-    StarsAggregates = 16
+    StarsAggregates = 16,
+    ContentPersons = 32,
 }

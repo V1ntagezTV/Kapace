@@ -66,76 +66,94 @@
 
     <!-- Episodes Body -->
     <div class="episodes-list__body">
-      <router-link
-        v-for="episode in episodes"
-        :key="episode.EpisodeId"
-        class="episodes-list__link"
-        :to="{
-          name: 'episode',
-          params: {
-            content: contentId,
-            episode: episode.EpisodeId,
-            translation: selectedTranslatorId
-          }
-        }"
+      <div
+        v-if="episodes.length === 0"
+        class="episodes-list__empty column gap-16"
       >
-        <!-- Episode Card Block -->
-        <div class="episode-card box__inline">
-          <div class="episode-card__title body-large box__inline">
-            {{ episode.Number }} cерия {{ episode.Title ? ": " + episode.Title : "" }}
+        <img
+          class="episodes-list__empty-image"
+          src="/stroked-image-v2.png"
+          alt=""
+        >
+        <p class="episodes-list__empty-text label-medium padding-16 row v__center gap-8">
+          <warning-outline-icon style="color: var(--primary40)" />
+          Список эпизодов пуст.
+        </p>
+      </div>
+
+      <template v-else>
+        <router-link
+          v-for="episode in episodes"
+          :key="episode.EpisodeId"
+          class="episodes-list__link"
+          :to="{
+            name: 'episode',
+            params: {
+              content: contentId,
+              episode: episode.EpisodeId,
+              translation: selectedTranslatorId
+            }
+          }"
+        >
+          <!-- Episode Card Block -->
+          <div class="episode-card box__inline">
+            <div class="episode-card__title body-large box__inline">
+              {{ episode.Number }} cерия {{ episode.Title ? ": " + episode.Title : "" }}
+            </div>
+
+            <div class="episode-card__meta box__inline">
+              <filter-chips-v2
+                v-if="!episode.HasTranslations"
+                class="episode-card__tag row label-small v__center h__center"
+              >
+                <template #text>
+                  <p class="episode-card__tag-text body-small text__one-line">
+                    Нет перевода
+                  </p>
+                </template>
+              </filter-chips-v2>
+
+              <filter-chips-v2
+                v-if="episode.Stars > 0"
+                class="episode-card__tag row label-small"
+                :enable-text-icon="true"
+              >
+                <template #text-icon>
+                  <star class="episode-card__icon" />
+                </template>
+                <template #text>
+                  <p class="episode-card__tag-text body-small text__one-line h__padding-8">
+                    {{ episode.Stars }}
+                  </p>
+                </template>
+              </filter-chips-v2>
+
+              <filter-chips-v2
+                v-if="episode.Views > 0"
+                class="episode-card__tag row label-small"
+                :enable-text-icon="true"
+              >
+                <template #text-icon>
+                  <Eye class="episode-card__icon episode-card__icon--eye" />
+                </template>
+                <template #text>
+                  <p class="episode-card__tag-text body-small text__one-line h__padding-8">
+                    {{ episode.Views }}
+                  </p>
+                </template>
+              </filter-chips-v2>
+
+              <filter-chips-v2 class="episode-card__tag row label-small">
+                <template #text>
+                  <p class="episode-card__tag-text body-small text__one-line h__padding-8">
+                    {{ StringExtensions.getDateStr(episode.CreatedAt) }}
+                  </p>
+                </template>
+              </filter-chips-v2>
+            </div>
           </div>
-
-          <div class="episode-card__meta box__inline">
-            <filter-chips-v2
-              v-if="!episode.HasTranslations"
-              class="episode-card__tag row label-small v__center h__center"
-            >
-              <template #text>
-                <p class="episode-card__tag-text body-small text__one-line">
-                  Нет перевода
-                </p>
-              </template>
-            </filter-chips-v2>
-
-            <filter-chips-v2
-              v-if="episode.Stars > 0"
-              class="episode-card__tag row label-small gap-8"
-            >
-              <template #text-icon>
-                <Star class="episode-card__icon" />
-              </template>
-              <template #text>
-                <p class="episode-card__tag-text body-small text__one-line h__padding-8">
-                  {{ episode.Stars }}
-                </p>
-              </template>
-            </filter-chips-v2>
-
-            <filter-chips-v2
-              v-if="episode.Views > 0"
-              class="episode-card__tag row label-small"
-              :enable-text-icon="true"
-            >
-              <template #text-icon>
-                <Eye class="episode-card__icon episode-card__icon--eye" />
-              </template>
-              <template #text>
-                <p class="episode-card__tag-text body-small text__one-line h__padding-8">
-                  {{ episode.Views }}
-                </p>
-              </template>
-            </filter-chips-v2>
-
-            <filter-chips-v2 class="episode-card__tag row label-small">
-              <template #text>
-                <p class="episode-card__tag-text body-small text__one-line h__padding-8">
-                  {{ StringExtensions.getDateStr(episode.CreatedAt) }}
-                </p>
-              </template>
-            </filter-chips-v2>
-          </div>
-        </div>
-      </router-link>
+        </router-link>
+      </template>
     </div>
   </div>
 </template>
@@ -160,6 +178,7 @@ import { TranslationService } from "@/api/TranslationService";
 import { V1GetByEpisodeRequest } from "@/api/Requests/V1GetByEpisodeRequest";
 import { V1GetByEpisodeResponse } from "@/api/Responses/V1GetByEpisodeResponse";
 import {StringExtensions} from "../../../helpers/StringExtensions";
+import WarningOutlineIcon from "@/components/Icons/WarningOutlineIcon.vue";
 
 const props = defineProps({
   contentId: { type: String as PropType<string>, required: true },
@@ -324,6 +343,23 @@ $color-bg-tag-hover: var(--primary80);
     padding: 12px 0;
   }
 
+  &__empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 26px;
+  }
+
+  &__empty-image {
+    max-width: 150px;
+    height: auto;
+  }
+  
+  &__empty-text {
+    background: var(--primary90);
+    border-radius: 100px;
+  }
+
   &__link {
     display: block;
     text-decoration: none;
@@ -394,7 +430,6 @@ $color-bg-tag-hover: var(--primary80);
 
     &__tag-text,
     &__icon {
-      color: $color-text-hover;
     }
   }
 }

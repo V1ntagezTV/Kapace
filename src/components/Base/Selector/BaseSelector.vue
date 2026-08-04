@@ -116,7 +116,7 @@ onUnmounted(() => {
 
 // Синхронизация локального состояния с пропсом
 watch(() => props.modelValue, (newValue) => {
-  titleRef.value = newValue;
+  titleRef.value = ((newValue?.length ?? 0) > 0) ? newValue : (props.title ?? '');
 });
 // Синхронизация локального состояния с пропсом
 watch(() => props.isDropped, (newValue) => {

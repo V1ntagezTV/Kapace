@@ -1,6 +1,7 @@
 export const HistoryType = {
     Content: "Content",
     Episode: "Episode",
+    Person: "Person",
 } as const;
 
 export const HistoryChangesOrderType = {

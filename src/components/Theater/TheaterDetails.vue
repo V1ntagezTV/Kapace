@@ -53,13 +53,13 @@
     </div>
     <div class="content-details__splitter" />
     <div class="content-details__description-wrapper">
-      <p
+      <div
         ref="descriptionRef"
         class="content-details__description"
         :class="{ 'content-details__description--collapsed': !isDescriptionExpanded }"
       >
-        {{ details.Content.Description }}
-      </p>
+        <MarkdownContent :source="details.Content.Description" />
+      </div>
       <button
         v-if="isDescriptionOverflowing"
         class="content-details__description-toggle"
@@ -98,6 +98,7 @@ import {userStore} from "@/store/UserStore";
 import {FavoriteStatus} from "@/models/FavoriteStatuses";
 import HeartEmptyIcon from "@/components/Icons/HeartEmptyIcon.vue";
 import StarsRateComponent from "@/components/UseReadyComponents/StarsRateComponent.vue";
+import MarkdownContent from "@/components/Markdown/MarkdownContent.vue";
 
 const user = userStore();
 
@@ -173,7 +174,7 @@ const otherTitles = (details: V1GetFullContentResponse) : string => {
   }
 
   &__description {
-    white-space: pre-wrap;
+    width: 100%;
     word-wrap: break-word;
     font-style: normal;
     font-weight: 500;

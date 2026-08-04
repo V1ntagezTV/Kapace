@@ -14,7 +14,7 @@ export const CHANGES_ORDER_BY_OPTIONS = [
     'Сначала старые',
 ] as const;
 
-export const CHANGES_HISTORY_TYPE_OPTIONS = ['Все', 'Дорама', 'Серия'] as const;
+export const CHANGES_HISTORY_TYPE_OPTIONS = ['Все', 'Дорама', 'Серия', 'Персона'] as const;
 
 export const CHANGES_STATUS_OPTIONS = ['Все', 'Не одобрено', 'Одобрено'] as const;
 
@@ -45,6 +45,9 @@ export function toHistoryTypes(value: string | null): HistoryTypeValue[] {
     }
     if (value === 'Дорама') {
         return [HistoryType.Content];
+    }
+    if (value === 'Персона') {
+        return [HistoryType.Person];
     }
     return [];
 }

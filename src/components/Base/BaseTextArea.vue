@@ -8,6 +8,7 @@
       :value="modelValue"
       class="textarea__text-area body-medium material textarea__text-area"
       :placeholder="placeholder"
+      :maxlength="maxLength"
       @input="$emit('update:modelValue', $event.target.value)"
     />
   </div>
@@ -21,7 +22,8 @@ const props = defineProps({
   label: {type: String, required: false, default: null},
   modelValue: {type: String, default: ""},
   markAsInvalidInput: {type: Boolean, default: false},
-  placeholder: {type: String, default: null}
+  placeholder: {type: String, default: null},
+  maxLength: {type: Number, default: 5000}
 });
 </script>
 

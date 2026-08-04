@@ -122,17 +122,6 @@
       </router-link>
     </div>
 
-    <base-background v-if="selectedTranslation !== null && translations" class="column gap-8 ">
-      <div>
-        Переводычи:
-      </div>
-      {{ translations.Translators }}
-      <div>
-        Инфа о текущем переводе
-      </div>
-      {{ selectedTranslation }}
-    </base-background>
-
     <!-- Список эпизодов (компонент) -->
     <translations-list-component-v3
       v-if="dataIsReady && content"

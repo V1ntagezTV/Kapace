@@ -1,5 +1,5 @@
 <template>
-  <div class="v__center row gap-16">
+  <div class="v__center column gap-16">
     <base-background :type="2" class="column h__center padding-16 h__fill v__fill">
       <div class="column h__fill v__fill h__center m-radius-8">
         <p class="headline-small">

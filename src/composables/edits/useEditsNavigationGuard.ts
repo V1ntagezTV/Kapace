@@ -9,6 +9,8 @@ const EDITOR_ROUTE_NAMES = new Set([
     'create-episode',
     'edit-episode',
     'edit-episode-prefill',
+    'create-person',
+    'edit-person',
 ]);
 
 function isEditorRoute(routeName: string | symbol | null | undefined): boolean {

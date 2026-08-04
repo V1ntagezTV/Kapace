@@ -9,6 +9,8 @@ const ROUTE_PAGE_MAP: Record<string, SettingsPageTypes> = {
     'create-episode': SettingsPageTypes.CreateEpisode,
     'edit-episode': SettingsPageTypes.EditEpisode,
     'edit-episode-prefill': SettingsPageTypes.EditEpisode,
+    'create-person': SettingsPageTypes.CreatePerson,
+    'edit-person': SettingsPageTypes.EditPerson,
 };
 
 function parseRouteParam(routeParam: string | string[] | undefined): string | null {
@@ -33,6 +35,8 @@ export function useEditNavigation() {
         return episodeParam ? Number(episodeParam) : null;
     });
 
+    const personId = computed(() => parseRouteParam(route.params.person));
+
     const isListPage = computed(() => selectedPage.value === SettingsPageTypes.Edits);
 
     const isContentEditorPage = computed(
@@ -47,12 +51,22 @@ export function useEditNavigation() {
             selectedPage.value === SettingsPageTypes.EditEpisode
     );
 
+    const isPersonEditorPage = computed(
+        () =>
+            selectedPage.value === SettingsPageTypes.CreatePerson ||
+            selectedPage.value === SettingsPageTypes.EditPerson
+    );
+
     const isEditingContent = computed(
         () => selectedPage.value === SettingsPageTypes.EditContent
     );
 
     const isEditingEpisode = computed(
         () => selectedPage.value === SettingsPageTypes.EditEpisode
+    );
+
+    const isEditingPerson = computed(
+        () => selectedPage.value === SettingsPageTypes.EditPerson
     );
 
     const contentPageTitle = computed(() => {
@@ -72,16 +86,27 @@ export function useEditNavigation() {
         return 'Новый эпизод';
     });
 
+    const personPageTitle = computed(() => {
+        if (isEditingPerson.value && personId.value) {
+            return `Редактирование персоны #${personId.value}`;
+        }
+        return 'Новая персона';
+    });
+
     return {
         selectedPage,
         contentId,
         episodeId,
+        personId,
         isListPage,
         isContentEditorPage,
         isEpisodeEditorPage,
+        isPersonEditorPage,
         isEditingContent,
         isEditingEpisode,
+        isEditingPerson,
         contentPageTitle,
         episodePageTitle,
+        personPageTitle,
     };
 }

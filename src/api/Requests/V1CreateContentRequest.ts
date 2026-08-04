@@ -1,6 +1,7 @@
 import {ContentType} from "../Enums/ContentType"
 import {Country} from "../Enums/Country"
 import {ContentStatus} from "@/api/Enums/ContentStatus";
+import {PersonRoleValue} from "@/api/Enums/PersonRole";
 
 export type V1CreateContentRequest = {
     readonly GeneratedId: bigint,
@@ -8,6 +9,16 @@ export type V1CreateContentRequest = {
     readonly ChangeableFields: V1ChangeableFields,
     readonly CreatedBy: number
 }
+
+export type V1ContentPersonRole = {
+    Role: PersonRoleValue;
+    CharacterName: string | null;
+};
+
+export type V1ContentPerson = {
+    PersonId: number;
+    Roles: V1ContentPersonRole[];
+};
 
 export type V1ChangeableFields = {
     Title: string | null,
@@ -20,6 +31,7 @@ export type V1ChangeableFields = {
     AvatarImageName: string | null,
     AdditionalImageNames: string[] | null,
     Genres: string[] | null,
+    Persons: V1ContentPerson[] | null,
     Duration: number | null,
     ReleasedAt: string | null,
     PlannedSeries: number | null,

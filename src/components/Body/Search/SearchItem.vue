@@ -27,7 +27,7 @@
             </div>
           </div>
 
-          <div class="row row-dynamic gap-8">
+          <div v-if="content.Translates.length > 0" class="row row-dynamic gap-8">
             <div
               v-for="lang in removeDuplicates(content.Translates)"
               :key="lang"
@@ -292,6 +292,7 @@ async function toggleFavorite() {
     overflow: hidden;
     height: fit-content;
     padding: 16px;
+    grid-gap: 4px;
 
     grid-row-start: 2;
     grid-row-end: 3;

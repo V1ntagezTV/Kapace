@@ -4,6 +4,8 @@ import {V1ChangeableFields, V1CreateContentRequest} from "@/api/Requests/V1Creat
 import {V1GetChangesComparisonsRequest} from "@/api/Requests/V1GetChangesComparisonsRequest";
 import {V1GetChangesComparisonsResponse} from "@/api/Responses/V1GetChangesComparisonsResponse";
 import {V1ApproveRequest} from "@/api/Requests/V1ApproveRequest";
+import {V1CreatePersonRequest} from "@/api/Requests/V1CreatePersonRequest";
+import {V1CreatePersonResponse} from "@/api/Responses/V1CreatePersonResponse";
 import { Language } from "./Enums/Language";
 import {TranslationType} from "@/api/Enums/TranslationType";
 
@@ -36,6 +38,13 @@ export class ChangesHistoryService extends ApiService {
     }
     public async createEpisodeChange(request: V1CreateEpisodeChangeRequest) {
         return await this.CallPostHandlerAsync<V1CreateEpisodeChangeRequest>(request, 'create-episode')
+    }
+
+    public async createPersonChange(request: V1CreatePersonRequest): Promise<V1CreatePersonResponse> {
+        return await this.CallHandlerAsync<V1CreatePersonResponse, V1CreatePersonRequest>(
+            request,
+            'create-person'
+        );
     }
 
     public async getChangesComparisons(request: V1GetChangesComparisonsRequest)

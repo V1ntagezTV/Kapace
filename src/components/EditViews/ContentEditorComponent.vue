@@ -166,9 +166,9 @@
           Описание*
         </p>
       </div>
-      <base-text-area
+      <MarkdownEditor
         v-model="description"
-        class="content-edit__description-input body-medium content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+        class="content-edit__description-input"
         :placeholder="'Введите описание'"
         :mark-as-invalid-input="isMarkAsInvalidRequiredProperties.Description"
       />
@@ -211,6 +211,93 @@
         @change:input="onChangeGenreInput"
         @onkeydown:enter="onEnterGenreInput"
       />
+    </div>
+
+    <div class="content-edit__unit-box">
+      <div class="content-edit__details">
+        <p class="body-large">
+          Персоны
+        </p>
+        <label class="body-medium">Выберите персону, роли участия и имя персонажа (для роли Актёр)</label>
+      </div>
+
+      <div v-if="contentPersons.length > 0" class="column gap-8">
+        <div class="content-edit__genres-selected row gap-8">
+          <filter-chips
+            v-for="person in contentPersons"
+            :key="person.PersonId"
+            class="m3-bg-3 m-border m-radius-circle"
+            :text="formatContentPersonChip(person)"
+            :enable-menu-icon="true"
+            @click="removeContentPerson(person.PersonId)"
+          >
+            <template #menu-icon>
+              <x-icon />
+            </template>
+          </filter-chips>
+        </div>
+      </div>
+
+      <async-search-selector
+        v-model="personSelectedTitle"
+        class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+        :placeholder="'Выберите персону'"
+        :menu-alignment="MenuAlignment.Left"
+        :values="personSelectableValues"
+        :call-updater-delay="500"
+        :is-dropped="isPersonsMenuDropped"
+        @change:input="onChangePersonInput"
+      />
+
+      <div class="content-edit__details">
+        <p class="body-large">
+          Роли
+        </p>
+      </div>
+
+      <div class="content-edit__genres-selected row gap-8">
+        <filter-chips
+          v-for="label in roleSelectableValues"
+          :key="label"
+          class="m-border m-radius-circle"
+          :class="isRoleLabelSelected(label) ? 'm3-bg-3' : 'content-edit__bg'"
+          :text="label"
+          @click="toggleRoleByLabel(label)"
+        />
+      </div>
+
+      <div
+        v-if="selectedRoles.length > 0"
+        class="content-edit__genres-selected row gap-8"
+      >
+        <filter-chips
+          v-for="role in selectedRoles"
+          :key="role"
+          class="m3-bg-3 m-border m-radius-circle"
+          :text="PERSON_ROLE_LABELS[role]"
+          :enable-menu-icon="true"
+          @click="removeSelectedRole(role)"
+        >
+          <template #menu-icon>
+            <x-icon />
+          </template>
+        </filter-chips>
+      </div>
+
+      <BaseInput
+        v-if="hasActorRole"
+        v-model="characterNameInput"
+        class="content-edit__bg m-radius-1 m-border m-border-hover m-border-active"
+        :mark-as-invalid-input="isCharacterNameInvalid"
+        :place-holder="'Имя персонажа'"
+      />
+
+      <BaseTextButton
+        class="material m-radius-circle content-edit__text-button"
+        @click="addSelectedPerson"
+      >
+        Добавить персону
+      </BaseTextButton>
     </div>
 
     <div class="content-edit__unit-box">
@@ -294,7 +381,7 @@ import BaseInput from "@/components/Base/BaseInput.vue";
 import BaseButton from "@/components/Base/BaseButton.vue";
 import TimePicker from "@/components/Base/TimePicker.vue";
 import YearPicker from "@/components/Base/DatePicker.vue";
-import BaseTextArea from "@/components/Base/BaseTextArea.vue";
+import MarkdownEditor from "@/components/Markdown/MarkdownEditor.vue";
 import BaseSelector from "@/components/Base/Selector/BaseSelector.vue";
 import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import BaseImageInput from "@/components/Base/BaseImageInput.vue";
@@ -328,6 +415,7 @@ const {
   contentType,
   contentStatus,
   genres,
+  contentPersons,
   duration,
   releasedAt,
   plannedSeries,
@@ -339,6 +427,21 @@ const {
   onChangeGenreInput,
   onEnterGenreInput,
   deleteSelectedGenre,
+  personSelectableValues,
+  personSelectedTitle,
+  isPersonsMenuDropped,
+  characterNameInput,
+  isCharacterNameInvalid,
+  selectedRoles,
+  roleSelectableValues,
+  hasActorRole,
+  onChangePersonInput,
+  toggleRoleByLabel,
+  removeSelectedRole,
+  addSelectedPerson,
+  removeContentPerson,
+  formatContentPersonChip,
+  PERSON_ROLE_LABELS,
   removeAdditionalImage,
   onClickInsertContent,
   resetForm,
@@ -346,6 +449,10 @@ const {
   openAdditionalImagesDialog,
   onAdditionalImagesSelected,
 } = useContentEditor(toRef(props, 'contentId'));
+
+function isRoleLabelSelected(label: string): boolean {
+  return selectedRoles.value.some(role => PERSON_ROLE_LABELS[role] === label);
+}
 
 const isImageCropperVisible = ref(false);
 const imageToCrop = ref<File | null>(null);

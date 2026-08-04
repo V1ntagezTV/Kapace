@@ -51,9 +51,11 @@ import {TranslatorService} from "@/api/TranslatorService";
 import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 import BaseBackground from "@/components/Base/BaseBackground.vue";
 import AutoHide from "@/components/AutoHide.vue";
+import {PersonService} from "@/api/PersonService";
 import {GenreService} from "@/api/GenreService";
 import {UserApi} from "@/api/UserApi";
 import {FavoriteApi} from "@/api/FavoriteApi";
+import {ReportApi} from "@/api/ReportApi";
 
 
 provide('content-service', new ContentService());
@@ -62,9 +64,11 @@ provide('image-service', new ImageService());
 provide('changes-history-service', new ChangesHistoryService());
 provide('episode-service', new EpisodeService());
 provide('translator-service', new TranslatorService());
+provide('person-service', new PersonService());
 provide('genre-service', new GenreService());
 provide('user-api', new UserApi());
 provide('favorite-api', new FavoriteApi());
+provide('report-api', new ReportApi());
 
 const clientEventStore = new ClientEventStore();
 const events = computed(() => clientEventStore.$state.events);

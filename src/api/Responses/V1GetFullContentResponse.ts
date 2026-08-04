@@ -1,14 +1,28 @@
 import {QueryContent} from "@/api/BaseQuery/QueryContent";
 import {FavoriteStatus} from "@/models/FavoriteStatuses";
+import {PersonRoleValue} from "@/api/Enums/PersonRole";
 
 export class V1GetFullContentResponse {
     constructor(
         public Content: QueryContent,
         public Episodes: V1GetFullContentEpisode[],
         public Genres: V1GetFullContentGenre[],
+        public Persons: V1GetFullContentPerson[],
         public UserInfo: V1GetFullUserFavouriteInfo | null,
         public StarsAggregates: StarsAggregate) {
     }
+}
+
+export type V1GetFullContentPersonRole = {
+    Role: PersonRoleValue,
+    CharacterName: string | null,
+}
+
+export type V1GetFullContentPerson = {
+    PersonId: number,
+    Name: string,
+    ImageLink: string | null,
+    Roles: V1GetFullContentPersonRole[],
 }
 
 export class V1GetFullContentGenre {

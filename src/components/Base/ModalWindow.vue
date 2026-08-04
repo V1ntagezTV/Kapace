@@ -1,5 +1,10 @@
 <template>
-  <div class="modal-backdrop" @click="emits('on:close')">
+  <div
+    class="modal-backdrop"
+    @click="emits('on:close')"
+    @wheel.self.prevent
+    @touchmove.self.prevent
+  >
     <div class="modal m-border m-radius-16" @click.stop>
       <slot name="header" />
       <slot name="body" />
@@ -28,12 +33,14 @@ const emits = defineEmits<{
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  overscroll-behavior: none;
+  z-index: 10000;
 }
 
 .modal {
   background: #FFFFFF;
   box-shadow: 2px 2px 20px 1px;
-  overflow-x: auto;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 16px;

@@ -5,10 +5,12 @@ import ProfileView from "@/views/ProfileView.vue";
 import LogInView from "@/views/LogInView.vue";
 import RegistrationView from "@/views/RegistrationView.vue";
 import TheaterView from "@/views/TheaterView.vue";
+import PersonView from "@/views/PersonView.vue";
 import RestorePasswordView from "@/views/RestorePasswordView.vue";
 import EpisodeView from "@/views/EpisodeView.vue";
 import EditsView from "@/views/EditsView.vue";
 import SettingsView from "@/views/SettingsView.vue";
+import PersonHistoryView from "@/views/PersonHistoryView.vue";
 import ContentHistoryView from "@/views/ContentHistoryView.vue";
 
 const routes = [
@@ -51,6 +53,16 @@ const routes = [
     name: 'theater',
     path: '/theater/:id',
     component: TheaterView,
+  },
+  {
+    name: 'person',
+    path: '/person/:id',
+    component: PersonView,
+  },
+  {
+    name: 'person-history',
+    path: '/person/:id/history',
+    component: PersonHistoryView,
   },
   {
     name: 'content-history',
@@ -96,6 +108,16 @@ const routes = [
       {
         name: "create-episode",
         path: "/edit/episode",
+        component: EditsView,
+      },
+      {
+        name: "create-person",
+        path: "/edit/person",
+        component: EditsView,
+      },
+      {
+        name: "edit-person",
+        path: "/edit/person/:person(\\d+)",
         component: EditsView,
       }
     ]

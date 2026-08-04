@@ -1,4 +1,6 @@
 import {V1GetByQueryResponseContent} from "@/api/Requests/V1GetByQueryResponse";
+import {V1PersonContentAppearance} from "@/api/PersonService";
+import {PersonRole} from "@/api/Enums/PersonRole";
 import {SearchItemViewModel} from "@/components/Body/Search/ViewModels/SearchItemViewModel";
 import moment from "moment";
 import {Country} from "@/api/Enums/Country";
@@ -65,6 +67,32 @@ export class SearchContentFactory {
             Genres: content.Genres.map(x => x.Name).join(' / '),
             MinAge: content.Content.MinAgeLimit >= 0 ? content.Content.MinAgeLimit : null,
             SeriesCounter: seriesCounter
+        };
+    }
+
+    static mapPersonContentToViewModel(content: V1PersonContentAppearance): SearchItemViewModel {
+        const descriptionParts: string[] = [];
+        const characterName = content.Roles
+            ?.find(role => role.Role === PersonRole.Actor)
+            ?.CharacterName
+            ?.trim();
+
+        if (characterName) {
+            descriptionParts.push(characterName);
+        }
+
+        const seriesCounter = `${content.OutSeries}/${content.PlannedSeries}`;
+
+        return {
+            Id: content.ContentId,
+            AvatarImageLink: resolveBackendImageLink(content.AvatarImageLink),
+            Images: [],
+            Title: content.Title,
+            Description: descriptionParts.join(' / '),
+            Translates: [],
+            Genres: null,
+            MinAge: null,
+            SeriesCounter: seriesCounter,
         };
     }
 }

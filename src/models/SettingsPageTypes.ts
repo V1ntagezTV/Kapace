@@ -4,4 +4,6 @@ export enum SettingsPageTypes {
     CreateEpisode = 4,
     EditContent = 5,
     EditEpisode = 6,
+    CreatePerson = 7,
+    EditPerson = 8,
 }

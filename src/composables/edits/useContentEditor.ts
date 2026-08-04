@@ -3,13 +3,16 @@ import { ContentService } from '@/api/ContentService';
 import { ContentStatus } from '@/api/Enums/ContentStatus';
 import { ContentType } from '@/api/Enums/ContentType';
 import { Country } from '@/api/Enums/Country';
+import { PersonRole } from '@/api/Enums/PersonRole';
 import { ImageService } from '@/api/ImageService';
 import { V1ChangeableFields } from '@/api/Requests/V1CreateContentRequest';
 import { useGenrePicker } from '@/composables/edits/useGenrePicker';
+import { useContentPersonPicker, type ContentPersonEntry } from '@/composables/edits/useContentPersonPicker';
 import { contentEditorDirty } from '@/composables/edits/editsFormDirty';
 import { useFormDirtyState } from '@/composables/edits/useFormDirtyState';
 import { generateBigIntId } from '@/helpers/generateId';
 import { resolveBackendImageLink } from '@/helpers/ImageLinkResolver';
+import { getActorCharacterName } from '@/helpers/personRoles';
 import { ClientEventStore, EventTypes } from '@/store/ClientEventStore';
 import { userStore } from '@/store/UserStore';
 import { computed, inject, onMounted, ref, watch, type Ref } from 'vue';
@@ -58,6 +61,7 @@ export function useContentEditor(contentId: Ref<string | null>) {
     const contentType = ref<typeof ContentType | null>(null);
     const contentStatus = ref<typeof ContentStatus | null>(null);
     const genres = ref<string[]>([]);
+    const contentPersons = ref<ContentPersonEntry[]>([]);
     const duration = ref<string | null>(null);
     const releasedAt = ref<string | null>(null);
     const plannedSeries = ref<number | null>(null);
@@ -83,6 +87,27 @@ export function useContentEditor(contentId: Ref<string | null>) {
         resetGenrePicker,
     } = useGenrePicker(genres);
 
+    const {
+        personSelectableValues,
+        personSelectedTitle,
+        isPersonsMenuDropped,
+        characterNameInput,
+        isCharacterNameInvalid,
+        selectedRoles,
+        isRolesInvalid,
+        roleSelectableValues,
+        hasActorRole,
+        onChangePersonInput,
+        toggleRoleByLabel,
+        removeSelectedRole,
+        addSelectedPerson,
+        removeContentPerson,
+        resetPersonPicker,
+        clearPersonSearchFields,
+        formatContentPersonChip,
+        PERSON_ROLE_LABELS,
+    } = useContentPersonPicker(contentPersons);
+
     let localImageIdSequence = 0;
 
     const { isDirty, pauseTracking, resumeTracking, clearDirty } = useFormDirtyState([
@@ -94,6 +119,7 @@ export function useContentEditor(contentId: Ref<string | null>) {
         contentType,
         contentStatus,
         genres,
+        contentPersons,
         duration,
         releasedAt,
         plannedSeries,
@@ -149,6 +175,7 @@ export function useContentEditor(contentId: Ref<string | null>) {
         showEngTitleInputField.value = false;
         showOriginTitleInputField.value = false;
         resetGenrePicker();
+        resetPersonPicker();
         clearValidationFlags();
     }
 
@@ -168,6 +195,13 @@ export function useContentEditor(contentId: Ref<string | null>) {
         contentType.value = content.Content.Type;
         contentStatus.value = content.Content.Status;
         genres.value = content.Genres.map(x => x.Name);
+        contentPersons.value = (content.Persons ?? []).map(person => ({
+            PersonId: person.PersonId,
+            PersonName: person.Name,
+            ImageLink: resolveBackendImageLink(person.ImageLink),
+            Roles: (person.Roles ?? []).map(role => role.Role),
+            CharacterName: getActorCharacterName(person.Roles) ?? '',
+        }));
         additionalImages.value = (content.Content.AdditionalImages ?? [])
             .map(image => ({
                 LocalId: generateLocalId(),
@@ -194,6 +228,7 @@ export function useContentEditor(contentId: Ref<string | null>) {
         showEngTitleInputField.value = (engTitle.value?.length ?? 0) > 0;
         showOriginTitleInputField.value = (originalTitle.value?.length ?? 0) > 0;
         resetGenrePicker();
+        clearPersonSearchFields();
         clearValidationFlags();
     }
 
@@ -254,6 +289,15 @@ export function useContentEditor(contentId: Ref<string | null>) {
             Duration: durationInMinutes(duration.value ?? ''),
             EngTitle: engTitle.value,
             Genres: normalizedGenres,
+            Persons: contentPersons.value.map(person => ({
+                PersonId: person.PersonId,
+                Roles: person.Roles.map(role => ({
+                    Role: role,
+                    CharacterName: role === PersonRole.Actor
+                        ? (person.CharacterName.trim() || null)
+                        : null,
+                })),
+            })),
             MinAge: minAge.value,
             PlannedSeries: plannedSeries.value,
             OriginalTitle: originalTitle.value,
@@ -401,6 +445,7 @@ export function useContentEditor(contentId: Ref<string | null>) {
         contentType,
         contentStatus,
         genres,
+        contentPersons,
         duration,
         releasedAt,
         plannedSeries,
@@ -412,6 +457,22 @@ export function useContentEditor(contentId: Ref<string | null>) {
         onChangeGenreInput,
         onEnterGenreInput,
         deleteSelectedGenre,
+        personSelectableValues,
+        personSelectedTitle,
+        isPersonsMenuDropped,
+        characterNameInput,
+        isCharacterNameInvalid,
+        selectedRoles,
+        isRolesInvalid,
+        roleSelectableValues,
+        hasActorRole,
+        onChangePersonInput,
+        toggleRoleByLabel,
+        removeSelectedRole,
+        addSelectedPerson,
+        removeContentPerson,
+        formatContentPersonChip,
+        PERSON_ROLE_LABELS,
         removeAdditionalImage,
         onClickInsertContent,
         resetForm,

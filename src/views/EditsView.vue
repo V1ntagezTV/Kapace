@@ -16,6 +16,12 @@
         :episode-id="episodeId"
         :page-title="episodePageTitle"
       />
+      <PersonEditorComponent
+        v-else-if="isPersonEditorPage"
+        :key="personId ?? 'new-person'"
+        :person-id="personId"
+        :page-title="personPageTitle"
+      />
     </KeepAlive>
   </div>
 </template>
@@ -24,6 +30,7 @@
 import ContentEditorComponent from '@/components/EditViews/ContentEditorComponent.vue';
 import EditListComponent from '@/components/EditViews/EditListComponent.vue';
 import EpisodeEditorComponent from '@/components/EditViews/EpisodeEditorComponent.vue';
+import PersonEditorComponent from '@/components/EditViews/PersonEditorComponent.vue';
 import SettingsNavigation from '@/components/Settings/SettingsNavigation.vue';
 import { useEditsAccess } from '@/composables/edits/useEditsAccess';
 import { useEditNavigation } from '@/composables/edits/useEditNavigation';
@@ -36,11 +43,14 @@ const {
   selectedPage,
   contentId,
   episodeId,
+  personId,
   isListPage,
   isContentEditorPage,
   isEpisodeEditorPage,
+  isPersonEditorPage,
   contentPageTitle,
   episodePageTitle,
+  personPageTitle,
 } = useEditNavigation();
 </script>
 
