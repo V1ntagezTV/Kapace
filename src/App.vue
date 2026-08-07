@@ -56,6 +56,7 @@ import {GenreService} from "@/api/GenreService";
 import {UserApi} from "@/api/UserApi";
 import {FavoriteApi} from "@/api/FavoriteApi";
 import {ReportApi} from "@/api/ReportApi";
+import {CommentApi} from "@/api/CommentApi";
 
 
 provide('content-service', new ContentService());
@@ -69,6 +70,7 @@ provide('genre-service', new GenreService());
 provide('user-api', new UserApi());
 provide('favorite-api', new FavoriteApi());
 provide('report-api', new ReportApi());
+provide('comment-api', new CommentApi());
 
 const clientEventStore = new ClientEventStore();
 const events = computed(() => clientEventStore.$state.events);

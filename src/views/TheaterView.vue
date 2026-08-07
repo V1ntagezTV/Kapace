@@ -146,6 +146,12 @@
         v-if="isDataReady"
         :content-id="contentId"
       />
+
+      <comments-block
+        v-if="isDataReady"
+        target-type="Content"
+        :target-id="contentId"
+      />
     </div>
 
     <report-modal
@@ -197,6 +203,7 @@ import WarningIcon from "@/components/Icons/WarningIcon.vue";
 import WarningOutlineIcon from "@/components/Icons/WarningOutlineIcon.vue";
 import ReportIcon from "@/components/Icons/ReportIcon.vue";
 import ReportModal from "@/components/Modal/ReportModal.vue";
+import CommentsBlock from "@/components/Comments/CommentsBlock.vue";
 import { ClientEventStore, EventTypes } from "@/store/ClientEventStore";
 
 // --- Setup ---

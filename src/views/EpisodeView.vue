@@ -122,6 +122,12 @@
       </router-link>
     </div>
 
+    <comments-block
+      v-if="dataIsReady"
+      target-type="Episode"
+      :target-id="currentEpisode.Id"
+    />
+
     <!-- Список эпизодов (компонент) -->
     <translations-list-component-v3
       v-if="dataIsReady && content"
@@ -162,6 +168,7 @@ import {
   V1GetByEpisodeResponseTranslation
 } from "@/api/Responses/V1GetByEpisodeResponse";
 import { V1GetByQueryResponseContent } from "@/api/Requests/V1GetByQueryResponse";
+import CommentsBlock from "@/components/Comments/CommentsBlock.vue";
 
 const route = useRoute();
 

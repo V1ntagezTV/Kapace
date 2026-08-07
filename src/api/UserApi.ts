@@ -154,6 +154,13 @@ export class UserApi extends ApiService {
     async logout() : Promise<ApiResponse<{}>> {
         return await this.fetchV2<{}, {}>({}, 'cookie-logout');
     }
+
+    async getShortUsers(request: V1GetShortUsersRequest): Promise<ApiResponse<V1GetShortUsersResponse>> {
+        return await this.fetchV2<V1GetShortUsersResponse, V1GetShortUsersRequest>(
+            request,
+            'get-short-users'
+        );
+    }
 }
 
 export type VerifyPasswordResetCodeRequest = {
@@ -182,4 +189,19 @@ export type GetCurrentUser = {
 export type GetCurrentPermission = {
     Id: number,
     Alias: string
+}
+
+export type V1GetShortUsersRequest = {
+    /** long[] on backend; send numbers for safe integers */
+    UserIds: Array<number | string>;
+}
+
+export type V1ShortUser = {
+    UserId: number | string;
+    Nickname: string;
+    ImageLink: string | null;
+}
+
+export type V1GetShortUsersResponse = {
+    Users: V1ShortUser[];
 }

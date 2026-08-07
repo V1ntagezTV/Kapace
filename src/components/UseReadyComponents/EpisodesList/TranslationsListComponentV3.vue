@@ -107,7 +107,7 @@
                 class="episode-card__tag row label-small v__center h__center"
               >
                 <template #text>
-                  <p class="episode-card__tag-text body-small text__one-line">
+                  <p class="episode-card__tag-text text__one-line">
                     Нет перевода
                   </p>
                 </template>
@@ -122,7 +122,7 @@
                   <star class="episode-card__icon" />
                 </template>
                 <template #text>
-                  <p class="episode-card__tag-text body-small text__one-line h__padding-8">
+                  <p class="episode-card__tag-text text__one-line h__padding-8">
                     {{ episode.Stars }}
                   </p>
                 </template>
@@ -137,7 +137,7 @@
                   <Eye class="episode-card__icon episode-card__icon--eye" />
                 </template>
                 <template #text>
-                  <p class="episode-card__tag-text body-small text__one-line h__padding-8">
+                  <p class="episode-card__tag-text text__one-line h__padding-8">
                     {{ episode.Views }}
                   </p>
                 </template>
@@ -145,7 +145,7 @@
 
               <filter-chips-v2 class="episode-card__tag row label-small">
                 <template #text>
-                  <p class="episode-card__tag-text body-small text__one-line h__padding-8">
+                  <p class="episode-card__tag-text text__one-line h__padding-8">
                     {{ StringExtensions.getDateStr(episode.CreatedAt) }}
                   </p>
                 </template>
@@ -403,7 +403,7 @@ $color-bg-tag-hover: var(--primary80);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    gap: 16px;
+    gap: 4px;
     color: $color-text-dimmed;
   }
 

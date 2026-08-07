@@ -74,6 +74,12 @@
           />
         </div>
       </section>
+
+      <comments-block
+        v-if="isDataReady"
+        target-type="Person"
+        :target-id="personId"
+      />
     </div>
 
     <report-modal
@@ -104,6 +110,7 @@ import { userStore } from '@/store/UserStore';
 import { SearchContentFactory } from '@/components/Body/Search/SearchItemViewFactory';
 import { SearchItemViewModel } from '@/components/Body/Search/ViewModels/SearchItemViewModel';
 import { resolveBackendImageLink } from '@/helpers/ImageLinkResolver';
+import CommentsBlock from "@/components/Comments/CommentsBlock.vue";
 
 const route = useRoute();
 const router = useRouter();
