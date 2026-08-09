@@ -86,7 +86,7 @@ import {UserApi} from "@/api/UserApi";
 import {ClientEventStore, EventTypes} from "@/store/ClientEventStore";
 import BaseInput from "@/components/Base/BaseInput.vue";
 import {StringExtensions} from "@/helpers/StringExtensions";
-import {useRouter} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import Eye from "@/components/Icons/MaterialIcons/Eye.vue";
 import IconButton from "@/components/Base/Buttons/IconButton.vue";
 import EyeCross from "@/components/Icons/EyeCross.vue";
@@ -94,8 +94,10 @@ import BaseTextButton from "@/components/Base/BaseTextButton.vue";
 import EmailVerificationModal from "@/components/Modal/EmailVerificationModal.vue";
 import {ErrorDetails} from "@/api/ApiService";
 import { AuthSession } from "@/api/AuthSession";
+import { WatchRoomAuthSession } from "@/api/WatchRoomAuthSession";
 
 const router = useRouter();
+const route = useRoute();
 const store = userStore();
 const userApi = inject<UserApi>('user-api');
 const eventStore = ClientEventStore();
@@ -112,6 +114,8 @@ const emailVerificationAuthTempToken = ref<string|null>(null);
 async function logInClick() {
   const wrongInputErrorStr = 'Ошибка! Не корректно введены логин или пароль!';
   const defaultErrorStr = 'Ошибка сервера! Что-то пошло не так!';
+
+  WatchRoomAuthSession.clear();
 
   if (!IsInputsValid()) {
     eventStore.push(wrongInputErrorStr, EventTypes.Error as typeof EventTypes);
@@ -155,8 +159,36 @@ async function logInClick() {
   const currentUser = userResponse.data;
 
   store.applyCurrentUser(currentUser);
+
+  const bearerResponse = await userApi.loginByBearer(
+    loginInput.value,
+    passwordInput.value,
+    isRememberMe.value
+  );
+  const isWatchRoomSessionAvailable = !userApi.isErrorDetails(bearerResponse)
+    && WatchRoomAuthSession.set(bearerResponse);
+
+  if (!isWatchRoomSessionAvailable) {
+    eventStore.push(
+      'Комнаты просмотра недоступны до повторного входа.',
+      EventTypes.Error as typeof EventTypes
+    );
+  }
+
   AuthSession.resetAuthLostFlagForTestsOrLogin();
-  await router.push('/');
+  await router.push(getSafeReturnUrl());
+}
+
+function getSafeReturnUrl(): string {
+  const returnUrl = route.query.returnUrl;
+  if (typeof returnUrl !== 'string'
+    || !returnUrl.startsWith('/')
+    || returnUrl.includes('//')
+    || returnUrl.includes('\\')) {
+    return '/';
+  }
+
+  return returnUrl;
 }
 
 function IsInputsValid() : boolean {

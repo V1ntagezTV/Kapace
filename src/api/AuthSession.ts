@@ -1,5 +1,6 @@
 import { userStore } from "@/store/UserStore";
 import { ClientEventStore, EventTypes } from "@/store/ClientEventStore";
+import { WatchRoomAuthSession } from "@/api/WatchRoomAuthSession";
 
 type RefreshResult = boolean;
 
@@ -61,6 +62,7 @@ export const AuthSession = {
     events.push("Сессия истекла. Войдите снова.", EventTypes.Error);
 
     await callCookieLogoutBestEffort();
+    WatchRoomAuthSession.clear();
     store.LogOut();
 
     // Динамический import, иначе цикл: ApiService -> AuthSession -> router -> *Service -> ApiService (TDZ)

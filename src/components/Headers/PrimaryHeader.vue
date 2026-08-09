@@ -157,7 +157,9 @@ import LoopIcon from "@/components/Icons/LoopIcon.vue";
 import FolderIcon from "@/components/Icons/FolderIcon.vue";
 import PlusIcon from "@/components/Icons/PlusIcon.vue";
 import MenuGridIcon from "@/components/Icons/MenuGridIcon.vue";
+import PauseIcon from "@/components/Icons/PauseIcon.vue";
 import { resolveUserAvatarSrc } from "@/helpers/UserAvatarResolver";
+import { WatchRoomAuthSession } from "@/api/WatchRoomAuthSession";
 
 const store = userStore();
 const userAvatarSrc = computed(() => resolveUserAvatarSrc(store.imageUrl));
@@ -180,7 +182,8 @@ type HeaderNavItem = {
 const navItems: HeaderNavItem[] = [
   {label: 'Главная', to: '/', icon: FolderIcon, exact: true},
   {label: 'Редактор', to: '/edit', icon: AddNote},
-  {label: 'Поиск', to: '/search', icon: LoopIcon}
+  {label: 'Поиск', to: '/search', icon: LoopIcon},
+  {label: 'Комната', to: '/watch-room', icon: PauseIcon}
 ];
 
 const menuValues = navItems.map((item) => item.label);
@@ -239,6 +242,7 @@ async function logout() {
     await userApi.logout();
   }
 
+  WatchRoomAuthSession.clear();
   store.LogOut();
 
   if (route.name !== 'main') {

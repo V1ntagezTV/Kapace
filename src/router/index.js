@@ -12,6 +12,7 @@ import EditsView from "@/views/EditsView.vue";
 import SettingsView from "@/views/SettingsView.vue";
 import PersonHistoryView from "@/views/PersonHistoryView.vue";
 import ContentHistoryView from "@/views/ContentHistoryView.vue";
+import WatchRoomView from "@/views/WatchRoomView.vue";
 
 const routes = [
   {
@@ -23,6 +24,16 @@ const routes = [
     path: '/search',
     name: 'Поиск',
     component: SearchView
+  },
+  {
+    path: '/watch-room',
+    name: 'watch-room',
+    component: WatchRoomView,
+  },
+  {
+    path: '/watch-room/:room',
+    name: 'watch-room-room',
+    component: WatchRoomView,
   },
   {
     path: '/profile',
@@ -50,33 +61,33 @@ const routes = [
     component: RestorePasswordView,
   },
   {
-    name: 'theater',
     path: '/theater/:id',
+    name: 'theater',
     component: TheaterView,
   },
   {
-    name: 'person',
     path: '/person/:id',
+    name: 'person',
     component: PersonView,
   },
   {
-    name: 'person-history',
     path: '/person/:id/history',
+    name: 'person-history',
     component: PersonHistoryView,
   },
   {
-    name: 'content-history',
     path: '/theater/:id/history',
+    name: 'content-history',
     component: ContentHistoryView,
   },
   {
-    name: "episode",
     path: '/episode/:content/:episode/:translation(\\d+)*',
+    name: "episode",
     component: EpisodeView,
   },
   {
-    name: "edit",
     path: "/edit",
+    name: "edit",
     component: EditsView,
     redirect: { name: "edit-list" },
     children: [

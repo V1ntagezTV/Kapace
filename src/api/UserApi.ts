@@ -4,6 +4,7 @@ export class UserApi extends ApiService {
     constructor() {
         super('v1/user/');
     }
+
     public async logIn(email: string, password: string, isRememberMe: boolean) : Promise<Response | ErrorDetails> {
         const path = this.hostPath + this.servicePath + 'login-by-cookie';
         const requestHeaders: HeadersInit = new Headers();
@@ -25,7 +26,6 @@ export class UserApi extends ApiService {
 
         if (response.status === 400) {
             const model = await response.json() as ErrorDetails;
-            console.log({path: response.url, response: model});
             return model;
         } else if (response.status === 200) {
             return response;
@@ -36,6 +36,52 @@ export class UserApi extends ApiService {
                 ErrorDetails: new Map<string, string>()
             };
         }
+    }
+
+    public async loginByBearer(
+        email: string,
+        password: string,
+        isRememberMe: boolean
+    ): Promise<LoginByBearerResponse | ErrorDetails> {
+        const path = this.hostPath + this.servicePath + 'login-by-bearer';
+        const requestHeaders: HeadersInit = new Headers();
+        requestHeaders.set('Content-Type', 'application/json; charset=utf-8');
+
+        try {
+            const response = await fetch(path, {
+                method: 'POST',
+                headers: requestHeaders,
+                body: JSON.stringify({
+                    Email: email,
+                    Password: password,
+                    IsRememberMe: isRememberMe
+                }),
+                credentials: "include"
+            });
+
+            if (response.status === 200) {
+                const model = await response.json() as LoginByBearerApiResponse;
+                const bearerToken = model.BearerToken ?? model.Token;
+                if (typeof bearerToken === "string" && bearerToken.trim()) {
+                    return {
+                        BearerToken: bearerToken,
+                        UserId: model.UserId
+                    };
+                }
+            }
+
+            if (response.status === 400) {
+                return await response.json() as ErrorDetails;
+            }
+        } catch {
+            // Credentials and bearer tokens must not be written to logs.
+        }
+
+        return {
+            ErrorCode: "0",
+            Message: "Что-то пошло не так! Ошибка сервера.",
+            ErrorDetails: new Map<string, string>()
+        };
     }
 
     public async getCurrent() : Promise<ApiResponse<GetCurrentResponse>> {
@@ -170,6 +216,17 @@ export type VerifyPasswordResetCodeRequest = {
 
 export type VerifyPasswordResetCodeResponse = {
     Token: string
+}
+
+export type LoginByBearerResponse = {
+    BearerToken: string,
+    UserId: number
+}
+
+type LoginByBearerApiResponse = {
+    BearerToken?: string,
+    Token?: string,
+    UserId: number
 }
 
 export type GetCurrentResponse = {
